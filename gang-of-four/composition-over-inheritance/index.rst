@@ -1,62 +1,52 @@
-
 ============================================
- The Composition Over Inheritance Principle
+ 상속보다 컴포지션 원칙
 ============================================
 
-*A principle from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 원칙*
 
-.. TODO Below, be sure to mention advantage of Python,
-   to fulfill promise made here in admonition.
+.. TODO 아래에 파이썬의 장점을 언급하여
+   여기 경고에서 한 약속을 이행하십시오.
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   In Python as in other programming languages,
-   this grand principle encourages software architects
-   to escape from Object Orientation
-   and enjoy the simpler practices
-   of Object Based programming instead.
+   다른 프로그래밍 언어와 마찬가지로 파이썬에서도
+   이 위대한 원칙은 소프트웨어 아키텍트가
+   객체 지향에서 벗어나
+   대신 객체 기반 프로그래밍의
+   더 간단한 관행을 즐기도록 권장합니다.
 
-This is the second principle propounded
-by the :doc:`/gang-of-four/index` at the very beginning,
-in its “Introduction” chapter.
-The principle is so important that they display it indented and in italics,
-like this:
+이것은 :doc:`/gang-of-four/index`가 맨 처음 "소개" 장에서 제시한
+두 번째 원칙입니다.
+이 원칙은 매우 중요하여 다음과 같이 들여쓰기하고 기울임꼴로 표시합니다.
 
-    *Favor object composition over class inheritance.*
+    *클래스 상속보다 객체 컴포지션을 선호하십시오.*
 
-Let’s take a single design problem
-and watch how this principle works itself out
-through several of the classic Gang of Four design patterns.
-Each design pattern will assemble simple classes,
-unburdened by inheritance,
-into an elegant runtime solution.
+단일 디자인 문제를 가지고 이 원칙이
+몇 가지 고전적인 갱 오브 포 디자인 패턴을 통해
+어떻게 작동하는지 살펴보겠습니다.
+각 디자인 패턴은 상속에 얽매이지 않는 간단한 클래스를 조립하여
+우아한 런타임 솔루션을 만듭니다.
 
-Problem: the subclass explosion
+문제: 서브클래스 폭발
 -------------------------------
 
-A crucial weakness of inheritance as a design strategy
-is that a class often needs to be specialized
-along several different design axes at once,
-leading to what the Gang of Four call
-“a proliferation of classes” in their Bridge chapter
-and
-“an explosion of subclasses to support every combination”
-in their Decorator chapter.
+디자인 전략으로서 상속의 결정적인 약점은
+클래스가 종종 여러 다른 디자인 축을 따라 동시에 특수화되어야 한다는 것입니다.
+이는 갱 오브 포가 브리지 장에서 "클래스의 확산"이라고 부르는 것과
+데코레이터 장에서 "모든 조합을 지원하기 위한 서브클래스의 폭발"이라고 부르는 것으로 이어집니다.
 
-Python’s `logging module <https://docs.python.org/3/library/logging.html>`_
-is a good example in the Standard Library itself
-of a module that follows the Composition Over Inheritance principle,
-so let’s use logging as our example.
-Imagine a base logging class
-that has gradually gained subclasses
-as developers needed to send log messages to new destinations.
+파이썬의 `logging 모듈 <https://docs.python.org/3/library/logging.html>`_은
+표준 라이브러리 자체에서 상속보다 컴포지션 원칙을 따르는 모듈의 좋은 예이므로
+로깅을 예로 사용하겠습니다.
+개발자가 새 대상으로 로그 메시지를 보내야 함에 따라
+점차 서브클래스를 얻은 기본 로깅 클래스를 상상해 보십시오.
 
 .. testcode::
 
     import sys
     import syslog
 
-    # The initial class.
+    # 초기 클래스.
 
     class Logger(object):
         def __init__(self, file):
@@ -66,7 +56,7 @@ as developers needed to send log messages to new destinations.
             self.file.write(message + '\n')
             self.file.flush()
 
-    # Two more classes, that send messages elsewhere.
+    # 메시지를 다른 곳으로 보내는 두 개의 추가 클래스.
 
     class SocketLogger(Logger):
         def __init__(self, sock):
@@ -82,14 +72,14 @@ as developers needed to send log messages to new destinations.
         def log(self, message):
             syslog.syslog(self.priority, message)
 
-The problem arises when this first axis of design is joined by another.
-Let’s imagine that log messages now need to be filtered —
-some users only want to see messages with the word “Error” in them,
-and a developer responds with a new subclass of ``Logger``:
+이 첫 번째 디자인 축에 다른 축이 합류하면 문제가 발생합니다.
+이제 로그 메시지를 필터링해야 한다고 상상해 보십시오 —
+일부 사용자는 "Error"라는 단어가 포함된 메시지만 보고 싶어하고,
+개발자는 ``Logger``의 새 서브클래스로 응답합니다.
 
 .. testcode::
 
-    # New design direction: filtering messages.
+    # 새로운 디자인 방향: 메시지 필터링.
 
     class FilteredLogger(Logger):
         def __init__(self, pattern, file):
@@ -100,7 +90,7 @@ and a developer responds with a new subclass of ``Logger``:
             if self.pattern in message:
                 super().log(message)
 
-    # It works.
+    # 작동합니다.
 
     f = FilteredLogger('Error', sys.stdout)
     f.log('Ignored: this is not important')
@@ -110,58 +100,49 @@ and a developer responds with a new subclass of ``Logger``:
 
     Error: but you want to see this
 
-The trap has now been laid,
-and will be sprung the moment the application
-needs to filter messages
-but write them to a socket instead of a file.
-None of the existing classes covers that case.
-If the developer plows on ahead with subclassing
-and creates a ``FilteredSocketLogger``
-that combines the features of both classes,
-then the subclass explosion is underway.
+이제 함정이 놓였고, 애플리케이션이 메시지를 필터링해야 하지만
+파일 대신 소켓에 써야 하는 순간에 터질 것입니다.
+기존 클래스 중 어느 것도 해당 사례를 다루지 않습니다.
+개발자가 서브클래싱을 계속 진행하여
+두 클래스의 기능을 결합한 ``FilteredSocketLogger``를 만들면
+서브클래스 폭발이 진행 중입니다.
 
-Maybe the programmer will get lucky
-and no further combinations will be needed.
-But in the general case the application will wind up with 3×2=6 classes::
+프로그래머는 운이 좋아서 더 이상 조합이 필요하지 않을 수도 있습니다.
+그러나 일반적인 경우 애플리케이션은 3×2=6개의 클래스로 끝납니다.
 
     Logger            FilteredLogger
     SocketLogger      FilteredSocketLogger
     SyslogLogger      FilteredSyslogLogger
 
-The total number of classes will increase geometrically
-if *m* and \ *n* both continue to grow.
-This is the “proliferation of classes”
-and “explosion of subclasses”
-that the Gang of Four want to avoid.
+*m*과 *n*이 모두 계속 증가하면 총 클래스 수는 기하급수적으로 증가합니다.
+이것이 갱 오브 포가 피하고 싶어하는 "클래스의 확산"과
+"서브클래스의 폭발"입니다.
 
-The solution is to recognize
-that a class responsible for both filtering messages and logging messages
-is too complicated.
-In modern Object Oriented practice,
-it would be accused of violating the “Single Responsibility Principle.”
+해결책은 메시지 필터링과 메시지 로깅을 모두 담당하는 클래스가
+너무 복잡하다는 것을 인식하는 것입니다.
+최신 객체 지향 관행에서는
+"단일 책임 원칙"을 위반했다고 비난받을 것입니다.
 
-But how can we distribute
-the two features of message filtering and message output
-across different classes?
+그러나 메시지 필터링과 메시지 출력이라는 두 가지 기능을
+다른 클래스에 어떻게 분배할 수 있을까요?
 
-Solution #1: The Adapter Pattern
+해결책 #1: 어댑터 패턴
 --------------------------------
 
-.. TODO link to Adapter page once written
+.. TODO 작성되면 어댑터 페이지에 링크
 
-One solution is the Adapter Pattern:
-to decide that the original logger class
-doesn’t need to be improved,
-because any mechanism for outputting messages
-can be wrapped up to look like the file object that the logger is expecting.
+한 가지 해결책은 어댑터 패턴입니다.
+원래 로거 클래스를 개선할 필요가 없다고 결정하는 것입니다.
+왜냐하면 메시지를 출력하는 모든 메커니즘을
+로거가 예상하는 파일 객체처럼 보이도록 래핑할 수 있기 때문입니다.
 
-1. So we keep the original ``Logger``.
-2. And we also keep the ``FilteredLogger``.
-3. But instead of creating destination-specific subclasses,
-   we adapt each destination to the behavior of a file
-   and then pass the adapter to a ``Logger`` as its output file.
+1. 따라서 원래 ``Logger``를 유지합니다.
+2. 그리고 ``FilteredLogger``도 유지합니다.
+3. 그러나 대상별 서브클래스를 만드는 대신
+   각 대상을 파일의 동작에 맞게 조정하고
+   어댑터를 ``Logger``의 출력 파일로 전달합니다.
 
-Here are adapters for each of the other two outputs:
+다음은 다른 두 출력 각각에 대한 어댑터입니다.
 
 .. testcode::
 
@@ -188,21 +169,20 @@ Here are adapters for each of the other two outputs:
         def flush(self):
             pass
 
-Python encourages duck typing,
-so an adapter’s only responsibility is to offer the right methods —
-our adapters, for example, are exempt from the need
-to inherit from either the classes they wrap
-or from the ``file`` type they are imitating.
-They are also under no obligation to re-implement
-the full slate of more than a dozen methods that a real file offers.
-Just as it’s not important that a duck can walk if all you need is a quack,
-our adapters only need to implement the two file methods
-that the ``Logger`` really uses.
+파이썬은 덕 타이핑을 권장하므로
+어댑터의 유일한 책임은 올바른 메서드를 제공하는 것입니다 —
+예를 들어 우리 어댑터는 래핑하는 클래스나
+모방하는 ``file`` 타입에서 상속받을 필요가 없습니다.
+또한 실제 파일이 제공하는 12개 이상의 메서드 전체를
+다시 구현할 의무도 없습니다.
+오리가 꽥꽥거리는 소리만 필요하다면 걸을 수 있다는 것이 중요하지 않듯이,
+우리 어댑터는 ``Logger``가 실제로 사용하는
+두 가지 파일 메서드만 구현하면 됩니다.
 
-And so the subclass explosion is avoided!
-Logger objects and adapter objects
-can be freely mixed and matched at runtime
-without the need to create any further classes:
+따라서 서브클래스 폭발을 피할 수 있습니다!
+로거 객체와 어댑터 객체는
+추가 클래스를 만들 필요 없이
+런타임에 자유롭게 혼합하고 일치시킬 수 있습니다.
 
 .. testcode::
 
@@ -219,48 +199,47 @@ without the need to create any further classes:
 
     The socket received: b'Error: message number two\n'
 
-Note that it was only for the sake of example
-that the ``FileLikeSocket`` class is written out above —
-in real life that adapter comes built-in to Python’s Standard Library.
-Simply call any socket’s |makefile|_ method
-to receive a complete adapter that makes the socket look like a file.
+위에서 ``FileLikeSocket`` 클래스를 작성한 것은
+예시를 위해서일 뿐이라는 점에 유의하십시오 —
+실제로는 해당 어댑터가 파이썬 표준 라이브러리에 내장되어 있습니다.
+소켓의 |makefile|_ 메서드를 호출하기만 하면
+소켓을 파일처럼 보이게 만드는 완전한 어댑터를 받을 수 있습니다.
 
 .. |makefile| replace:: ``makefile()``
 .. _makefile: https://docs.python.org/3/library/socket.html#socket.socket.makefile
 
-Solution #2: The Bridge Pattern
+해결책 #2: 브리지 패턴
 -------------------------------
 
-.. TODO link to Bridge Pattern once written
+.. TODO 작성되면 브리지 패턴에 링크
 
-The Bridge Pattern splits a class’s behavior
-between an outer “abstraction” object that the caller sees
-and an “implementation” object that’s wrapped inside.
-We can apply the Bridge Pattern to our logging example
-if we make the (perhaps slightly arbitrary) decision
-that filtering belongs out in the “abstraction” class
-while output belongs in the “implementation” class.
+브리지 패턴은 클래스의 동작을
+호출자가 보는 외부 "추상화" 객체와
+내부에 래핑된 "구현" 객체로 분할합니다.
+필터링은 "추상화" 클래스에 속하고
+출력은 "구현" 클래스에 속한다는
+(아마도 약간 임의적인) 결정을 내리면
+로깅 예제에 브리지 패턴을 적용할 수 있습니다.
 
 .. TODO s/write/output?
 
-As in the Adapter case,
-a separate echelon of classes now governs writing.
-But instead of having to contort our output classes
-to match the interface of a Python ``file`` object —
-which required the awkward maneuver
-of adding a newline in the logger
-that sometimes had to be removed again in the adapter —
-we now get to define the interface of the wrapped class ourselves.
+어댑터 사례와 마찬가지로
+별도의 클래스 계층이 이제 쓰기를 관리합니다.
+그러나 출력 클래스를 파이썬 ``file`` 객체의 인터페이스와 일치하도록
+왜곡해야 하는 대신 —
+로거에서 줄 바꿈을 추가하고
+어댑터에서 다시 제거해야 하는 어색한 기동이 필요했습니다 —
+이제 래핑된 클래스의 인터페이스를 직접 정의할 수 있습니다.
 
-So let’s design the inner “implementation” object to accept a raw message,
-rather than needing a newline appended,
-and reduce the interface to only a single method ``emit()``
-instead of also having to support a ``flush()`` method
-that was usually a no-op.
+따라서 내부 "구현" 객체가 줄 바꿈이 추가될 필요 없이
+원시 메시지를 받도록 설계하고,
+인터페이스를 단일 메서드 ``emit()``으로 줄여서
+일반적으로 아무 작업도 하지 않는 ``flush()`` 메서드를
+지원할 필요가 없도록 합시다.
 
 .. testcode::
 
-    # The “abstractions” that callers will see.
+    # 호출자가 보게 될 "추상화".
 
     class Logger(object):
         def __init__(self, handler):
@@ -278,7 +257,7 @@ that was usually a no-op.
             if self.pattern in message:
                 super().log(message)
 
-    # The “implementations” hidden behind the scenes.
+    # 이면의 "구현".
 
     class FileHandler:
         def __init__(self, file):
@@ -302,8 +281,8 @@ that was usually a no-op.
         def emit(self, message):
             syslog.syslog(self.priority, message)
 
-Abstraction objects and implementation objects
-can now be freely combined at runtime:
+추상화 객체와 구현 객체는
+이제 런타임에 자유롭게 결합할 수 있습니다.
 
 .. testcode::
 
@@ -317,40 +296,39 @@ can now be freely combined at runtime:
 
     Error: this is important
 
-This presents more symmetry than the Adapter.
-Instead of file output being native to the ``Logger``
-but non-file output requiring an additional class,
-a functioning logger is now always built
-by composing an abstraction with an implementation.
+이것은 어댑터보다 더 많은 대칭성을 제공합니다.
+파일 출력이 ``Logger``에 기본적으로 제공되지만
+파일이 아닌 출력에는 추가 클래스가 필요한 대신,
+이제 항상 추상화와 구현을 구성하여
+작동하는 로거가 빌드됩니다.
 
-Once again,
-the subclass explosion is avoided
-because two kinds of class are composed together at runtime
-without requiring either class to be extended.
+다시 한번, 두 종류의 클래스가 런타임에 함께 구성되므로
+어느 클래스도 확장할 필요 없이
+서브클래스 폭발을 피할 수 있습니다.
 
-Solution #3: The Decorator Pattern
+해결책 #3: 데코레이터 패턴
 ----------------------------------
 
-What if we wanted to apply two different filters to the same log?
-Neither of the above solutions supports multiple filters —
-say, one filtering by priority and the other matching a keyword.
+동일한 로그에 두 가지 다른 필터를 적용하려면 어떻게 해야 할까요?
+위의 해결책 중 어느 것도 여러 필터를 지원하지 않습니다 —
+예를 들어, 하나는 우선순위로 필터링하고 다른 하나는 키워드와 일치시킵니다.
 
-Look back at the filters defined in the previous section.
-The reason we cannot stack two filters
-is that there’s an asymmetry
-between the interface they offer and the interface they wrap:
-they offer a ``log()`` method
-but call their handler’s ``emit()`` method.
-Wrapping one filter in another would result in an ``AttributeError``
-when the outer filter tried to call the inner filter’s ``emit()``.
+이전 섹션에서 정의된 필터를 다시 살펴보십시오.
+두 개의 필터를 쌓을 수 없는 이유는
+제공하는 인터페이스와 래핑하는 인터페이스 사이에
+비대칭성이 있기 때문입니다.
+``log()`` 메서드를 제공하지만
+핸들러의 ``emit()`` 메서드를 호출합니다.
+한 필터를 다른 필터로 래핑하면 외부 필터가
+내부 필터의 ``emit()``을 호출하려고 할 때 ``AttributeError``가 발생합니다.
 
-If we instead pivot our filters and handlers to offering the same interface,
-so that they all alike offer a ``log()`` method,
-then we have arrived at the Decorator Pattern:
+대신 필터와 핸들러가 동일한 인터페이스를 제공하도록 전환하여
+모두 ``log()`` 메서드를 제공하도록 하면
+데코레이터 패턴에 도달하게 됩니다.
 
 .. testcode::
 
-    # The loggers all perform real output.
+    # 모든 로거는 실제 출력을 수행합니다.
 
     class FileLogger:
         def __init__(self, file):
@@ -374,7 +352,7 @@ then we have arrived at the Decorator Pattern:
         def log(self, message):
             syslog.syslog(self.priority, message)
 
-    # The filter calls the same method it offers.
+    # 필터는 제공하는 것과 동일한 메서드를 호출합니다.
 
     class LogFilter:
         def __init__(self, pattern, logger):
@@ -385,14 +363,13 @@ then we have arrived at the Decorator Pattern:
             if self.pattern in message:
                 self.logger.log(message)
 
-For the first time,
-the filtering code has moved outside of any particular logger class.
-Instead, it’s now a stand-alone feature
-that can be wrapped around any logger we want.
+처음으로 필터링 코드가 특정 로거 클래스 외부로 이동했습니다.
+대신 이제 원하는 모든 로거 주위에 래핑할 수 있는
+독립 실행형 기능이 되었습니다.
 
-As with our first two solutions,
-filtering can be combined with output at runtime
-without building any special combined classes:
+처음 두 가지 해결책과 마찬가지로
+특별한 결합 클래스를 빌드하지 않고도
+런타임에 필터링을 출력과 결합할 수 있습니다.
 
 .. testcode::
 
@@ -409,9 +386,9 @@ without building any special combined classes:
     Noisy: this logger always produces output
     Error: this is important and gets printed
 
-And because Decorator classes are symmetric —
-they offer exactly the same interface they wrap —
-we can now stack several different filters atop the same log!
+그리고 데코레이터 클래스는 대칭적이므로 —
+래핑하는 것과 정확히 동일한 인터페이스를 제공합니다 —
+이제 동일한 로그 위에 여러 다른 필터를 쌓을 수 있습니다!
 
 .. testcode::
 
@@ -424,57 +401,53 @@ we can now stack several different filters atop the same log!
 
     Error: this is pretty severe
 
-But note the one place where the symmetry of this design breaks down:
-while filters can be stacked,
-output routines cannot be combined or stacked.
-Log messages can still only be written to one output.
+그러나 이 디자인의 대칭성이 깨지는 한 곳에 유의하십시오.
+필터는 쌓을 수 있지만
+출력 루틴은 결합하거나 쌓을 수 없습니다.
+로그 메시지는 여전히 하나의 출력에만 쓸 수 있습니다.
 
-Solution #4: Beyond the Gang of Four patterns
+해결책 #4: 갱 오브 포 패턴을 넘어서
 ---------------------------------------------
 
-Python’s logging module wanted even more flexibility:
-not only to support multiple filters,
-but to support multiple outputs for a single stream of log messages.
-Based on the design of logging modules in other languages —
-see `PEP 282 <https://www.python.org/dev/peps/pep-0282/>`_\ ’s
-“Influences” section for the main inspirations —
-the Python logging module
-implements its own Composition Over Inheritance pattern.
+파이썬의 로깅 모듈은 훨씬 더 많은 유연성을 원했습니다.
+여러 필터를 지원할 뿐만 아니라
+단일 로그 메시지 스트림에 대한 여러 출력을 지원합니다.
+다른 언어의 로깅 모듈 디자인을 기반으로 —
+주요 영감에 대해서는 `PEP 282 <https://www.python.org/dev/peps/pep-0282/>`_의
+"영향" 섹션을 참조하십시오 —
+파이썬 로깅 모듈은 자체 상속보다 컴포지션 패턴을 구현합니다.
 
-1. The ``Logger`` class that callers interact with
-   doesn’t itself implement either filtering or output.
-   Instead, it maintains a list of filters and a list of handlers.
+1. 호출자가 상호 작용하는 ``Logger`` 클래스는
+   자체적으로 필터링이나 출력을 구현하지 않습니다.
+   대신 필터 목록과 핸들러 목록을 유지합니다.
 
-2. For each log message,
-   the logger calls each of its filters.
-   The message is discarded if any filter rejects it.
+2. 각 로그 메시지에 대해
+   로거는 각 필터를 호출합니다.
+   필터 중 하나라도 거부하면 메시지가 삭제됩니다.
 
-3. For each log message that’s accepted by all the filters,
-   the logger loops over its output handlers
-   and asks every one of them to ``emit()`` the message.
+3. 모든 필터에서 수락된 각 로그 메시지에 대해
+   로거는 출력 핸들러를 반복하고
+   각 핸들러에게 메시지를 ``emit()``하도록 요청합니다.
 
-Or, at least, that’s the core of the idea.
-The Standard Library’s logging is in fact more complicated.
-For example,
-each handler can carry its own list of filters
-in addition to those listed by its logger.
-And each handler also specifies a minimum message “level”
-like ``INFO`` or ``WARN`` that,
-rather confusingly,
-is enforced neither by the handler itself
-nor by any of the handler’s filters,
-but instead by an ``if`` statement
-buried deep inside the logger where it loops over the handlers.
-The total design is thus a bit of a mess.
+또는 적어도 그것이 아이디어의 핵심입니다.
+표준 라이브러리의 로깅은 실제로 더 복잡합니다.
+예를 들어, 각 핸들러는 로거에 나열된 필터 외에
+자체 필터 목록을 가질 수 있습니다.
+그리고 각 핸들러는 또한 ``INFO`` 또는 ``WARN``과 같은
+최소 메시지 "수준"을 지정하며,
+혼란스럽게도 이는 핸들러 자체나
+핸들러의 필터 중 어느 것도 적용하지 않고
+대신 로거가 핸들러를 반복하는 곳 깊숙이 묻혀 있는
+``if`` 문에 의해 적용됩니다.
+따라서 전체 디자인은 약간 엉망입니다.
 
-But we can use the Standard Library logger’s basic insight —
-that a logger’s messages
-might deserve both multiple filters *and* multiple outputs —
-to decouple filter classes and handler classes entirely:
+그러나 표준 라이브러리 로거의 기본 통찰력 —
+로거의 메시지는 여러 필터 *및* 여러 출력을 받을 자격이 있을 수 있다는 것 —
+을 사용하여 필터 클래스와 핸들러 클래스를 완전히 분리할 수 있습니다.
 
 .. testcode::
 
-    # There is now only one logger.
+    # 이제 로거는 하나뿐입니다.
 
     class Logger:
         def __init__(self, filters, handlers):
@@ -486,7 +459,7 @@ to decouple filter classes and handler classes entirely:
                 for h in self.handlers:
                     h.emit(message)
 
-    # Filters now know only about strings!
+    # 필터는 이제 문자열에 대해서만 알고 있습니다!
 
     class TextFilter:
         def __init__(self, pattern):
@@ -495,7 +468,7 @@ to decouple filter classes and handler classes entirely:
         def match(self, text):
             return self.pattern in text
 
-    # Handlers look like “loggers” did in the previous solution.
+    # 핸들러는 이전 해결책의 "로거"처럼 보입니다.
 
     class FileHandler:
         def __init__(self, file):
@@ -519,27 +492,24 @@ to decouple filter classes and handler classes entirely:
         def emit(self, message):
             syslog.syslog(self.priority, message)
 
-Note that only with this final pivot in our design
-do filters really shine forth with the simplicity they deserve.
-For the first time,
-they accept only a string and return only a verdict.
-All of the previous designs
-either hid filtering inside one of the logging classes itself,
-or saddled filters with additional duties
-beyond simply rendering a verdict.
+이 최종 디자인 전환에서만
+필터가 마땅히 받아야 할 단순함으로 빛을 발한다는 점에 유의하십시오.
+처음으로 문자열만 받고 판정만 반환합니다.
+이전의 모든 디자인은
+로깅 클래스 자체 내부에 필터링을 숨기거나
+단순히 판정을 내리는 것 이상의 추가 의무를
+필터에 지웠습니다.
 
-In fact,
-the word “log” has dropped entirely away from the name of the filter class,
-and for a very important reason:
-there's no longer anything about it that’s specific to logging!
-The ``TextFilter`` is now entirely reusable
-in any context that happens to involve strings.
-Finally decoupled from the specific concept of logging,
-it will be easier to test and maintain.
+사실, "log"라는 단어는 필터 클래스의 이름에서 완전히 사라졌으며,
+매우 중요한 이유가 있습니다.
+더 이상 로깅에 특정한 것이 없기 때문입니다!
+``TextFilter``는 이제 문자열과 관련된 모든 컨텍스트에서
+완전히 재사용할 수 있습니다.
+마지막으로 로깅이라는 특정 개념에서 분리되어
+테스트하고 유지 관리하기가 더 쉬워질 것입니다.
 
-Again,
-as with all Composition Over Inheritance solutions to a problem,
-classes are composed at runtime without needing any inheritance:
+다시 한번, 문제에 대한 모든 상속보다 컴포지션 해결책과 마찬가지로
+클래스는 상속 없이 런타임에 구성됩니다.
 
 .. testcode::
 
@@ -554,51 +524,47 @@ classes are composed at runtime without needing any inheritance:
 
     Error: this is important
 
-There’s a crucial lesson here:
-design principles like Composition Over Inheritance are,
-in the end,
-more important than individual patterns like the Adapter or Decorator.
-Always follow the principle.
-But don’t always feel constrained
-to choose a pattern from an official list.
-The design at which we’ve now arrived
-is both more flexible and easier to maintain
-than any of the previous designs,
-even though they were based on official Gang of Four patterns
-but this final design is not.
-Sometimes, yes, you will find an existing Design Pattern
-that’s a perfect fit for your problem —
-but if not,
-your design might be stronger if you move beyond them.
+여기에는 중요한 교훈이 있습니다.
+상속보다 컴포지션과 같은 디자인 원칙은
+결국 어댑터나 데코레이터와 같은 개별 패턴보다
+더 중요합니다.
+항상 원칙을 따르십시오.
+그러나 항상 공식 목록에서 패턴을 선택하도록
+제한받는다고 느끼지 마십시오.
+우리가 지금 도달한 디자인은
+이전 디자인보다 유연하고 유지 관리가 더 쉽습니다.
+비록 이전 디자인은 공식적인 갱 오브 포 패턴을 기반으로 했지만
+이 최종 디자인은 그렇지 않습니다.
+때로는 문제에 완벽하게 맞는 기존 디자인 패턴을 찾을 수 있지만 —
+그렇지 않다면 디자인을 넘어서면 디자인이 더 강력해질 수 있습니다.
 
-.. TODO Once Facade is written, note that this is not a Facade because
-   we let the client build the filter and handler itself rather than
-   hide them behind a method.  (Or maybe a builder pattern is the right
-   one to mention?  Hmm.)
+.. TODO Facade가 작성되면 클라이언트가 필터와 핸들러를
+   메서드 뒤에 숨기는 대신 직접 빌드하도록 허용했기 때문에
+   Facade가 아니라는 점에 유의하십시오. (아니면 빌더 패턴이
+   언급하기에 적절한 패턴일까요? 흠.)
 
-Dodge: “if” statements
+회피: "if" 문
 ----------------------
 
-I suspect that the above code has startled many readers.
-To a typical Python programmer,
-such heavy use of classes might look entirely contrived —
-an awkward exercise in trying to make old ideas from the 1980s
-seem relevant to modern Python.
+위의 코드가 많은 독자를 놀라게 했을 것이라고 생각합니다.
+일반적인 파이썬 프로그래머에게는
+클래스를 많이 사용하는 것이 완전히 부자연스러워 보일 수 있습니다 —
+1980년대의 오래된 아이디어를 현대 파이썬과 관련 있어 보이게 하려는
+어색한 연습처럼 말입니다.
 
-When a new design requirement appears,
-does the typical Python programmer
-really go write a new class?
-No!
-“Simple is better than complex.”
-Why add a class,
-when an ``if`` statement will work instead?
-A single logger class can gradually accrete conditionals
-until it handles all the same cases
-as our previous examples:
+새로운 디자인 요구 사항이 나타나면
+일반적인 파이썬 프로그래머는
+정말로 새 클래스를 작성할까요?
+아니요!
+"복잡한 것보다 간단한 것이 낫다."
+``if`` 문으로도 충분한데
+왜 클래스를 추가해야 할까요?
+단일 로거 클래스는 점차 조건문을 추가하여
+이전 예제와 동일한 모든 경우를 처리할 수 있습니다.
 
 .. testcode::
 
-    # Each new feature as an “if” statement.
+    # "if" 문으로서의 각 새로운 기능.
 
     class Logger:
         def __init__(self, pattern=None, file=None, sock=None, priority=None):
@@ -619,7 +585,7 @@ as our previous examples:
             if self.priority is not None:
                 syslog.syslog(self.priority, message)
 
-    # Works just fine.
+    # 잘 작동합니다.
 
     logger = Logger(pattern='Error', file=sys.stdout)
 
@@ -630,139 +596,124 @@ as our previous examples:
 
     Error: this is important
 
-You may recognize this example
-as more typical of the Python design practices
-you’ve encountered in real applications.
+실제 애플리케이션에서 접했던
+더 일반적인 파이썬 디자인 관행으로
+이 예를 인식할 수 있습니다.
 
-The ``if`` statement approach is not entirely without benefit.
-This class’s whole range of possible behaviors
-can be grasped in a single reading of the code from top to bottom.
-The parameter list might look verbose but,
-thanks to Python’s optional keyword arguments,
-most calls to the class won’t need to provide all four arguments.
+``if`` 문 접근 방식이 전혀 이점이 없는 것은 아닙니다.
+이 클래스의 전체 가능한 동작 범위는
+코드를 위에서 아래로 한 번 읽는 것만으로 파악할 수 있습니다.
+매개변수 목록은 장황해 보일 수 있지만,
+파이썬의 선택적 키워드 인수 덕분에
+클래스에 대한 대부분의 호출은 네 가지 인수를 모두 제공할 필요가 없습니다.
 
-(It’s true that this class can handle only one file and one socket,
-but that’s an incidental simplification for the sake of readability.
-We could easily pivot the ``file`` and ``socket`` parameters
-to lists named ``files`` and ``sockets``.)
+(이 클래스는 파일 하나와 소켓 하나만 처리할 수 있다는 것은 사실이지만,
+가독성을 위해 단순화한 것입니다.
+``file`` 및 ``socket`` 매개변수를
+``files`` 및 ``sockets``라는 목록으로 쉽게 전환할 수 있습니다.)
 
-Given that every Python programmer learns ``if`` quickly,
-but can take much longer to understand classes,
-it might seem a clear win
-for code to rely on the simplest possible mechanism
-that will get a feature working.
-But let’s balance that temptation by making explicit what’s been lost
-by dodging Composition Over Inheritance:
+모든 파이썬 프로그래머가 ``if``를 빨리 배우지만
+클래스를 이해하는 데 훨씬 더 오래 걸릴 수 있다는 점을 감안할 때,
+기능을 작동시키는 가장 간단한 메커니즘에
+코드가 의존하는 것이 분명한 승리처럼 보일 수 있습니다.
+그러나 상속보다 컴포지션을 회피함으로써 잃어버린 것을 명시적으로 만들어
+그 유혹의 균형을 맞춰 봅시다.
 
-.. TODO I feel I was looking for a different word here than “locality”
+.. TODO 여기서 "지역성"이라는 단어와 다른 단어를 찾고 있었던 것 같습니다.
 
-1. **Locality.**
-   Reorganizing the code to use ``if`` statements
-   hasn’t been an unmitigated win for readability.
-   If you are tasked with improving or debugging one particular feature —
-   say, the support for writing to a socket —
-   you will find that you can’t read its code all in one place.
-   The code behind that single feature
-   is scattered between the initializer’s parameter list,
-   the initializer’s code,
-   and the ``log()`` method itself.
+1. **지역성.**
+   ``if`` 문을 사용하도록 코드를 재구성하는 것이
+   가독성에 대한 무조건적인 승리는 아니었습니다.
+   특정 기능(예: 소켓에 쓰는 지원)을 개선하거나 디버깅하는 임무를 맡은 경우
+   해당 코드를 한 곳에서 모두 읽을 수 없다는 것을 알게 될 것입니다.
+   해당 단일 기능 뒤의 코드는
+   초기화자의 매개변수 목록, 초기화자의 코드 및
+   ``log()`` 메서드 자체 사이에 흩어져 있습니다.
 
-2. **Deletability.**
-   An underappreciated property of good design
-   is that it makes deleting features easy.
-   Perhaps only veterans of large and mature Python applications
-   will strongly enough appreciate
-   the importance of code deletion to a project’s health.
-   In the case of our class-based solutions,
-   we can trivially delete a feature like logging to a socket
-   by removing the ``SocketHandler`` class and its unit tests
-   once the application no longer needs it.
-   By contrast,
-   deleting the socket feature from the forest of ``if`` statements
-   not only requires caution
-   to avoid breaking adjacent code,
-   but raises the awkward question of what to do
-   with the ``socket`` parameter in the initializer.
-   Can it be removed?
-   Not if we need to keep the list of positional parameters consistent —
-   we would need to retain the parameter,
-   but raise an exception if it’s ever used.
+2. **삭제 가능성.**
+   좋은 디자인의 과소평가된 속성은
+   기능 삭제를 쉽게 만든다는 것입니다.
+   아마도 크고 성숙한 파이썬 애플리케이션의 베테랑만이
+   프로젝트 상태에 대한 코드 삭제의 중요성을
+   충분히 인식할 것입니다.
+   클래스 기반 솔루션의 경우,
+   애플리케이션이 더 이상 필요하지 않으면
+   ``SocketHandler`` 클래스와 해당 단위 테스트를 제거하여
+   소켓에 로깅과 같은 기능을 간단히 삭제할 수 있습니다.
+   반대로 ``if`` 문의 숲에서 소켓 기능을 삭제하는 것은
+   인접 코드를 손상시키지 않도록 주의해야 할 뿐만 아니라
+   초기화자에서 ``socket`` 매개변수를 어떻게 해야 하는지에 대한
+   어색한 질문을 제기합니다.
+   제거할 수 있습니까?
+   위치 매개변수 목록을 일관되게 유지해야 하는 경우에는 그렇지 않습니다 —
+   매개변수를 유지해야 하지만
+   사용되면 예외를 발생시켜야 합니다.
 
-3. **Dead code analysis.**
-   Related to the previous point
-   is the fact that when we use Composition Over Inheritance,
-   dead code analyzers
-   can trivially detect
-   when the last use of ``SocketHandler`` in the codebase disappears.
-   But dead code analysis is often helpless to make a determination like
-   “you can now remove all the attributes and ``if`` statements
-   related to socket output,
-   because no surviving call to the initializer
-   passes anything for ``socket`` other than ``None``.”
+3. **죽은 코드 분석.**
+   이전 요점과 관련된 것은
+   상속보다 컴포지션을 사용할 때
+   죽은 코드 분석기가 코드베이스에서 ``SocketHandler``의 마지막 사용이
+   사라지는 시점을 간단히 감지할 수 있다는 사실입니다.
+   그러나 죽은 코드 분석은 종종
+   "이제 소켓 출력과 관련된 모든 속성과 ``if`` 문을 제거할 수 있습니다.
+   왜냐하면 초기화자에 대한 남아 있는 호출 중
+   ``socket``에 대해 ``None`` 이외의 것을 전달하는 것이 없기 때문입니다."와 같은
+   결정을 내리는 데 무력합니다.
 
-4. **Testing.**
-   One of the strongest signals about code health that our tests provide
-   is how many lines of irrelevant code have to run
-   before reaching the line under test.
-   Testing a feature like logging to a socket is easy
-   if the test can simply spin up a ``SocketHandler`` instance,
-   pass it a live socket,
-   and ask it to ``emit()`` a message.
-   No code runs except code relevant to the feature.
-   But testing socket logging in our forest of ``if`` statements
-   will run at least three times the number of lines of code.
-   Having to set up a logger
-   with the right combination of several features
-   merely to test one of them
-   is an important warning sign,
-   that might seem trivial in this small example
-   but becomes crucial as a system grows larger.
+4. **테스팅.**
+   테스트가 제공하는 코드 상태에 대한 가장 강력한 신호 중 하나는
+   테스트 중인 줄에 도달하기 전에
+   얼마나 많은 관련 없는 코드가 실행되어야 하는지입니다.
+   테스트가 단순히 ``SocketHandler`` 인스턴스를 시작하고,
+   라이브 소켓을 전달하고, 메시지를 ``emit()``하도록 요청할 수 있다면
+   소켓에 로깅과 같은 기능을 테스트하는 것은 쉽습니다.
+   기능과 관련된 코드 외에는 코드가 실행되지 않습니다.
+   그러나 ``if`` 문의 숲에서 소켓 로깅을 테스트하면
+   최소 3배의 코드 줄이 실행됩니다.
+   여러 기능의 올바른 조합으로 로거를 설정해야 하는 것은
+   그중 하나만 테스트하기 위한 것이며,
+   이 작은 예에서는 사소해 보일 수 있지만
+   시스템이 커짐에 따라 중요해지는 중요한 경고 신호입니다.
 
-5. **Efficiency.**
-   I’m deliberately putting this point last,
-   because readability and maintainability
-   are generally more important concerns.
-   But the design problems with the forest of ``if`` statements
-   are also signalled by the approach’s inefficiency.
-   Even if you want a simple unfiltered log to a single file,
-   every single message will be forced to run an ``if`` statement
-   against every possible feature you could have enabled.
-   The technique of composition, by contrast,
-   only runs code for the features you’ve composed together.
+5. **효율성.**
+   가독성과 유지 관리성이 일반적으로 더 중요한 문제이므로
+   이 점을 의도적으로 마지막에 배치합니다.
+   그러나 ``if`` 문의 숲에 대한 디자인 문제는
+   접근 방식의 비효율성으로도 나타납니다.
+   단일 파일에 대한 간단한 필터링되지 않은 로그를 원하더라도
+   모든 단일 메시지는 활성화했을 수 있는 모든 가능한 기능에 대해
+   ``if`` 문을 실행해야 합니다.
+   반대로 컴포지션 기술은
+   함께 구성한 기능에 대해서만 코드를 실행합니다.
 
-For all of these reasons,
-I suggest that the apparent simplicity of the ``if`` statement forest
-is, from the point of view of software design, largely an illusion.
-The ability to read the logger top-to-bottom as a single piece of code
-comes at the cost of several other kinds of conceptual expense
-that will grow sharply with the size of the codebase.
+이러한 모든 이유로 ``if`` 문 숲의 명백한 단순성은
+소프트웨어 디자인 관점에서 볼 때 대체로 환상이라고 제안합니다.
+로거를 위에서 아래로 단일 코드 조각으로 읽을 수 있는 능력은
+코드베이스의 크기에 따라 급격히 증가할
+몇 가지 다른 종류의 개념적 비용을 치르게 됩니다.
 
-Dodge: Multiple Inheritance
+회피: 다중 상속
 ---------------------------
 
-Some Python projects
-fall short of practicing Composition Over Inheritance
-because they are tempted to dodge the principle
-by means of a controversial feature of the Python language:
-multiple inheritance.
+일부 파이썬 프로젝트는 파이썬 언어의 논란이 많은 기능인
+다중 상속을 통해 원칙을 회피하려는 유혹 때문에
+상속보다 컴포지션을 실천하는 데 미치지 못합니다.
 
-Let’s return to the example code we started with,
-where ``FilteredLogger`` and ``SocketLogger``
-were two different subclasses of a base ``Logger`` class.
-In a language that only supported single inheritance,
-a ``FilteredSocketLogger``
-would have to choose
-to inherit either from ``SocketLogger`` or ``FilteredLogger``,
-and would then have to duplicate code from the other class.
+``FilteredLogger``와 ``SocketLogger``가
+기본 ``Logger`` 클래스의 두 가지 다른 서브클래스였던
+처음 시작한 예제 코드로 돌아가 봅시다.
+단일 상속만 지원하는 언어에서는
+``FilteredSocketLogger``가 ``SocketLogger`` 또는 ``FilteredLogger``에서
+상속하도록 선택해야 하며,
+그런 다음 다른 클래스의 코드를 복제해야 합니다.
 
-But Python supports multiple inheritance,
-so the new ``FilteredSocketLogger``
-can list both ``SocketLogger`` and ``FilteredLogger`` as base classes
-and inherit from both:
+그러나 파이썬은 다중 상속을 지원하므로
+새 ``FilteredSocketLogger``는 ``SocketLogger``와 ``FilteredLogger``를
+모두 기본 클래스로 나열하고 둘 다에서 상속할 수 있습니다.
 
 .. testcode::
 
-    # Our original example’s base class and subclasses.
+    # 원래 예제의 기본 클래스와 서브클래스.
 
     class Logger(object):
         def __init__(self, file):
@@ -788,14 +739,14 @@ and inherit from both:
             if self.pattern in message:
                 super().log(message)
 
-    # A class derived through multiple inheritance.
+    # 다중 상속을 통해 파생된 클래스.
 
     class FilteredSocketLogger(FilteredLogger, SocketLogger):
         def __init__(self, pattern, sock):
             FilteredLogger.__init__(self, pattern, None)
             SocketLogger.__init__(self, sock)
 
-    # Works just fine.
+    # 잘 작동합니다.
 
     logger = FilteredSocketLogger('Error', sock1)
     logger.log('Warning: not that important')
@@ -807,204 +758,179 @@ and inherit from both:
 
     The socket received: b'Error: this is important\n'
 
-This bears several striking resemblances
-to our Decorator Pattern solution.
-In both cases:
+이것은 데코레이터 패턴 해결책과 몇 가지 놀라운 유사점을 가지고 있습니다.
+두 경우 모두:
 
-* There’s a logger class for each kind of output
-  (instead of our Adapter’s asymmetry
-  between writing files directly
-  but non-files through an adapter).
+* 각 종류의 출력에 대한 로거 클래스가 있습니다.
+  (파일을 직접 쓰고 파일이 아닌 것은 어댑터를 통해 쓰는
+  어댑터의 비대칭성과는 대조적입니다.)
 
-* The ``message`` preserves the exact value provided by the caller
-  (instead of our Adapter’s habit
-  of replacing it with a file-specific value
-  by appending a newline).
+* ``message``는 호출자가 제공한 정확한 값을 유지합니다.
+  (줄 바꿈을 추가하여 파일별 값으로 바꾸는
+  어댑터의 습관과는 대조적입니다.)
 
-* The filter and loggers are symmetric
-  in that they both implement the same method ``log()``.
-  (Our other solutions besides the Decorator
-  had filter classes offering one method
-  and output classes offering another).
+* 필터와 로거는 둘 다 동일한 메서드 ``log()``를 구현한다는 점에서
+  대칭적입니다.
+  (데코레이터 이외의 다른 해결책은
+  한 메서드를 제공하는 필터 클래스와
+  다른 메서드를 제공하는 출력 클래스를 가졌습니다.)
 
-* The filter never tries to produce output on its own but,
-  if a message survives filtering,
-  defers the task of output to other code.
+* 필터는 자체적으로 출력을 생성하려고 시도하지 않지만,
+  메시지가 필터링을 통과하면
+  출력 작업을 다른 코드에 위임합니다.
 
-These close similarities
-with our earlier Decorator solution
-mean that we can compare it with this new code
-to make an unusually sharp comparison
-between Composition Over Inheritance and multiple inheritance.
-Let’s sharpen the focus still further with a question:
+이전 데코레이터 해결책과의 이러한 밀접한 유사성은
+상속보다 컴포지션과 다중 상속 간의
+매우 날카로운 비교를 위해 이 새 코드와 비교할 수 있음을 의미합니다.
+질문을 통해 초점을 더욱 선명하게 해 봅시다.
 
-*If we have thorough unit tests for both the logger and filter,
-how confident are we that they will work together?*
+*로거와 필터 모두에 대한 철저한 단위 테스트가 있는 경우
+함께 작동할 것이라고 얼마나 확신합니까?*
 
-1. The success of the Decorator example
-   depends only on the public behaviors of each class:
-   that the ``LogFilter`` offers a ``log()`` method
-   that in turn calls ``log()`` on the object it wraps
-   (which a test can trivially verify using a tiny fake logger),
-   and that each logger offers a working ``log()`` method.
-   As long as our unit tests verify these two public behaviors,
-   we can’t break composition
-   without failing our unit tests.
+1. 데코레이터 예제의 성공은
+   각 클래스의 공개 동작에만 의존합니다.
+   ``LogFilter``는 ``log()`` 메서드를 제공하고
+   이 메서드는 래핑하는 객체에서 ``log()``를 호출합니다.
+   (테스트는 작은 가짜 로거를 사용하여 간단히 확인할 수 있습니다.)
+   그리고 각 로거는 작동하는 ``log()`` 메서드를 제공합니다.
+   단위 테스트가 이러한 두 가지 공개 동작을 확인하는 한,
+   단위 테스트를 실패하지 않고는 컴포지션을 깰 수 없습니다.
 
-   Multiple inheritance, by contrast,
-   depends on behavior that cannot be verified
-   by simply instantiating the classes in question.
-   The public behavior of a ``FilteredLogger``
-   is that it offers a ``log()`` method
-   that both filters and writes to a file.
-   But multiple inheritance doesn’t merely depend on that public behavior,
-   but on how that behavior is implemented internally.
-   Multiple inheritance will work
-   if the method is deferring to its base class using ``super()``,
-   but not if the method does its own ``write()`` to the file,
-   even though either implementation would satisfy the unit test.
+   반대로 다중 상속은
+   해당 클래스를 단순히 인스턴스화하는 것만으로는 확인할 수 없는
+   동작에 의존합니다.
+   ``FilteredLogger``의 공개 동작은
+   파일을 필터링하고 쓰는 ``log()`` 메서드를 제공하는 것입니다.
+   그러나 다중 상속은 해당 공개 동작에만 의존하는 것이 아니라
+   해당 동작이 내부적으로 구현되는 방식에 의존합니다.
+   메서드가 ``super()``를 사용하여 기본 클래스에 위임하는 경우
+   다중 상속이 작동하지만,
+   메서드가 파일에 자체 ``write()``를 수행하는 경우에는 작동하지 않습니다.
+   어떤 구현이든 단위 테스트를 만족시킬지라도 말입니다.
 
-   A test suite must therefore go beyond unit testing
-   and perform actual multiple inheritance on the class —
-   or else monkey patch to verify that ``log()`` calls ``super().log()`` —
-   to guarantee that multiple inheritance keeps working
-   as future developers work on the code.
+   따라서 테스트 스위트는 단위 테스트를 넘어서
+   클래스에 대한 실제 다중 상속을 수행하거나 —
+   또는 ``log()``가 ``super().log()``를 호출하는지 확인하기 위해 몽키 패치를 수행해야 합니다 —
+   미래 개발자가 코드를 작업할 때
+   다중 상속이 계속 작동하도록 보장합니다.
 
-2. Multiple inheritance has introduced a new ``__init__()`` method
-   because neither base class’s ``__init__()`` method
-   accepts enough arguments for a combined filter and logger.
-   That new code needs to be tested,
-   so at least one test will be necessary
-   for every new subclass.
+2. 다중 상속은 새 ``__init__()`` 메서드를 도입했습니다.
+   왜냐하면 어느 기본 클래스의 ``__init__()`` 메서드도
+   결합된 필터와 로거에 대한 충분한 인수를 받지 않기 때문입니다.
+   해당 새 코드를 테스트해야 하므로
+   모든 새 서브클래스에 대해 최소한 하나의 테스트가 필요합니다.
 
-   You might be tempted to concoct a scheme
-   to avoid a new ``__init__()`` for every subclass,
-   like accepting ``*args`` and then passing them on to ``super().__init__()``.
-   (If you do pursue that approach,
-   review the classic essay “\ `Python's Super Considered Harmful
-   <https://fuhm.net/super-harmful/>`_\ ”
-   which argues that only ``**kw`` is in fact safe.)
-   The problem with such a scheme is that it hurts readability —
-   you can no longer figure out what arguments an ``__init__()`` method takes
-   simply by reading its parameter list.
-   And type checking tools
-   will no longer be able to guarantee correctness.
+   모든 서브클래스에 대한 새 ``__init__()``를 피하기 위해
+   ``*args``를 받고 ``super().__init__()``에 전달하는 것과 같은
+   계획을 세우고 싶을 수 있습니다.
+   (이 접근 방식을 추구한다면
+   고전적인 에세이 "\ `파이썬의 Super는 해롭다고 간주됨
+   <https://fuhm.net/super-harmful/>`_ "을 검토하십시오.
+   이 에세이는 ``**kw``만 실제로 안전하다고 주장합니다.)
+   이러한 계획의 문제점은 가독성을 해친다는 것입니다 —
+   더 이상 ``__init__()`` 메서드가 어떤 인수를 사용하는지
+   매개변수 목록을 읽는 것만으로는 알 수 없습니다.
+   그리고 유형 검사 도구는
+   더 이상 정확성을 보장할 수 없습니다.
 
-   But whether you give each derived class its own ``__init__()``
-   or design them to chain together,
-   your unit tests of the original ``FilteredLogger`` and ``SocketLogger``
-   can’t by themselves guarantee
-   that the classes initialize correctly when combined.
+   그러나 각 파생 클래스에 자체 ``__init__()``를 제공하든
+   함께 연결하도록 설계하든,
+   원래 ``FilteredLogger`` 및 ``SocketLogger``의 단위 테스트는
+   결합될 때 클래스가 올바르게 초기화된다는 것을
+   자체적으로 보장할 수 없습니다.
 
-   By contrast,
-   the Decorator’s design leaves its initializers
-   happily and strictly orthogonal.
-   The filter accepts its ``pattern``,
-   the logger accepts its ``sock``,
-   and there is no possible conflict between the two.
+   반대로 데코레이터의 디자인은 초기화자를
+   행복하고 엄격하게 직교적으로 남겨둡니다.
+   필터는 ``pattern``을 받고,
+   로거는 ``sock``을 받으며,
+   두 가지 사이에 가능한 충돌은 없습니다.
 
-3. Finally,
-   it’s possible that two classes work fine on their own,
-   but have class or instance attributes with the same name
-   that will collide
-   when the classes are combined through multiple inheritance.
+3. 마지막으로, 두 클래스가 자체적으로는 잘 작동하지만
+   다중 상속을 통해 클래스가 결합될 때
+   충돌할 동일한 이름의 클래스 또는 인스턴스 속성을 가질 수 있습니다.
 
-   Yes,
-   our small examples here
-   make the chance of collision look too small to worry about —
-   but remember that these examples are merely standing in
-   for the vastly more complicated classes
-   you might write in real applications.
+   예, 여기의 작은 예는
+   충돌 가능성이 너무 작아서 걱정할 필요가 없어 보입니다 —
+   그러나 이러한 예는 실제 애플리케이션에서 작성할 수 있는
+   훨씬 더 복잡한 클래스를 대신하는 것일 뿐이라는 것을 기억하십시오.
 
-   Whether the programmer writes tests to guard against collision
-   by running ``dir()`` on instances of each class
-   and checking for attributes they have in common,
-   or by writing an integration test
-   for every possible subclass,
-   the original unit tests of the two separate classes
-   will once again have failed to guarantee
-   that they can combine cleanly through multiple inheritance.
+   프로그래머가 각 클래스의 인스턴스에서 ``dir()``을 실행하고
+   공통 속성을 확인하여 충돌을 방지하기 위한 테스트를 작성하든,
+   가능한 모든 서브클래스에 대한 통합 테스트를 작성하든,
+   두 개의 개별 클래스에 대한 원래 단위 테스트는
+   다중 상속을 통해 깔끔하게 결합될 수 있다는 것을
+   다시 한번 보장하지 못할 것입니다.
 
-For any of these reasons,
-the unit tests of two base classes can stay green
-even as their ability to be combined through multiple inheritance
-is broken.
-This means that the Gang of Four’s
-“explosion of subclasses to support every combination”
-will also afflict your tests.
-Only by testing
-every combination of *m*\ ×\ *n* base classes in your application
-can you make it safe for the application to use such classes at runtime.
+이러한 이유 중 어느 하나라도,
+두 기본 클래스의 단위 테스트는
+다중 상속을 통해 결합하는 능력이 깨지더라도
+계속해서 녹색으로 유지될 수 있습니다.
+이는 갱 오브 포의
+"모든 조합을 지원하기 위한 서브클래스의 폭발"이
+테스트에도 영향을 미칠 것임을 의미합니다.
+애플리케이션에서 *m* × *n* 기본 클래스의 모든 조합을 테스트해야만
+애플리케이션이 런타임에 이러한 클래스를 안전하게 사용할 수 있습니다.
 
-In addition to breaking the guarantees of unit testing,
-multiple inheritance involves at least three further liabilities.
+단위 테스트의 보증을 깨는 것 외에도
+다중 상속에는 최소 세 가지 추가 책임이 따릅니다.
 
-4. Introspection is simple in the Decorator case.
-   Simply ``print(my_filter.logger)`` or view that attribute in a debugger
-   to see what sort of output logger is attached.
-   In the case of multiple inheritance, however,
-   you can only learn which filter and logger have been combined
-   by examining the metadata of the class itself —
-   either by reading its ``__mro__``
-   or subjecting the object to a series of ``isinstance()`` tests.
+4. 데코레이터의 경우 성찰이 간단합니다.
+   단순히 ``print(my_filter.logger)``를 하거나 디버거에서 해당 속성을 보면
+   어떤 종류의 출력 로거가 연결되어 있는지 알 수 있습니다.
+   그러나 다중 상속의 경우
+   클래스 자체의 메타데이터를 검사해야만
+   어떤 필터와 로거가 결합되었는지 알 수 있습니다 —
+   ``__mro__``를 읽거나 객체에 일련의 ``isinstance()`` 테스트를 수행합니다.
 
-5. It’s trivial in the Decorator case
-   to take a live combination of a filter and logger
-   and at runtime to swap in a different logger
-   through assignment to the ``.logger`` attribute —
-   say, because the user has just toggled a preference
-   in the application’s interface.
-   But to do the same in the multiple inheritance case
-   would require the rather more objectionable maneuver
-   of overwriting the object’s class.
-   While changing an object’s class at runtime
-   is not impossible in a dynamic language like Python,
-   it’s generally considered a symptom
-   that software design has gone wrong.
+5. 데코레이터의 경우
+   필터와 로거의 라이브 조합을 가져와
+   런타임에 ``.logger`` 속성에 할당하여
+   다른 로거로 교체하는 것이 간단합니다 —
+   예를 들어 사용자가 방금 애플리케이션 인터페이스에서
+   기본 설정을 전환했기 때문입니다.
+   그러나 다중 상속의 경우 동일한 작업을 수행하려면
+   객체의 클래스를 덮어쓰는 훨씬 더 불쾌한 기동이 필요합니다.
+   런타임에 객체의 클래스를 변경하는 것은
+   파이썬과 같은 동적 언어에서는 불가능하지 않지만,
+   일반적으로 소프트웨어 디자인이 잘못되었다는 증상으로 간주됩니다.
 
-6. Finally,
-   multiple inheritance provides no built-in mechanism
-   to help the programmer order the base classes correctly.
-   The ``FilteredSocketLogger``
-   won’t successfully write to a socket if its base classes are swapped and,
-   as dozens of Stack Overflow questions attest,
-   Python programmers have perpetual difficultly
-   with putting third-party base classes in the right order.
-   The Decorator pattern, by contrast,
-   makes it obvious which way the classes compose:
-   the filter’s ``__init__()`` wants a ``logger`` object,
-   but the logger’s ``__init__()`` doesn’t ask for a ``filter``.
+6. 마지막으로, 다중 상속은 프로그래머가
+   기본 클래스를 올바르게 정렬하는 데 도움이 되는
+   기본 제공 메커니즘을 제공하지 않습니다.
+   ``FilteredSocketLogger``는 기본 클래스가 바뀌면
+   소켓에 성공적으로 쓰지 못하며,
+   수십 개의 스택 오버플로 질문이 증명하듯이
+   파이썬 프로그래머는 타사 기본 클래스를
+   올바른 순서로 배치하는 데 영구적인 어려움을 겪습니다.
+   반대로 데코레이터 패턴은
+   클래스가 구성되는 방식을 명확하게 만듭니다.
+   필터의 ``__init__()``는 ``logger`` 객체를 원하지만,
+   로거의 ``__init__()``는 ``filter``를 요청하지 않습니다.
 
-Multiple inheritance, then,
-incurs a number of liabilities
-without adding a single advantage.
-At least in this example,
-solving a design problem with inheritance
-is strictly worse than a design based on composition.
+따라서 다중 상속은 단일 이점을 추가하지 않고
+여러 가지 책임을 발생시킵니다.
+적어도 이 예에서는 상속으로 디자인 문제를 해결하는 것이
+컴포지션 기반 디자인보다 엄격하게 나쁩니다.
 
-Dodge: Mixins
+회피: 믹스인
 -------------
 
-The ``FilteredSocketLogger`` in the previous section
-needed its own custom ``__init__()`` method
-because it needed to accept arguments for both of its base classes.
-But it turns out that this liability
-can be avoided.
-Of course,
-in cases where a subclass doesn’t require any extra data,
-the problem doesn’t arise.
-But even classes that do require extra data
-can have it delivered by other means.
+이전 섹션의 ``FilteredSocketLogger``는
+두 기본 클래스 모두에 대한 인수를 받아야 했기 때문에
+자체 사용자 지정 ``__init__()`` 메서드가 필요했습니다.
+그러나 이 책임은 피할 수 있다는 것이 밝혀졌습니다.
+물론 서브클래스에 추가 데이터가 필요하지 않은 경우에는
+문제가 발생하지 않습니다.
+그러나 추가 데이터가 필요한 클래스라도
+다른 수단으로 데이터를 전달받을 수 있습니다.
 
-We can make the ``FilteredLogger``
-more friendly to multiple inheritance
-if we provide a default value for ``pattern`` in the class itself
-and then invite callers to customize the attribute directly,
-out-of-band of initialization:
+클래스 자체에서 ``pattern``에 대한 기본값을 제공하고
+호출자가 초기화와 별도로 속성을 직접 사용자 지정하도록 초대하면
+``FilteredLogger``를 다중 상속에 더 친화적으로 만들 수 있습니다.
 
 .. testcode::
 
-    # Don’t accept a “pattern” during initialization.
+    # 초기화 중에 "pattern"을 받지 마십시오.
 
     class FilteredLogger(Logger):
         pattern = ''
@@ -1013,17 +939,17 @@ out-of-band of initialization:
             if self.pattern in message:
                 super().log(message)
 
-    # Multiple inheritance is now simpler.
+    # 다중 상속이 이제 더 간단해졌습니다.
 
     class FilteredSocketLogger(FilteredLogger, SocketLogger):
-        pass  # This subclass needs no extra code!
+        pass  # 이 서브클래스에는 추가 코드가 필요하지 않습니다!
 
-    # The caller can just set “pattern” directly.
+    # 호출자는 "pattern"을 직접 설정할 수 있습니다.
 
     logger = FilteredSocketLogger(sock1)
     logger.pattern = 'Error'
 
-    # Works just fine.
+    # 잘 작동합니다.
 
     logger.log('Warning: not that important')
     logger.log('Error: this is important')
@@ -1034,31 +960,29 @@ out-of-band of initialization:
 
     The socket received: b'Error: this is important\n'
 
-Having pivoted the ``FilteredLogger``
-to an initialization maneuver
-that’s orthogonal to that of its base class,
-why not push the idea of orthogonality to its logical conclusion?
-We can convert the ``FilteredLogger`` to a “mixin”
-that lives entirely outside the class hierarchy
-with which multiple inheritance will combine it.
+``FilteredLogger``를 기본 클래스의 초기화 기동과
+직교적인 초기화 기동으로 전환했으므로,
+직교성이라는 아이디어를 논리적 결론까지 밀어붙이지 않겠습니까?
+``FilteredLogger``를 다중 상속이 결합할 클래스 계층 구조
+외부에 완전히 존재하는 "믹스인"으로 변환할 수 있습니다.
 
 .. testcode::
 
-    # Simplify the filter by making it a mixin.
+    # 믹스인으로 만들어 필터를 단순화합니다.
 
-    class FilterMixin:  # No base class!
+    class FilterMixin:  # 기본 클래스 없음!
         pattern = ''
 
         def log(self, message):
             if self.pattern in message:
                 super().log(message)
 
-    # Multiple inheritance looks the same as above.
+    # 다중 상속은 위와 동일하게 보입니다.
 
     class FilteredLogger(FilterMixin, FileLogger):
-        pass  # Again, the subclass needs no extra code.
+        pass  # 다시 한번, 서브클래스에는 추가 코드가 필요하지 않습니다.
 
-    # Works just fine.
+    # 잘 작동합니다.
 
     logger = FilteredLogger(sys.stdout)
     logger.pattern = 'Error'
@@ -1069,62 +993,58 @@ with which multiple inheritance will combine it.
 
     Error: this is important
 
-The mixin is conceptually simpler
-than the filtered subclass we saw in the last section:
-it has no base class that might complicate method resolution order,
-so ``super()`` will always call
-the next base class listed in the ``class`` statement.
+믹스인은 지난 섹션에서 보았던 필터링된 서브클래스보다
+개념적으로 더 간단합니다.
+메서드 확인 순서를 복잡하게 만들 수 있는 기본 클래스가 없으므로
+``super()``는 항상 ``class`` 문에 나열된
+다음 기본 클래스를 호출합니다.
 
-A mixin also has a simpler testing story than the equivalent subclass.
-Whereas the ``FilteredLogger`` would need tests
-that both run it standalone
-and also combine it with other classes,
-the ``FilterMixin`` only needs tests that combine it with a logger.
-Because the mixin is by itself incomplete,
-a test can’t even be written that runs it standalone.
+믹스인은 또한 동등한 서브클래스보다 테스트 스토리가 더 간단합니다.
+``FilteredLogger``는 독립 실행형으로 실행하고
+다른 클래스와 결합하는 테스트가 모두 필요하지만,
+``FilterMixin``은 로거와 결합하는 테스트만 필요합니다.
+믹스인은 자체적으로 불완전하므로
+독립 실행형으로 실행하는 테스트는 작성할 수도 없습니다.
 
-.. TODO might also want it because go into different hierarchies
+.. TODO 다른 계층 구조로 들어가기 때문에 원할 수도 있습니다.
 
-But all the other liabilities of multiple inheritance still apply.
-So while the mixin pattern
-does improve the readability and conceptual simplicity
-of multiple inheritance,
-it’s not a complete solution for its problems.
+그러나 다중 상속의 다른 모든 책임은 여전히 적용됩니다.
+따라서 믹스인 패턴은 다중 상속의
+가독성과 개념적 단순성을 향상시키지만,
+문제에 대한 완전한 해결책은 아닙니다.
 
-.. TODO Once Template Method is written, point out that it would let us
-   write simple Boolean filter method that would buy back the
-   possibility of re-use that we lost when we moved to multiple
-   inheritance.
+.. TODO 템플릿 메서드가 작성되면 간단한 부울 필터 메서드를 작성하여
+   다중 상속으로 전환했을 때 잃어버린 재사용 가능성을
+   되찾을 수 있다는 점을 지적하십시오.
 
-Dodge: Building classes dynamically
+회피: 동적으로 클래스 빌드
 -----------------------------------
 
-As we saw in the previous two sections,
-neither traditional multiple inheritance nor mixins
-solve the Gang of Four’s problem
-of “an explosion of subclasses to support every combination” —
-they merely avoid code duplication when two classes need to be combined.
+이전 두 섹션에서 보았듯이
+전통적인 다중 상속이나 믹스인 모두
+"모든 조합을 지원하기 위한 서브클래스의 폭발"이라는
+갱 오브 포의 문제를 해결하지 못합니다 —
+단지 두 클래스를 결합해야 할 때 코드 중복을 피할 뿐입니다.
 
-Multiple inheritance still requires, in the general case,
-“a proliferation of classes” with *m*\ ×\ *n* class statements
-that each look like:
+다중 상속은 여전히 일반적인 경우
+각각 다음과 같이 보이는 *m* × *n* 클래스 문의
+"클래스 확산"을 필요로 합니다.
 
 .. testcode::
 
     class FilteredSocketLogger(FilteredLogger, SocketLogger):
         ...
 
-But it turns out that Python offers a workaround.
+그러나 파이썬은 해결 방법을 제공한다는 것이 밝혀졌습니다.
 
-Imagine that our application reads a configuration file
-to learn the log filter and log destination it should use,
-a file whose contents aren’t known until runtime.
-Instead of building all *m*\ ×\ *n* possible classes ahead of time
-and then selecting the right one,
-we can wait and take advantage of the fact
-that Python not only supports the ``class`` statement
-but a builtin ``type()`` function
-that creates new classes dynamically at runtime:
+애플리케이션이 구성 파일을 읽어
+사용해야 할 로그 필터와 로그 대상을 학습한다고 상상해 보십시오.
+이 파일의 내용은 런타임까지 알 수 없습니다.
+미리 가능한 모든 *m* × *n* 클래스를 빌드하고
+올바른 클래스를 선택하는 대신,
+기다렸다가 파이썬이 ``class`` 문뿐만 아니라
+런타임에 동적으로 새 클래스를 만드는
+내장 ``type()`` 함수도 지원한다는 사실을 활용할 수 있습니다.
 
 .. testsetup::
 
@@ -1142,7 +1062,7 @@ that creates new classes dynamically at runtime:
 
 .. testcode::
 
-    # Imagine 2 filtered loggers and 3 output loggers.
+    # 2개의 필터링된 로거와 3개의 출력 로거를 상상해 보십시오.
 
     filters = {
         'pattern': PatternFilteredLog,
@@ -1154,7 +1074,7 @@ that creates new classes dynamically at runtime:
         'syslog': SyslogLog,
     }
 
-    # Select the two classes we want to combine.
+    # 결합하려는 두 클래스를 선택합니다.
 
     with open('config') as f:
         filter_name, output_name = f.read().split()
@@ -1162,84 +1082,76 @@ that creates new classes dynamically at runtime:
     filter_cls = filters[filter_name]
     output_cls = outputs[output_name]
 
-    # Build a new derived class (!)
+    # 새 파생 클래스를 빌드합니다 (!)
 
     name = filter_name.title() + output_name.title() + 'Log'
     cls = type(name, (filter_cls, output_cls), {})
 
-    # Call it as usual to produce an instance.
+    # 평소와 같이 호출하여 인스턴스를 생성합니다.
 
     logger = cls(...)
 
-The tuple of classes passed to ``type()``
-has the same meaning
-as the series of base classes in a ``class`` statement.
-The ``type()`` call above creates a new class
-through multiple inheritance from both a filtered logger and an output logger.
+``type()``에 전달된 클래스 튜플은
+``class`` 문의 기본 클래스 시리즈와
+동일한 의미를 갖습니다.
+위의 ``type()`` 호출은 필터링된 로거와 출력 로거 모두에서
+다중 상속을 통해 새 클래스를 만듭니다.
 
-.. TODO only works if no special init logic needed
+.. TODO 특별한 초기화 논리가 필요하지 않은 경우에만 작동합니다.
 
-Before you ask:
-yes,
-it would also work
-to build a ``class`` statement as plain text
-and then pass it to |eval|.
+묻기 전에:
+예, ``class`` 문을 일반 텍스트로 빌드한 다음
+|eval|에 전달하는 것도 작동합니다.
 
 .. |eval| replace:: ``eval()``
 .. _eval: https://docs.python.org/3/library/functions.html#eval
 
-But building classes on-the-fly carries severe liabilities.
+그러나 즉석에서 클래스를 빌드하는 것은 심각한 책임을 수반합니다.
 
-* Readability suffers.
-  A human reading the above snippet of code
-  will have to do extra work
-  to determine what sort of object an instance of ``cls`` is.
-  Also, many Python programmers
-  aren’t familiar with ``type()``
-  and will need to stop and puzzle over its documentation.
-  If they have difficulty with the novel concept
-  that classes can be defined dynamically,
-  they might still be confused.
+* 가독성이 저하됩니다.
+  위의 코드 조각을 읽는 사람은
+  ``cls``의 인스턴스가 어떤 종류의 객체인지 확인하기 위해
+  추가 작업을 수행해야 합니다.
+  또한 많은 파이썬 프로그래머는
+  ``type()``에 익숙하지 않으므로
+  설명서를 멈추고 고민해야 합니다.
+  클래스를 동적으로 정의할 수 있다는 새로운 개념에 어려움을 겪는다면
+  여전히 혼란스러울 수 있습니다.
 
-* If a constructed class like ``PatternFilteredFileLog``
-  is named in an exception or error message,
-  the developer will probably be unhappy to discover
-  that nothing comes up when they search the code for that class name.
-  Debugging becomes more difficult
-  when you cannot even locate a class.
-  Considerable time may be spent
-  searching the codebase for ``type()`` calls
-  and trying to determine which one generated the class.
-  Sometimes developers have to resort
-  to calling each method with bad arguments
-  and using the line numbers in the resulting tracebacks
-  to track down the base classes.
+* ``PatternFilteredFileLog``와 같이 생성된 클래스가
+  예외 또는 오류 메시지에 명명되면
+  개발자는 해당 클래스 이름을 코드로 검색할 때
+  아무것도 나오지 않는다는 사실을 발견하고 불행해할 것입니다.
+  클래스를 찾을 수조차 없을 때 디버깅이 더 어려워집니다.
+  코드베이스에서 ``type()`` 호출을 검색하고
+  어떤 호출이 클래스를 생성했는지 확인하는 데
+  상당한 시간이 소요될 수 있습니다.
+  때로는 개발자가 각 메서드를 잘못된 인수로 호출하고
+  결과 추적의 줄 번호를 사용하여
+  기본 클래스를 추적해야 합니다.
 
-* Type introspection will, in the general case,
-  fail for classes constructed dynamically at runtime.
-  “Jump to class” shortcuts in your editor
-  won’t have anywhere to take you
-  when you highlight an instance of ``PatternFilteredFileLog``
-  in the debugger.
-  And type checking engines like
-  `mypy <https://github.com/python/mypy>`_
-  and `pyre-check <https://github.com/facebook/pyre-check>`_
-  will be unlikely to offer the strong protections for your generated class
-  that they’re able to provide
-  for normal Python classes.
+* 일반적으로 런타임에 동적으로 생성된 클래스의 경우
+  유형 성찰이 실패합니다.
+  편집기의 "클래스로 이동" 바로 가기는
+  디버거에서 ``PatternFilteredFileLog``의 인스턴스를 강조 표시할 때
+  이동할 곳이 없습니다.
+  그리고 `mypy <https://github.com/python/mypy>`_ 및
+  `pyre-check <https://github.com/facebook/pyre-check>`_와 같은
+  유형 검사 엔진은 생성된 클래스에 대해
+  일반 파이썬 클래스에 대해 제공할 수 있는 강력한 보호 기능을
+  제공하지 않을 가능성이 높습니다.
 
-* The beautiful Jupyter Notebook feature ``%autoreload``
-  possesses a nearly preternatural ability
-  to detect and reload modified source code in a live Python interpreter.
-  But it’s foiled, for example, by the multiple inheritance classes
-  that `matplotlib builds at runtime
+* 아름다운 Jupyter Notebook 기능 ``%autoreload``는
+  라이브 파이썬 인터프리터에서 수정된 소스 코드를
+  감지하고 다시 로드하는 거의 초자연적인 능력을 가지고 있습니다.
+  그러나 예를 들어 `matplotlib이 런타임에 빌드하는
   <https://github.com/matplotlib/matplotlib/blob/54b426397c0e7567edaee4f7f77036c2b8569573/lib/matplotlib/axes/_subplots.py#L180>`_
-  through ``type()`` calls inside its ``subplot_class_factory()``.
+  다중 상속 클래스에 의해 좌절됩니다.
+  ``subplot_class_factory()`` 내부의 ``type()`` 호출을 통해 말입니다.
 
-Once its liabilities are weighed,
-the attempt to use runtime class generation as a last-ditch maneuver
-to rescue the already faulty mechanism of multiple inheritance
-stands as a *reductio ad absurdum*
-of the entire project of dodging Composition Over Inheritance
-when you need an object’s behavior
-to vary over several independent axes.
+책임을 고려하면,
+이미 결함이 있는 다중 상속 메커니즘을 구출하기 위한
+최후의 수단으로 런타임 클래스 생성을 사용하려는 시도는
+객체의 동작이 여러 독립적인 축에 걸쳐 다양해야 할 때
+상속보다 컴포지션을 회피하는 전체 프로젝트의
+*귀류법*으로 간주됩니다.

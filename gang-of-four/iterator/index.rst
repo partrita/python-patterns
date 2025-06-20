@@ -1,60 +1,58 @@
-
 ======================
- The Iterator Pattern
+ 반복자 패턴
 ======================
 
-*A “Behavioral Pattern” from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 "행동 패턴"*
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   Python supports the Iterator Pattern
-   at the most fundamental level available to a programming language:
-   it’s built into Python’s syntax.
+   파이썬은 프로그래밍 언어에 사용 가능한 가장 근본적인 수준에서
+   반복자 패턴을 지원합니다:
+   파이썬 구문에 내장되어 있습니다.
 
-   But to support not only the object-based Iterator Pattern
-   but also its own legacy iteration protocol,
-   Python relegates the actual iteration object protocol
-   to a pair of dunder methods.
-   Instead of calling these directly,
-   programmers are expected to invoke iteration
-   through a pair of builtin functions.
+   그러나 객체 기반 반복자 패턴뿐만 아니라
+   자체 레거시 반복 프로토콜도 지원하기 위해,
+   파이썬은 실제 반복 객체 프로토콜을
+   한 쌍의 던더 메서드로 격하시킵니다.
+   이를 직접 호출하는 대신,
+   프로그래머는 한 쌍의 내장 함수를 통해
+   반복을 호출해야 합니다.
 
-The least expressive computer languages
-make no attempt to hide the inner workings of their data structures.
-In those languages,
-if you want to visit every element in an array,
-you have to generate the integer indexes yourself.
+가장 표현력이 낮은 컴퓨터 언어는
+데이터 구조의 내부 작동을 숨기려는 시도를 하지 않습니다.
+이러한 언어에서는
+배열의 모든 요소를 방문하려면
+정수 인덱스를 직접 생성해야 합니다.
 
-Code in such languages struggles to stay at the high level
-of describing programmer intent.
-Instead, the flow of each thought
-is interrupted with low-level data structure details.
-When code can’t abstract away the mechanics of iteration,
-it becomes more difficult to read;
-it’s more liable to errors,
-because the same iteration details need to be repeated over and over;
-and changing how a data structure is traversed
-requires finding and changing every place in the code
-where that data structure is iterated over.
+이러한 언어의 코드는 프로그래머의 의도를 설명하는
+높은 수준을 유지하기 위해 애씁니다.
+대신 각 생각의 흐름은
+낮은 수준의 데이터 구조 세부 정보로 중단됩니다.
+코드가 반복 메커니즘을 추상화할 수 없으면
+읽기가 더 어려워집니다.
+동일한 반복 세부 정보가 반복적으로 반복되어야 하므로
+오류가 발생하기 쉽습니다.
+그리고 데이터 구조를 순회하는 방식을 변경하려면
+해당 데이터 구조가 반복되는 코드의 모든 위치를 찾아 변경해야 합니다.
 
-The remedy is encapsulation.
-The Iterator Pattern proposes
-that the details about how a data structure is traversed
-should be moved into an “iterator” object that,
-from the outside,
-simply yields one item after another
-without exposing the internals of how the data structure is designed.
+해결책은 캡슐화입니다.
+반복자 패턴은
+데이터 구조를 순회하는 방법에 대한 세부 정보가
+외부에서는 데이터 구조가 설계된 방식의 내부를 노출하지 않고
+단순히 항목을 차례로 생성하는 "반복자" 객체로
+이동되어야 한다고 제안합니다.
 
-Iterating with the “for” loop
+"for" 루프를 사용한 반복
 =============================
 
-Python’s ``for`` loop
-abstracts the Iterator Pattern so thoroughly
-that most Python programmers are never even aware
-of the object design pattern that it enacts beneath the surface.
-The ``for`` loop performs repeated assignment,
-running its indented block of code
-once for each item in the sequence it is iterating over.
+파이썬의 ``for`` 루프는
+반복자 패턴을 너무 철저하게 추상화하여
+대부분의 파이썬 프로그래머는
+그것이 표면 아래에서 실행하는 객체 디자인 패턴을
+인식조차 하지 못합니다.
+``for`` 루프는 반복 할당을 수행하며,
+반복하는 시퀀스의 각 항목에 대해
+들여쓰기된 코드 블록을 한 번 실행합니다.
 
 .. testcode::
 
@@ -68,31 +66,31 @@ once for each item in the sequence it is iterating over.
    3
    5
 
-The above loop has performed a series of three assignment statements
-``prime = 2``, ``prime = 3``, and ``prime = 5``,
-running the indented block of code after each assignment.
-The block can include the C-style loop control statements
-``break`` to leave the loop early
-and ``continue`` to skip back to the top of the loop.
+위의 루프는 ``prime = 2``, ``prime = 3``, ``prime = 5``의
+세 가지 할당문을 수행했으며,
+각 할당 후 들여쓰기된 코드 블록을 실행했습니다.
+블록에는 루프를 일찍 종료하는 C 스타일 루프 제어문 ``break``와
+루프의 맨 위로 다시 건너뛰는 ``continue``가 포함될 수 있습니다.
 
-.. TODO write and link here to a guide to writing loops
+.. TODO 루프 작성 가이드를 작성하고 여기에 링크합니다.
 
-Because ``for`` is a repeated assignment statement,
-it has the same flexibility as Python’s normal ``=`` assignment operator:
-by listing several names separated by commas,
-you can upgrade from assigning to a single name to unpacking a whole tuple.
-This lets you skip a separate unpacking step.
+``for``는 반복 할당문이므로
+파이썬의 일반적인 ``=`` 할당 연산자와 동일한 유연성을 갖습니다.
+쉼표로 구분된 여러 이름을 나열하여
+단일 이름에 할당하는 것에서 전체 튜플을 언패킹하는 것으로
+업그레이드할 수 있습니다.
+이렇게 하면 별도의 언패킹 단계를 건너뛸 수 있습니다.
 
 .. testcode::
 
    elements = [('H', 1.008), ('He', 4.003), ('Li', 6.94)]
 
-   # You’re not limited to a single name like “tup”...
+   # "tup"과 같은 단일 이름으로 제한되지 않습니다...
    for tup in elements:
        symbol, weight = tup
        print(symbol, weight)
 
-   # ...instead, unpack right inside the "for" statement
+   # ...대신 "for" 문 안에서 바로 언패킹합니다.
    for symbol, weight in elements:
        print(symbol, weight)
 
@@ -106,20 +104,20 @@ This lets you skip a separate unpacking step.
    He 4.003
    Li 6.94
 
-Famously, this can be coupled with the Python dictionary’s ``item()`` method
-to easily visit each dictionary key and value
-without the expense of a key lookup at the top of each loop.
+잘 알려진 바와 같이, 이것은 파이썬 딕셔너리의 ``item()`` 메서드와 결합되어
+각 루프의 맨 위에서 키 조회를 하는 비용 없이
+각 딕셔너리 키와 값을 쉽게 방문할 수 있습니다.
 
 .. testcode::
 
    d = {'H': 1.008, 'He': 4.003, 'Li': 6.94}
 
-   # You don’t need to...
+   # 그럴 필요가 없습니다...
    for symbol in d.keys():
        weight = d[symbol]
        print(symbol, weight)
 
-   # ...instead, you can simply:
+   # ...대신 간단히 다음을 수행할 수 있습니다.
    for symbol, weight in d.items():
        print(symbol, weight)
 
@@ -133,11 +131,11 @@ without the expense of a key lookup at the top of each loop.
    He 4.003
    Li 6.94
 
-The ``for`` loop combines such admirable concision and expressiveness
-that Python not only supports it as a stand-alone statement,
-but has incorporated it into four different expressions —
-Python’s famous “comprehensions” that build lists, sets, dictionaries,
-and generators directly from inline loops:
+``for`` 루프는 매우 훌륭한 간결성과 표현력을 결합하여
+파이썬은 이를 독립 실행형 문으로 지원할 뿐만 아니라
+네 가지 다른 표현식에 통합했습니다 —
+인라인 루프에서 직접 리스트, 세트, 딕셔너리 및
+제너레이터를 빌드하는 파이썬의 유명한 "컴프리헨션"입니다.
 
 .. testcode::
 
@@ -146,52 +144,44 @@ and generators directly from inline loops:
    {symbol: weight for symbol, weight in d.items() if weight > 5}
    list(symbol for symbol, weight in d.items() if weight > 5)
 
-Python’s decision to re-use its ``for`` statement syntax
-inside of expressions —
-instead of going to the trouble of inventing
-a separate special-purpose syntax for inline iteration —
-makes the language simpler, easier to learn, and easier to remember.
+표현식 내에서 ``for`` 문 구문을 재사용하기로 한 파이썬의 결정 —
+인라인 반복을 위한 별도의 특수 목적 구문을 고안하는 수고를 덜었습니다 —
+언어를 더 간단하고 배우기 쉽고 기억하기 쉽게 만듭니다.
 
-The pattern: the iterable and its iterator
+패턴: 반복 가능 객체와 반복자
 ==========================================
 
-Let’s now step behind the ``for`` loop
-and learn about the design pattern that powers it.
-The traditional Iterator Pattern involves three kinds of object.
+이제 ``for`` 루프 뒤로 물러나
+그것을 구동하는 디자인 패턴에 대해 알아봅시다.
+전통적인 반복자 패턴에는 세 가지 종류의 객체가 포함됩니다.
 
-First, there’s a *container* object.
+첫째, *컨테이너* 객체가 있습니다.
 
-Second, the container’s internal logic
-lets it corral and organize a number of *item* objects.
+둘째, 컨테이너의 내부 로직을 통해
+여러 *항목* 객체를 모으고 구성할 수 있습니다.
 
-Finally, there’s the key to the pattern:
-instead of the container inventing its own unique method calls
-for stepping through its items —
-which would force the programmer to learn
-a different approach for every container —
-it offers sequential access to its items
-through a generic *iterator* object
-that implements the exact same interface
-as the iterator of every other kind of container.
+마지막으로 패턴의 핵심이 있습니다.
+컨테이너가 항목을 단계별로 실행하기 위한 고유한 메서드 호출을 고안하는 대신 —
+이렇게 하면 프로그래머가 모든 컨테이너에 대해 다른 접근 방식을 배워야 합니다 —
+다른 모든 종류의 컨테이너의 반복자와
+정확히 동일한 인터페이스를 구현하는
+일반 *반복자* 객체를 통해 항목에 순차적으로 액세스할 수 있도록 합니다.
 
-Python provides a pair of builtins
-that let you step behind the ``for`` loop
-and pull the levers of iteration yourself.
+파이썬은 ``for`` 루프 뒤로 물러나
+직접 반복 레버를 당길 수 있는 한 쌍의 내장 함수를 제공합니다.
 
-* ``iter()`` takes a container object as its argument
-  and asks it to build and return a new iterator object.
-  If the argument you pass isn’t actually a container,
-  a ``TypeError`` is raised: ``object is not iterable``.
+* ``iter()``는 컨테이너 객체를 인수로 받아
+  새 반복자 객체를 빌드하고 반환하도록 요청합니다.
+  전달한 인수가 실제로 컨테이너가 아니면
+  ``TypeError``가 발생합니다: ``object is not iterable``.
 
-* ``next()`` takes the iterator as its argument and,
-  each time it’s called,
-  returns the next item from the container.
-  Once the container has no more objects to return,
-  the exception ``StopIteration`` is raised.
+* ``next()``는 반복자를 인수로 받아
+  호출될 때마다 컨테이너에서 다음 항목을 반환합니다.
+  컨테이너에 더 이상 반환할 객체가 없으면
+  예외 ``StopIteration``이 발생합니다.
 
-To manually reenact the previous section’s first ``for`` loop,
-we make a single call to ``iter()``
-followed by four calls to ``next()``:
+이전 섹션의 첫 번째 ``for`` 루프를 수동으로 다시 실행하려면
+``iter()``를 한 번 호출한 다음 ``next()``를 네 번 호출합니다.
 
 >>> it = iter(some_primes)
 >>> it
@@ -207,13 +197,10 @@ Traceback (most recent call last):
   ...
 StopIteration
 
-These are precisely the actions
-that were taken by Python’s ``for`` loop.
-Of course,
-the real ``for`` loop doesn’t hard-code
-exactly the right number of ``next()`` calls
-like I did here —
-instead, ``for`` is implemented as something like the following ``while`` loop:
+이것들은 정확히 파이썬의 ``for`` 루프가 수행한 작업입니다.
+물론 실제 ``for`` 루프는
+여기서 했던 것처럼 정확한 수의 ``next()`` 호출을 하드 코딩하지 않습니다 —
+대신 ``for``는 다음과 같은 ``while`` 루프와 유사하게 구현됩니다.
 
 .. testcode::
 
@@ -232,18 +219,17 @@ instead, ``for`` is implemented as something like the following ``while`` loop:
    3
    5
 
-My first question when I learned the Iterator Pattern was:
-why does the iterator need to be a separate object from the container?
-Why can’t each container simply include a counter inside
-that reminds it which object to yield next?
+반복자 패턴을 처음 배웠을 때의 첫 번째 질문은 다음과 같습니다.
+왜 반복자가 컨테이너와 별개의 객체여야 할까요?
+왜 각 컨테이너가 다음에 생성할 객체를 알려주는
+카운터를 내부에 단순히 포함할 수 없을까요?
 
-The answer is that a single internal counter would work
-as long as only one ``for`` loop at a time
-were ever iterating over a container.
-But there are many situations where several ``for`` loops
-are working on the same container at once.
-For example, to generate all combinations of two coin flips,
-a programmer might write concentric loops:
+답은 한 번에 하나의 ``for`` 루프만
+컨테이너를 반복하는 한 단일 내부 카운터가 작동한다는 것입니다.
+그러나 여러 ``for`` 루프가
+동시에 동일한 컨테이너에서 작동하는 경우가 많습니다.
+예를 들어, 두 동전 던지기의 모든 조합을 생성하기 위해
+프로그래머는 중첩 루프를 작성할 수 있습니다.
 
 .. testcode::
 
@@ -259,11 +245,11 @@ a programmer might write concentric loops:
     tails heads
     tails tails
 
-If the Python list object ``sides``
-had tried to support iteration using only a single internal counter,
-then the inner ``for`` loop would have used up all of the items
-and left the outer ``for`` loop without any further items to visit.
-Instead, we are given a separate iterator on each call to ``iter()``.
+파이썬 리스트 객체 ``sides``가
+단일 내부 카운터만 사용하여 반복을 지원하려고 했다면,
+내부 ``for`` 루프가 모든 항목을 사용하고
+외부 ``for`` 루프에는 방문할 추가 항목이 남지 않았을 것입니다.
+대신 ``iter()``를 호출할 때마다 별도의 반복자가 제공됩니다.
 
 >>> it1 = iter(sides)
 >>> it2 = iter(sides)
@@ -274,52 +260,48 @@ Instead, we are given a separate iterator on each call to ``iter()``.
 >>> it1 is it2
 False
 
-Not only concentric loops, but multiple threads of control —
-whether operating system threads or coroutines —
-also offer plenty of circumstances
-under which an object might be operated on
-by several ``for`` loops at the same time,
-so each of those ``for`` loops will also need their own iterator
-to avoid throwing each other off track.
+중첩 루프뿐만 아니라 여러 제어 스레드 —
+운영 체제 스레드이든 코루틴이든 —
+객체가 동시에 여러 ``for`` 루프에 의해 작동될 수 있는
+많은 상황을 제공하므로,
+이러한 각 ``for`` 루프는 서로를 방해하지 않도록
+자체 반복자가 필요합니다.
 
-A twist: objects which are their own iterator
+변형: 자체 반복자인 객체
 =============================================
 
-Each time you pass a normal Python container
-like a list, set, or dictionary to ``iter()``,
-you receive a new iterator object
-that starts visiting the container’s items over again from the beginning.
+일반적인 파이썬 컨테이너(리스트, 세트 또는 딕셔너리 등)를
+``iter()``에 전달할 때마다
+컨테이너의 항목을 처음부터 다시 방문하기 시작하는
+새로운 반복자 객체를 받습니다.
 
-Some Python objects, however, exhibit a different behavior.
+그러나 일부 파이썬 객체는 다른 동작을 보입니다.
 
-The Python file object is a good example.
-It conveniently yields lines of text
-when you iterate across it with a ``for`` loop.
-But, unlike a list or dictionary,
-it doesn’t start over again at the first line
-when traversed with a new ``for`` loop.
-Instead, it remembers its previous place in the file
-and continues yielding lines from where you previously left off.
+파이썬 파일 객체가 좋은 예입니다.
+``for`` 루프를 사용하여 반복할 때 편리하게 텍스트 줄을 생성합니다.
+그러나 리스트나 딕셔너리와 달리
+새 ``for`` 루프로 순회할 때 첫 번째 줄부터 다시 시작하지 않습니다.
+대신 파일에서 이전 위치를 기억하고
+이전에 중단한 위치에서 줄을 계속 생성합니다.
 
-The fact that a file picks up where it left off
-can be used to loop over a file in phases.
-A simple example of a file format that’s composed of different sections
-is the traditional UNIX mailbox file:
+파일이 중단된 지점에서 다시 시작한다는 사실을 사용하여
+파일을 단계별로 반복할 수 있습니다.
+여러 섹션으로 구성된 파일 형식의 간단한 예는
+전통적인 UNIX 메일박스 파일입니다.
 
 .. literalinclude:: email.txt
 
-This file needs to be parsed in three phases
-because each section is delimited by different rules.
-The initial “envelope line” that starts with the word ``From``
-is always a single standalone line.
-The header follows,
-consisting of a series of colon-separated names and values
-which is terminated by a single blank line.
-The body comes last
-and ends at either the next envelope ``From`` line
-or the end of the file.
-Here’s how we might parse the first message from a mailbox file
-using only ``for`` loops:
+이 파일은 각 섹션이 다른 규칙으로 구분되므로
+세 단계로 구문 분석해야 합니다.
+단어 ``From``으로 시작하는 초기 "봉투 줄"은
+항상 단일 독립 실행형 줄입니다.
+헤더가 뒤따르며,
+콜론으로 구분된 이름과 값의 연속으로 구성되며
+단일 빈 줄로 끝납니다.
+본문이 마지막에 오고
+다음 봉투 ``From`` 줄 또는 파일 끝에서 끝납니다.
+다음은 ``for`` 루프만 사용하여 메일박스 파일에서
+첫 번째 메시지를 구문 분석하는 방법입니다.
 
 .. testsetup::
 
@@ -345,11 +327,11 @@ using only ``for`` loops:
            body.append(line)
        return envelope, headers, body
 
-This convenient pattern —
-in which we tackle each section of the file with its own ``for`` loop
-that does a ``break`` once it’s done processing its section —
-is possible because each time we start up another loop,
-the file object continues reading from right where we left off.
+이 편리한 패턴 —
+파일의 각 섹션을 자체 ``for`` 루프로 처리하고
+섹션 처리가 완료되면 ``break``를 수행합니다 —
+다른 루프를 시작할 때마다
+파일 객체가 중단된 지점에서 바로 읽기를 계속하기 때문에 가능합니다.
 
 .. testcode::
 
@@ -364,12 +346,11 @@ the file object continues reading from right where we left off.
    Mary Smith <mary@example.net>
    2 lines
 
-How does the file object subvert normal iteration
-and preserve state between one ``for`` loop and the next?
+파일 객체는 일반적인 반복을 어떻게 방해하고
+한 ``for`` 루프와 다음 루프 사이의 상태를 유지할까요?
 
-We can see the answer by stepping behind the ``for`` loop,
-calling ``iter()`` ourselves,
-and examining the result:
+``for`` 루프 뒤로 물러나 ``iter()``를 직접 호출하고
+결과를 검사하여 답을 볼 수 있습니다.
 
 >>> f = open('email.txt')
 >>> f
@@ -383,37 +364,33 @@ and examining the result:
 >>> it1 is it2 is f
 True
 
-The file object is taking advantage of a technicality:
-the rule that ``iter()`` must return an iterator
-never says that the iterator can’t be the iterable object itself!
-Instead of creating a separate iterator object
-to keep up with which line from the file should be returned next,
-the file itself serves as its own iterator
-and yields a single continuous series of lines,
-delivering the next available line
-to whichever of possibly many consumers
-is the first to invoke ``next()``.
+파일 객체는 기술적인 세부 사항을 활용하고 있습니다.
+``iter()``가 반복자를 반환해야 한다는 규칙은
+반복자가 반복 가능한 객체 자체가 될 수 없다고 말하지 않습니다!
+파일에서 다음 줄을 반환해야 하는 줄을 추적하기 위해
+별도의 반복자 객체를 만드는 대신,
+파일 자체가 자체 반복자 역할을 하며
+단일 연속적인 줄 시리즈를 생성하여
+가능한 여러 소비자 중 ``next()``를 먼저 호출하는 소비자에게
+사용 가능한 다음 줄을 전달합니다.
 
-In the case of the file object,
-the decision to collapse the iterable and iterator
-together into a single object
-is driven by the behavior of the underlying operating system.
-Not every kind of file, after all, supports rewind and fast forward —
-Unix terminals and pipes don’t, for example —
-so the Python file object simply lets the operating system
-keep up with the current line
-and never tries to rewind on its own.
+파일 객체의 경우,
+반복 가능 객체와 반복자를 단일 객체로 통합하기로 한 결정은
+기본 운영 체제의 동작에 의해 주도됩니다.
+결국 모든 종류의 파일이 되감기 및 빨리 감기를 지원하는 것은 아닙니다 —
+예를 들어 Unix 터미널과 파이프는 지원하지 않습니다 —
+따라서 파이썬 파일 객체는 단순히 운영 체제가
+현재 줄을 추적하도록 하고 자체적으로 되감기를 시도하지 않습니다.
 
-But what if you wanted the ability to iterate in separate phases
-with other kinds of object, and not just files?
+그러나 파일뿐만 아니라 다른 종류의 객체에 대해서도
+여러 단계로 반복하는 기능을 원한다면 어떻게 해야 할까요?
 
-For example,
-what if you pass a plain list of lines to ``parse_email()``?
-Then the routine breaks — because the second and third ``for`` loops,
-instead of continuing from where the previous loop stopped,
-instead start again at the beginning of the list.
-Among other problems,
-this prevents the function from finding the email’s body:
+예를 들어, ``parse_email()``에 일반적인 줄 목록을 전달하면 어떻게 될까요?
+그러면 루틴이 중단됩니다 — 두 번째와 세 번째 ``for`` 루프가
+이전 루프가 중단된 지점에서 계속하는 대신
+목록의 처음부터 다시 시작하기 때문입니다.
+다른 문제 중에서도
+이렇게 하면 함수가 이메일 본문을 찾지 못하게 됩니다.
 
 .. testcode::
 
@@ -429,15 +406,15 @@ this prevents the function from finding the email’s body:
    Mary Smith <mary@example.net>
    0 lines
 
-How can we support gradual iteration
-over a standard container like a Python list?
+파이썬 리스트와 같은 표준 컨테이너에 대한
+점진적인 반복을 어떻게 지원할 수 있을까요?
 
-The answer is another extension to the traditional Iterator Pattern:
-in Python, iterators return themselves if passed to ``iter()``!
-This means that iterators themselves can be passed to ``for`` loops,
-and lets you write programs that switch back and forth whenever they want
-between manual single steps with ``next()``
-and automatic iteration with a ``for`` loop:
+답은 전통적인 반복자 패턴에 대한 또 다른 확장입니다.
+파이썬에서는 반복자가 ``iter()``에 전달되면 자신을 반환합니다!
+즉, 반복자 자체를 ``for`` 루프에 전달할 수 있으며,
+``next()``를 사용한 수동 단일 단계와
+``for`` 루프를 사용한 자동 반복 사이를
+원할 때마다 전환하는 프로그램을 작성할 수 있습니다.
 
 .. testcode::
 
@@ -454,13 +431,11 @@ and automatic iteration with a ``for`` loop:
    3
    5
 
-Because the above code handles only a single iterator
-that we requested ourselves with ``iter()``,
-both its manual ``next()`` calls as well as its ``for()`` loop
-are all advancing the same iterator
-along through the 3 items in the underlying list.
-The ``for`` loop works because the iterator object ``it``
-returns itself when asked for its iterator:
+위의 코드는 ``iter()``로 직접 요청한 단일 반복자만 처리하므로,
+수동 ``next()`` 호출과 ``for()`` 루프 모두
+기본 목록의 3개 항목을 통해 동일한 반복자를 진행시키고 있습니다.
+``for`` 루프는 반복자 객체 ``it``이
+반복자를 요청받았을 때 자신을 반환하기 때문에 작동합니다.
 
 >>> it
 <list_iterator object at 0x7f4fdce6c5f8>
@@ -469,11 +444,11 @@ returns itself when asked for its iterator:
 >>> iter(it) is it
 True
 
-So we can successfully use our ``parse_email()`` routine with a Python list if,
-instead of passing the underlying list,
-we instead pass an iterator that we’ve already constructed.
-With that change, the routine runs as successfully on a list
-as it originally did on an open file:
+따라서 기본 목록을 전달하는 대신
+이미 생성한 반복자를 전달하면
+파이썬 목록과 함께 ``parse_email()`` 루틴을 성공적으로 사용할 수 있습니다.
+이렇게 변경하면 루틴은 열린 파일에서 원래 그랬던 것처럼
+목록에서도 성공적으로 실행됩니다.
 
 .. testcode::
 
@@ -490,41 +465,39 @@ as it originally did on an open file:
    Mary Smith <mary@example.net>
    2 lines
 
-If you ever really do implement a routine like ``parse_email()``,
-it’s better not to make your caller remember to pass an iterator.
-Instead, have them pass the container
-and call ``iter()`` yourself.
+``parse_email()``과 같은 루틴을 실제로 구현하는 경우,
+호출자에게 반복자를 전달하도록 기억하게 하는 것보다
+컨테이너를 전달하고 ``iter()``를 직접 호출하는 것이 좋습니다.
 
-Implementing an Iterable and Iterator
+반복 가능 객체 및 반복자 구현
 =====================================
 
-How can a class implement the Iterator Pattern
-and plug in to Python’s native iteration mechanisms
-``for``, ``iter()``, and ``next()``?
+클래스가 반복자 패턴을 구현하고
+파이썬의 기본 반복 메커니즘인
+``for``, ``iter()`` 및 ``next()``에 연결하려면 어떻게 해야 할까요?
 
-* The container must offer an ``__iter__()`` method
-  that returns an iterator object.
-  Supporting this method makes a container an *iterable*.
+* 컨테이너는 반복자 객체를 반환하는 ``__iter__()`` 메서드를 제공해야 합니다.
+  이 메서드를 지원하면 컨테이너가 *반복 가능 객체*가 됩니다.
 
-* Each iterator must offer a ``__next__()`` method
-  (in old Python 2 code, the spelling is ``next()`` without the dunder)
-  that returns the next item from the container each time it is called.
-  It should raise ``StopIterator`` when there are no further items.
+* 각 반복자는 컨테이너에서 호출될 때마다 다음 항목을 반환하는
+  ``__next__()`` 메서드(이전 파이썬 2 코드에서는 던더 없는 ``next()`` 철자)를
+  제공해야 합니다.
+  더 이상 항목이 없으면 ``StopIteration``을 발생시켜야 합니다.
 
-* Remember the special case we learned about in the previous section —
-  that some users pass iterators to a ``for`` loop
-  instead of passing the underlying container?
-  To cover this case, each iterator is also required
-  to offer an ``__iter__()`` method that simply returns itself.
+* 이전 섹션에서 배운 특수한 경우를 기억하십시오 —
+  일부 사용자는 기본 컨테이너를 전달하는 대신
+  반복자를 ``for`` 루프에 전달합니다.
+  이 경우를 처리하기 위해 각 반복자는 단순히 자신을 반환하는
+  ``__iter__()`` 메서드도 제공해야 합니다.
 
-We can see all of these requirements working together
-by implementing our own simple iterator!
+자체 간단한 반복자를 구현하여
+이러한 모든 요구 사항이 함께 작동하는 것을 볼 수 있습니다!
 
-Note that there is no requirement that the items yielded by ``__next__()``
-be stored as persistent values inside the container,
-or even exist until ``__next__()`` is called.
-This lets us offer a very simple Iterator Pattern example
-without even implementing storage in the container:
+``__next__()``에 의해 생성된 항목이
+컨테이너 내부에 영구 값으로 저장되거나
+``__next__()``가 호출될 때까지 존재해야 한다는 요구 사항은 없습니다.
+이를 통해 컨테이너에 스토리지를 구현하지 않고도
+매우 간단한 반복자 패턴 예제를 제공할 수 있습니다.
 
 .. testcode::
 
@@ -553,11 +526,11 @@ without even implementing storage in the container:
        def __iter__(self):
            return self
 
-With these three simple methods — one for the container object,
-and two for its iterator —
-an ``OddNumbers`` container is now eligible
-for full membership in Python’s rich iteration ecosystem.
-It will work seamlessly with a ``for`` loop:
+이러한 세 가지 간단한 메서드(컨테이너 객체용 하나,
+반복자용 두 개)를 사용하면
+``OddNumbers`` 컨테이너는 이제
+파이썬의 풍부한 반복 생태계에 대한 전체 멤버십을 받을 수 있습니다.
+``for`` 루프와 원활하게 작동합니다.
 
 .. testcode::
 
@@ -573,7 +546,7 @@ It will work seamlessly with a ``for`` loop:
    5
    7
 
-And it works with the ``iter()`` and ``next()`` builtins.
+그리고 ``iter()`` 및 ``next()`` 내장 함수와도 작동합니다.
 
 .. testcode::
 
@@ -586,7 +559,7 @@ And it works with the ``iter()`` and ``next()`` builtins.
    1
    3
 
-And it can even dance with the comprehensions!
+그리고 컴프리헨션과도 춤을 출 수 있습니다!
 
 .. testcode::
 
@@ -598,30 +571,29 @@ And it can even dance with the comprehensions!
     [1, 3, 5, 7]
     {5, 7}
 
-Three simple methods are all that’s needed
-to unlock access to Python’s syntax-level support for iteration.
+세 가지 간단한 메서드만 있으면
+파이썬의 구문 수준 반복 지원에 액세스할 수 있습니다.
 
-Python’s extra level of indirection
+파이썬의 추가 간접 수준
 ===================================
 
-But, one question:
-why does Python even have ``iter()`` and ``next()``?
+그러나 한 가지 질문이 있습니다.
+왜 파이썬에는 ``iter()``와 ``next()``가 있을까요?
 
-The standard Iteration Pattern,
-out in the wider world of programming languages,
-involves no builtin functions.
-The pattern instead talks directly about object behavior:
-a container needs to implement one method,
-and an iterable needs to implement another.
-Why didn’t Python simply specify the names of the methods themselves,
-and let users call them directly using the well-understood
-``obj.method()`` notation?
+프로그래밍 언어의 더 넓은 세계에서
+표준 반복 패턴에는 내장 함수가 포함되지 않습니다.
+대신 패턴은 객체 동작에 대해 직접 이야기합니다.
+컨테이너는 하나의 메서드를 구현해야 하고,
+반복 가능 객체는 다른 메서드를 구현해야 합니다.
+왜 파이썬은 단순히 메서드 이름 자체를 지정하고
+사용자가 잘 알려진 ``obj.method()`` 표기법을 사용하여
+직접 호출하도록 하지 않았을까요?
 
-The reason is that Python had a legacy iteration mechanism to support.
+그 이유는 파이썬이 지원해야 할 레거시 반복 메커니즘이 있었기 때문입니다.
 
-Originally, Python’s ``for`` loop only supported containers
-that were integer-indexed, like the Python list and tuple.
-Its underlying operation looked something like this:
+원래 파이썬의 ``for`` 루프는
+파이썬 리스트 및 튜플과 같이 정수 인덱싱된 컨테이너만 지원했습니다.
+기본 작업은 다음과 같습니다.
 
 >>> some_primes[0]
 2
@@ -634,67 +606,57 @@ Traceback (most recent call last):
   ...
 IndexError: list index out of range
 
-It was the final ``IndexError``
-that told the original Python ``for`` loop it was finished.
-To iterate over a container
-that wasn’t always addressable by sequential integer indices,
-like a dictionary,
-you had to first ask for a ``list`` of keys, values, or items,
-then iterate over the integer-indexed list object —
-because integer indexes were all the ``for`` loop understood.
+원래 파이썬 ``for`` 루프에 완료되었음을 알린 것은
+마지막 ``IndexError``였습니다.
+딕셔너리와 같이 순차적 정수 인덱스로 항상 주소 지정할 수 없는
+컨테이너를 반복하려면
+먼저 키, 값 또는 항목의 ``list``를 요청한 다음
+정수 인덱싱된 리스트 객체를 반복해야 했습니다 —
+정수 인덱스가 ``for`` 루프가 이해하는 전부였기 때문입니다.
 
-When the time came for `PEP-234 <https://www.python.org/dev/peps/pep-0234/>`_
-to incorporate the Iterator Pattern into Python 2.2,
-there was a problem.
-If the ``for`` loop was now going to start calling
-``__iter__()`` on the container it was given,
-what would happen to all of the simpler containers that programmers had built
-over the years —
-that accepted integer indices,
-trusting that this made them iterable?
+`PEP-234 <https://www.python.org/dev/peps/pep-0234/>`_가
+파이썬 2.2에 반복자 패턴을 통합할 때가 되었을 때
+문제가 있었습니다.
+``for`` 루프가 이제 주어진 컨테이너에서 ``__iter__()``를 호출하기 시작하면
+프로그래머가 수년에 걸쳐 빌드한 모든 간단한 컨테이너에
+무슨 일이 일어날까요 —
+정수 인덱스를 받아들이고 반복 가능하다고 믿었던 컨테이너 말입니다.
 
-Happily,
-all problems in computer science
-can be solved by another level of indirection!\ `¹ <https://en.wikipedia.org/wiki/Indirection>`_
+다행히도 컴퓨터 과학의 모든 문제는
+또 다른 간접 수준으로 해결할 수 있습니다!\ `¹ <https://en.wikipedia.org/wiki/Indirection>`_
 
-Python decided to interpose a pair of builtins
-in between users and the unfortunate fact
-that the language features two iteration patterns —
-one legacy, and one the object based Iterator Pattern itself.
-The PEP decreed that:
+파이썬은 사용자와 언어가 두 가지 반복 패턴을 특징으로 한다는
+불행한 사실 사이에 한 쌍의 내장 함수를 삽입하기로 결정했습니다 —
+하나는 레거시이고 다른 하나는 객체 기반 반복자 패턴 자체입니다.
+PEP는 다음과 같이 규정했습니다.
 
-* The ``for`` loop would now prefer the Iterator Pattern.
-  If a container offered ``__iter__()``,
-  then the ``for`` loop would use the iterator it returned.
+* ``for`` 루프는 이제 반복자 패턴을 선호합니다.
+  컨테이너가 ``__iter__()``를 제공하면
+  ``for`` 루프는 반환된 반복자를 사용합니다.
 
-* To support old containers,
-  ``for`` would fall back to looking for a ``__getitem__()`` method and,
-  if it existed,
-  passing it the integers 0,1,2,… to receive items
-  until it received an ``IndexError``.
+* 이전 컨테이너를 지원하기 위해
+  ``for``는 ``__getitem__()`` 메서드를 찾는 것으로 대체되고,
+  존재하는 경우 정수 0, 1, 2, …를 전달하여 항목을 받고
+  ``IndexError``를 받을 때까지 계속합니다.
 
-* To expose this mechanism to Python programmers
-  without every programmer needing to hand-implement
-  this carefully crafted fallback themselves,
-  ``iter()`` was introduced.
-  It gives programmers access the underlying operation
-  “create an iterator from an iterable”
-  that would otherwise have only been natively available
-  to the ``for`` loop itself.
+* 모든 프로그래머가 이 신중하게 만들어진 대체 방법을
+  직접 구현할 필요 없이 이 메커니즘을 파이썬 프로그래머에게 노출하기 위해
+  ``iter()``가 도입되었습니다.
+  이를 통해 프로그래머는 기본 작업인
+  "반복 가능 객체에서 반복자 만들기"에 액세스할 수 있으며,
+  그렇지 않으면 ``for`` 루프 자체에서만 기본적으로 사용할 수 있었습니다.
 
-* Finally, ``next()`` was added in a later version of Python
-  so that both halves of the Iterator Pattern —
-  and not just the container half —
-  would be symmetrically covered by builtins.
+* 마지막으로, 반복자 패턴의 양쪽 절반(컨테이너 절반뿐만 아니라)이
+  대칭적으로 내장 함수로 처리되도록
+  나중에 파이썬 버전에 ``next()``가 추가되었습니다.
 
-While they were at it,
-they also tossed an obscure convenience into ``iter()``
-that involves passing it two arguments instead of one.
-Since it’s not related to the classic Iterator Pattern itself,
-I’ll recommend you read about it
-`in the Standard Libary documention <https://docs.python.org/3/library/functions.html#iter>`_
-for ``iter()`` if you’re curious,
-and then experiment with it for yourself.
+그 과정에서 그들은 또한 ``iter()``에
+하나가 아닌 두 개의 인수를 전달하는 것과 관련된
+모호한 편의 기능을 추가했습니다.
+고전적인 반복자 패턴 자체와는 관련이 없으므로
+궁금하다면 ``iter()``에 대한
+`표준 라이브러리 설명서 <https://docs.python.org/3/library/functions.html#iter>`_에서
+읽어보고 직접 실험해 보시기 바랍니다.
 
 .. testcleanup::
 

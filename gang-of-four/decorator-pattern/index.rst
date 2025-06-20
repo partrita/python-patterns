@@ -1,316 +1,284 @@
-
 =======================
- The Decorator Pattern
+ 데코레이터 패턴
 =======================
 
-*A “Structural Pattern” from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 "구조적 패턴"*
 
 .. TODO
-   talk about editing the class of objects that are returned
-   simpler than subclassing: you are not in between obj and its own methods
-     classes are perilous things
-     and subclasses, doubly perilous
+   반환되는 객체의 클래스 편집에 대해 이야기하십시오.
+   서브클래싱보다 간단합니다. 객체와 자체 메서드 사이에 있지 않습니다.
+     클래스는 위험한 것이고
+     서브클래스는 두 배로 위험합니다.
 
-.. admonition:: Warning
+.. admonition:: 경고
 
-   The “Decorator Pattern” ≠ Python “decorators”!
+   "데코레이터 패턴" ≠ 파이썬 "데코레이터"!
 
-   If you are interested in Python decorators like ``@classmethod``
-   and ``@contextmanager`` and ``@wraps()``,
-   then stay tuned for a later phase of this project
-   in which I start tackling Python language features.
+   ``@classmethod``, ``@contextmanager``, ``@wraps()``와 같은
+   파이썬 데코레이터에 관심이 있다면,
+   이 프로젝트의 이후 단계에서 파이썬 언어 기능을 다루기 시작할 때까지
+   기다려 주십시오.
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   The Decorator Pattern can be useful in Python code!
-   Happily, the pattern can be easier to implement
-   in a dynamic language like Python
-   than in the static languages where it was first practiced.
-   Use it on the rare occasion
-   when you need to adjust the behavior of an object
-   that you can’t subclass but can only wrap at runtime.
+   데코레이터 패턴은 파이썬 코드에서 유용할 수 있습니다!
+   다행히도 이 패턴은 정적 언어에서 처음 실행되었을 때보다
+   파이썬과 같은 동적 언어에서 구현하기가 더 쉽습니다.
+   서브클래싱할 수는 없지만 런타임에 래핑할 수만 있는 객체의
+   동작을 조정해야 하는 드문 경우에 사용하십시오.
 
-.. contents:: Contents:
+.. contents:: 목차:
    :backlinks: none
 
-The Python core developers made the terminology
-surrounding this design pattern more confusing than necessary
-by using the *decorator* for an entirely
-`unrelated language feature <https://www.python.org/dev/peps/pep-0318/>`_.
-The timeline:
+파이썬 핵심 개발자들은 이 디자인 패턴을 둘러싼 용어를
+완전히 `관련 없는 언어 기능 <https://www.python.org/dev/peps/pep-0318/>`_에
+*데코레이터*를 사용하여 필요 이상으로 혼란스럽게 만들었습니다.
+타임라인:
 
-* The design pattern was developed and named in the early 1990s
-  by participants in the “Architecture Handbook” series of workshops
-  that were kicked off at OOPSLA ’90,
-  a conference for researchers of object-oriented programming languages.
+* 이 디자인 패턴은 1990년대 초 OOPSLA '90에서 시작된
+  "아키텍처 핸드북" 워크숍 시리즈 참가자들에 의해 개발되고 명명되었습니다.
+  OOPSLA '90은 객체 지향 프로그래밍 언어 연구자들을 위한 컨퍼런스였습니다.
 
-* The design pattern became famous as the “Decorator Pattern”
-  with the 1994 publication
-  of the Gang of Four’s *Design Patterns* book.
+* 이 디자인 패턴은 1994년 갱 오브 포의 *디자인 패턴* 책 출판과 함께
+  "데코레이터 패턴"으로 유명해졌습니다.
 
-* In 2003, the Python core developers
-  decided to re-use the term *decorator*
-  for a completely unrelated feature they were adding to Python 2.4.
+* 2003년 파이썬 핵심 개발자들은
+  파이썬 2.4에 추가하고 있던 완전히 관련 없는 기능에 대해
+  *데코레이터*라는 용어를 재사용하기로 결정했습니다.
 
-Why were the Python core developers
-not more concerned about the name collision?
-It may simply be that Python’s dynamic features
-kept its programming community so separate
-from the world of design-pattern literature for heavyweight languages
-that the core developers never imagined that confusion could arise.
+왜 파이썬 핵심 개발자들은 이름 충돌에 대해
+더 걱정하지 않았을까요?
+단순히 파이썬의 동적 기능이 프로그래밍 커뮤니티를
+무거운 언어에 대한 디자인 패턴 문헌의 세계와 너무 분리시켜서
+핵심 개발자들이 혼란이 발생할 수 있다고 상상조차 하지 못했기 때문일 수 있습니다.
 
-To try to keep the two concepts straight,
-I will use the term *decorator class*
-instead of just *decorator*
-when referring to a class that implements the Decorator Pattern.
+두 개념을 명확하게 구분하기 위해,
+데코레이터 패턴을 구현하는 클래스를 참조할 때
+단순히 *데코레이터* 대신 *데코레이터 클래스*라는 용어를 사용하겠습니다.
 
-Definition
+정의
 ----------
 
-A *decorator* class:
+*데코레이터* 클래스:
 
-* Is an *adapter* (see the *Adapter Pattern*)
-* That implements the same interface as the object it wraps
-* That delegates method calls to the object it wraps
+* *어댑터*입니다 (어댑터 패턴 참조).
+* 래핑하는 객체와 동일한 인터페이스를 구현합니다.
+* 래핑하는 객체에 메서드 호출을 위임합니다.
 
-The decorator class’s purpose
-is to add to, remove from, or adjust the behaviors
-that the wrapped object would normally implement
-when its methods are called.
-With a decorator class, you might:
+데코레이터 클래스의 목적은
+메서드가 호출될 때 래핑된 객체가 일반적으로 구현하는
+동작을 추가, 제거 또는 조정하는 것입니다.
+데코레이터 클래스를 사용하면 다음을 수행할 수 있습니다.
 
-* Log method calls that would normally work silently
-* Perform extra setup or cleanup around a method
-* Pre-process method arguments
-* Post-process return values
-* Forbid actions that the wrapped object would normally allow
+* 일반적으로 자동으로 작동하는 메서드 호출 기록
+* 메서드 주위에 추가 설정 또는 정리 수행
+* 메서드 인수 전처리
+* 반환 값 후처리
+* 래핑된 객체가 일반적으로 허용하는 작업 금지
 
-These purposes might remind you of situations
-in which you would also think of subclassing an existing class.
-But the Decorator Pattern has a crucial advantage over a subclass:
-you can only solve a problem with a subclass
-when your own code is in charge
-of creating the objects in the first place.
-For example, it isn’t helpful
-to subclass the Python file object
-if a library you’re using is returning normal file objects
-and you have no way to intercept their construction —
-your new ``MyEvenBetterFile`` subclass would sit unused.
-A decorator class does not have that limitation.
-It can be wrapped around a plain old file object any time you want,
-without the need for you be in control
-when the wrapped object was created.
+이러한 목적은 기존 클래스를 서브클래싱하는 것을
+생각할 수 있는 상황을 상기시킬 수 있습니다.
+그러나 데코레이터 패턴은 서브클래스에 비해 결정적인 이점이 있습니다.
+자신의 코드가 처음에 객체를 생성하는 경우에만
+서브클래스로 문제를 해결할 수 있습니다.
+예를 들어, 사용 중인 라이브러리가 일반 파일 객체를 반환하고
+생성을 가로챌 방법이 없는 경우
+파이썬 파일 객체를 서브클래싱하는 것은 도움이 되지 않습니다 —
+새 ``MyEvenBetterFile`` 서브클래스는 사용되지 않은 채로 남게 됩니다.
+데코레이터 클래스에는 이러한 제한이 없습니다.
+래핑된 객체가 생성될 때 제어할 필요 없이
+원하는 언제든지 일반적인 이전 파일 객체 주위에 래핑할 수 있습니다.
 
-Implementing: Static wrapper
+구현: 정적 래퍼
 ----------------------------
 
-First, let’s learn the drudgery
-of creating the kind of decorator class you would write in C++ or Java.
-We will not take advantage of the fact
-that Python is a dynamic language,
-but will instead write static (non-dynamic) code
-where every method and attribute appears literally,
-on the page.
+먼저, C++ 또는 Java에서 작성할 종류의 데코레이터 클래스를 만드는
+지루한 작업을 배워봅시다.
+파이썬이 동적 언어라는 사실을 활용하지 않고,
+대신 모든 메서드와 속성이 페이지에 문자 그대로 나타나는
+정적(비동적) 코드를 작성할 것입니다.
 
-To be complete —
-to provide a real guarantee
-that every method called and attribute manipulated
-on the decorator object
-will be backed by the real behavior of the adapted object —
-the decorator class will need to implement:
+완전하게 하려면 —
+데코레이터 객체에서 호출된 모든 메서드와 조작된 속성이
+적응된 객체의 실제 동작에 의해 지원된다는
+실제 보증을 제공하려면 —
+데코레이터 클래스는 다음을 구현해야 합니다.
 
-* Every method of the adapted class
-* A getter for every attribute
-* A setter for every attribute
-* A deleter for every attribute
+* 적응된 클래스의 모든 메서드
+* 모든 속성에 대한 getter
+* 모든 속성에 대한 setter
+* 모든 속성에 대한 deleter
 
-This approach is conceptually simple
-but, wow, it involves a lot of code!
+이 접근 방식은 개념적으로 간단하지만,
+와, 코드가 정말 많습니다!
 
-Imagine that one library is giving you open Python file objects,
-and you need to pass them to another routine or library —
-but to debug some product issues with latency,
-you want to log each time that data is written to the file.
+한 라이브러리가 열린 파이썬 파일 객체를 제공하고,
+이를 다른 루틴이나 라이브러리에 전달해야 한다고 상상해 보십시오 —
+그러나 대기 시간과 관련된 일부 제품 문제를 디버깅하기 위해,
+데이터가 파일에 기록될 때마다 기록하고 싶습니다.
 
-Python file objects often seem quite simple.
-We usually ``read()`` from them,
-``write()`` to them,
-and not much else.
-But in fact the file object supports more than a dozen methods
-and offers five different attributes!
-A wrapper class that really wants to implement that full behavior
-runs to nearly 100 lines of code —
-as shown here, in our first working example of the Decorator Pattern:
+파이썬 파일 객체는 종종 매우 단순해 보입니다.
+우리는 일반적으로 ``read()``하고, ``write()``하며,
+그 이상은 거의 하지 않습니다.
+그러나 실제로 파일 객체는 12개 이상의 메서드를 지원하고
+5가지 다른 속성을 제공합니다!
+해당 전체 동작을 실제로 구현하려는 래퍼 클래스는
+거의 100줄의 코드로 실행됩니다 —
+여기 데코레이터 패턴의 첫 번째 작동 예제에서 볼 수 있듯이 말입니다.
 
 .. literalinclude:: verbose_static_wrapper.py
 
-So for the sake of the half-dozen lines of code at the bottom
-that supplement the behavior of ``write()`` and ``writelines()``,
-another hundred or so lines of code wound up being necessary.
+따라서 ``write()`` 및 ``writelines()``의 동작을 보완하는
+맨 아래 6줄의 코드를 위해
+또 다른 100줄 정도의 코드가 필요하게 되었습니다.
 
-You will notice that each Python object attribute
-goads us into being even more verbose than Java!
-A typical Java attribute is implemented as exactly two methods,
-like ``getEncoding()`` and ``setEncoding()``.
-A Python attribute, on the other hand,
-will in the general case need to be backed by *three* actions —
-get, set, and delete —
-because Python’s object model is dynamic
-and supports the idea that an attribute might disappear from an instance.
+각 파이썬 객체 속성이
+Java보다 훨씬 더 장황하게 만들도록 유도한다는 것을 알 수 있습니다!
+일반적인 Java 속성은 정확히 두 개의 메서드로 구현됩니다.
+예를 들어 ``getEncoding()`` 및 ``setEncoding()``입니다.
+반면에 파이썬 속성은 일반적으로
+가져오기, 설정 및 삭제의 *세 가지* 작업으로 지원되어야 합니다 —
+왜냐하면 파이썬의 객체 모델은 동적이며
+속성이 인스턴스에서 사라질 수 있다는 아이디어를 지원하기 때문입니다.
 
-Of course,
-if the class you are decorating
-does not have as many methods and attributes
-as the Python file object we took as our example,
-then your wrapper will be shorter.
-But in the general case,
-writing out a full wrapper class will be tedious
-unless you have a tool like an IDE that can automate the process.
-Also, the wrapper will need to be updated in the future
-if the underlying object gains (or loses)
-any methods, arguments, or attributes.
+물론, 장식하는 클래스가
+예제로 사용한 파이썬 파일 객체만큼
+많은 메서드와 속성을 가지고 있지 않다면
+래퍼는 더 짧아질 것입니다.
+그러나 일반적인 경우,
+IDE와 같이 프로세스를 자동화할 수 있는 도구가 없다면
+전체 래퍼 클래스를 작성하는 것은 지루할 것입니다.
+또한 기본 객체가 메서드, 인수 또는 속성을
+얻거나 잃으면 나중에 래퍼를 업데이트해야 합니다.
 
-.. TODO explain why I did both write methods and how I chose to do it
+.. TODO 두 쓰기 방법을 모두 수행한 이유와 수행 방법을 선택한 이유 설명
 
-Implementing: Tactical wrapper
+구현: 전술적 래퍼
 ------------------------------
 
-The wrapper in the previous section
-might have struck you as ridiculous.
-It tackled the Python file object as a general example
-of a class that needed to be wrapped,
-instead of studying the how file objects work to look for shortcuts:
+이전 섹션의 래퍼는
+터무니없다고 생각했을 수 있습니다.
+파일 객체가 바로 가기를 찾기 위해 어떻게 작동하는지 연구하는 대신,
+래핑해야 하는 클래스의 일반적인 예로서
+파이썬 파일 객체를 다루었습니다.
 
-* File objects are implemented in the C language and don’t,
-  in fact, permit deletion of any of their attributes.
-  So our wrapper could have omitted all 6 deleter methods
-  without any consequence, since the default behavior of a property
-  in the absence of a deleter is to disallow deletion anyway.
-  This would have saved 18 lines of code.
+* 파일 객체는 C 언어로 구현되며 실제로
+  속성 삭제를 허용하지 않습니다.
+  따라서 우리 래퍼는 결과 없이 6개의 deleter 메서드를 모두 생략할 수 있었습니다.
+  어쨌든 deleter가 없는 경우 속성의 기본 동작은 삭제를 허용하지 않는 것이기 때문입니다.
+  이렇게 하면 18줄의 코드를 절약할 수 있었습니다.
 
-* All file attributes except ``mode`` are read-only
-  and raise an ``AttributeError`` if assigned to —
-  which is the behavior if a property lacks a setter method.
-  So 5 of our 6 setters can be omitted, saving 15 more lines of code
-  and bringing our wrapper to ⅓ its original length
-  without sacrificing correctness.
+* ``mode``를 제외한 모든 파일 속성은 읽기 전용이며
+  할당되면 ``AttributeError``를 발생시킵니다 —
+  속성에 setter 메서드가 없는 경우의 동작입니다.
+  따라서 6개의 setter 중 5개를 생략하여 15줄의 코드를 더 절약하고
+  정확성을 희생하지 않고 래퍼를 원래 길이의 ⅓로 줄일 수 있습니다.
 
-It might also have occurred to you
-that the code to which you are passing the wrapper
-is unlikely to call every single file method that exists.
-What if it only calls two methods?
-Or only one?
-In many cases a programmer has found
-that a trivial wrapper like the following
-will perfectly satisfy real-world code
-that just wants to write to a file:
+래퍼를 전달하는 코드가
+존재하는 모든 단일 파일 메서드를 호출할 가능성이 낮다는 것도
+생각해 보셨을 것입니다.
+두 개의 메서드만 호출하면 어떻게 될까요?
+아니면 하나만?
+많은 경우 프로그래머는 다음과 같은
+사소한 래퍼가 파일에 쓰기만 원하는
+실제 코드를 완벽하게 만족시킨다는 것을 발견했습니다.
 
 .. literalinclude:: tactical_wrapper.py
 
-Yes, this can admittedly be a bit dangerous.
-A routine that seems so happy with a minimal wrapper like this
-can suddenly fail later
-if rare circumstances
-make it dig into methods or attributes
-that you never implemented
-because you never saw it use them.
-Even if you audit the library’s code
-and are sure it can never call any method besides ``write()``,
-that could change
-the next time you upgrade the library to a new version.
+예, 이것은 인정하건대 약간 위험할 수 있습니다.
+이와 같은 최소한의 래퍼에 매우 만족하는 것처럼 보이는 루틴은
+드문 상황으로 인해 사용자가 사용하지 않는 것을 보았기 때문에
+구현하지 않은 메서드나 속성을 파헤치게 되면
+나중에 갑자기 실패할 수 있습니다.
+라이브러리 코드를 감사하고
+``write()`` 이외의 메서드를 호출할 수 없다고 확신하더라도,
+다음에 라이브러리를 새 버전으로 업그레이드하면
+변경될 수 있습니다.
 
-In a more formal programming language,
-a duck typing requirement like “this function requires a file object”
-would likely be replaced with an exact specification like
-“this argument needs to support a ``writelines()`` method”
-or “pass an object
-that offers every methods in the interface ``IWritableFile``.”
-But most Python code lacks this precision
-and will force you, as the author of a wrapper class,
-to decide where to draw the line
-between the magnificent pedantry of wrapping every possible method
-and the danger of not wrapping enough.
+더 공식적인 프로그래밍 언어에서는
+"이 함수에는 파일 객체가 필요합니다"와 같은 덕 타이핑 요구 사항이
+"이 인수에는 ``writelines()`` 메서드가 지원되어야 합니다" 또는
+"인터페이스 ``IWritableFile``의 모든 메서드를 제공하는 객체를 전달하십시오"와 같은
+정확한 사양으로 대체될 가능성이 높습니다.
+그러나 대부분의 파이썬 코드는 이러한 정밀도가 부족하며
+래퍼 클래스의 작성자로서 가능한 모든 메서드를 래핑하는
+웅장한 현학성과 충분히 래핑하지 않는 위험 사이에서
+선을 어디에 그릴지 결정하도록 강요할 것입니다.
 
-Implementing: Dynamic wrapper
+구현: 동적 래퍼
 -----------------------------
 
-A very common approach to the Decorator Pattern in Python
-is the dynamic wrapper.
-Instead of trying to implement a method and property
-for every method and attribute on the wrapped object,
-a dynamic wrapper intercepts live attribute accesses
-as the program executes
-and responds by trying to access the same attribute
-on the wrapped object.
+파이썬에서 데코레이터 패턴에 대한 매우 일반적인 접근 방식은
+동적 래퍼입니다.
+래핑된 객체의 모든 메서드와 속성에 대한
+메서드와 속성을 구현하려고 하는 대신,
+동적 래퍼는 프로그램이 실행될 때
+라이브 속성 액세스를 가로채고
+래핑된 객체에서 동일한 속성에 액세스하려고 시도하여 응답합니다.
 
-A dynamic wrapper implements
-the dunder methods ``__getattr__()``, ``__setattr__()``, and
-— if it really wants to be feature-complete —
-``__delattr__()`` and responds to each of them
-by performing the equivalent operation on the wrapped object.
-Because ``__getattr__()`` is only invoked
-for attributes that are in fact missing on the wrapper,
-the wrapper is free to offer real implementations
-of any methods or properties it wants to intercept.
+동적 래퍼는 ``__getattr__()``, ``__setattr__()`` 및
+— 정말로 기능이 완전하기를 원한다면 —
+``__delattr__()``이라는 더블 언더스코어 메서드를 구현하고
+각각에 대해 래핑된 객체에서 동등한 작업을 수행하여 응답합니다.
+``__getattr__()``은 실제로 래퍼에 없는 속성에 대해서만 호출되므로,
+래퍼는 가로채려는 모든 메서드나 속성의
+실제 구현을 자유롭게 제공할 수 있습니다.
 
-There are a few edge cases that prevent every attribute access
-from being handled with ``__getattr__()``.
-For example, if the wrapped object is iterable,
-then the basic operation ``iter()`` will fail on the wrapper
-if the wrapper is not given a real ``__iter__()`` method of its own.
-Similarly, even if the wrapped object is an iterator,
-``next()`` will fail unless the wrapper offers a real ``__next__()``,
-because these two operations examine an object’s class
-for dunder methods
-instead of hitting the object directly with a ``__getattr__()``.
+모든 속성 액세스가 ``__getattr__()``으로 처리되는 것을 막는
+몇 가지 예외적인 경우가 있습니다.
+예를 들어, 래핑된 객체가 반복 가능하면
+래퍼에 자체 ``__iter__()`` 메서드가 제공되지 않으면
+래퍼에서 기본 작업 ``iter()``가 실패합니다.
+마찬가지로, 래핑된 객체가 반복자이더라도
+래퍼가 실제 ``__next__()``를 제공하지 않으면 ``next()``가 실패합니다.
+왜냐하면 이 두 작업은 ``__getattr__()``으로 객체를 직접 치는 대신
+더블 언더스코어 메서드에 대해 객체의 클래스를 검사하기 때문입니다.
 
-As a result of these special cases,
-a getattr-powered wrapper usually involves at least a half-dozen methods
-in addition to the methods you specifically want to specialize:
+이러한 특수한 경우의 결과로,
+getattr 기반 래퍼는 일반적으로 특별히 전문화하려는 메서드 외에
+최소 6개의 메서드를 포함합니다.
 
 .. literalinclude:: getattr_powered_wrapper.py
 
-.. TODO Could you fool it with getattribute? probably not but say why.
+.. TODO getattribute로 속일 수 있습니까? 아마도 아니지만 이유는 무엇입니까?
 
-As you can see,
-the code can be quite economical
-compared to the vast slate of methods
-we saw earlier in ``WriteLoggingFile1``
-for manually implementing every possible attribute.
+보시다시피 코드는 이전에 ``WriteLoggingFile1``에서 보았던
+모든 가능한 속성을 수동으로 구현하기 위한
+방대한 메서드 목록에 비해
+매우 경제적일 수 있습니다.
 
-This extra level of indirection
-does carry a small performance penalty for every attribute access,
-but is usually preferred to the burden of writing a static wrapper.
+이 추가 간접 수준은 모든 속성 액세스에 대해
+작은 성능 저하를 수반하지만,
+일반적으로 정적 래퍼를 작성하는 부담보다 선호됩니다.
 
-Dynamic wrappers also offer pleasant insulation
-against changes that might happen in the future
-to the object being wrapped.
-If a future version of Python adds or removes
-an attribute or method from the file object,
-the code of ``WriteLoggingFile3`` will require no change at all.
+동적 래퍼는 또한 나중에 래핑되는 객체에
+발생할 수 있는 변경 사항에 대한 쾌적한 격리를 제공합니다.
+미래 버전의 파이썬이 파일 객체에서
+속성이나 메서드를 추가하거나 제거하더라도
+``WriteLoggingFile3``의 코드는 전혀 변경할 필요가 없습니다.
 
-.. TODO what about live copying each attribute as it's accessed?
+.. TODO 액세스할 때 각 속성을 라이브로 복사하는 것은 어떻습니까?
 
-Caveat: Wrapping doesn’t actually work
+주의 사항: 래핑이 실제로 작동하지 않음
 --------------------------------------
 
-If Python didn’t support introspection —
-if the only operation you could perform on an object
-was attribute lookup,
-whether statically through an identifier like ``f.write``
-or dynamically via ``getattr(f, attrname)`` string lookup —
-then a decorator could be foolproof.
-As long as every attribute lookup that succeeds on the wrapped object
-will return the same sort of value when performed on the wrapper,
-then other Python code would never know the difference.
+파이썬이 성찰을 지원하지 않는다면 —
+객체에 대해 수행할 수 있는 유일한 작업이
+``f.write``와 같은 식별자를 통한 정적 조회이든
+``getattr(f, attrname)`` 문자열 조회를 통한 동적 조회이든
+속성 조회뿐이라면 —
+데코레이터는 완벽할 수 있습니다.
+래핑된 객체에서 성공하는 모든 속성 조회가
+래퍼에서 수행될 때 동일한 종류의 값을 반환하는 한,
+다른 파이썬 코드는 차이점을 결코 알 수 없을 것입니다.
 
-But Python is not merely a dynamic programming language;
-it also supports introspection.
-And introspection is the downfall of the Decorator Pattern.
-If the code to which you pass the wrapper decides to look deeper,
-all kinds of differences become apparent.
-The native file object, for example,
-is buttressed with many private methods and attributes:
+그러나 파이썬은 단순히 동적 프로그래밍 언어가 아닙니다.
+성찰도 지원합니다.
+그리고 성찰은 데코레이터 패턴의 몰락입니다.
+래퍼를 전달하는 코드가 더 깊이 들여다보기로 결정하면
+온갖 종류의 차이점이 분명해집니다.
+예를 들어 네이티브 파일 객체는
+많은 비공개 메서드와 속성으로 강화됩니다.
 
 .. testsetup::
 
@@ -325,114 +293,107 @@ is buttressed with many private methods and attributes:
 >>> dir(f)
 ['_CHUNK_SIZE', '__class__', '__del__', '__delattr__', '__dict__', '__dir__', '__doc__', '__enter__', '__eq__', '__exit__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__lt__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '_checkClosed', '_checkReadable', '_checkSeekable', '_checkWritable', '_finalizing', 'buffer', 'close', 'closed', 'detach', 'encoding', 'errors', 'fileno', 'flush', 'isatty', 'line_buffering', 'mode', 'name', 'newlines', 'read', 'readable', 'readline', 'readlines', 'seek', 'seekable', 'tell', 'truncate', 'writable', 'write', 'writelines']
 
-Your wrapper, on the other hand —
-if you have crafted it around the file’s public interface —
-will lack all of those private accouterments.
-Behind your carefully implemented public methods and attributes
-are the bare dunder methods of a generic Python ``object``,
-plus the few you had to implement to maintain compatibility:
+반면에 사용자의 래퍼는 —
+파일의 공개 인터페이스를 중심으로 제작했다면 —
+이러한 모든 비공개 부속품이 부족할 것입니다.
+신중하게 구현된 공개 메서드와 속성 뒤에는
+일반 파이썬 ``object``의 단순한 더블 언더스코어 메서드와
+호환성을 유지하기 위해 구현해야 했던 몇 가지 메서드만 있습니다.
 
 >>> w = WriteLoggingFile1(f, getLogger())
 >>> dir(w)
 ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__enter__', '__eq__', '__exit__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_file', '_logger', 'close', 'closed', 'encoding', 'errors', 'fileno', 'flush', 'isatty', 'mode', 'name', 'newlines', 'read', 'readinto', 'readline', 'readlines', 'seek', 'tell', 'truncate', 'write', 'writelines']
 
-The tactical wrapper, of course,
-looks spectacularly different than a real file object,
-because it does not even attempt to provide
-the full range of methods available on the wrapped object:
+물론 전술적 래퍼는
+실제 파일 객체와는 눈에 띄게 다릅니다.
+래핑된 객체에서 사용할 수 있는 전체 메서드 범위를
+제공하려고 시도조차 하지 않기 때문입니다.
 
 >>> w = WriteLoggingFile2(f, getLogger())
 >>> dir(w)
 ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_file', '_logger', 'write']
 
-More interesting is the getattr wrapper.
-Even though, in practice,
-it offers access to every attribute and method of the wrapped class,
-they are completely missing from its ``dir()``
-because each attribute only springs into existence
-when accessed by name.
+더 흥미로운 것은 getattr 래퍼입니다.
+실제로 래핑된 클래스의 모든 속성과 메서드에 대한
+액세스를 제공하지만,
+이름으로 액세스할 때 각 속성이 존재하기 시작하기 때문에
+``dir()``에서는 완전히 누락됩니다.
 
 >>> w = WriteLoggingFile3(f, getLogger())
 >>> dir(w)
 ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattr__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_file', '_logger', 'write', 'writelines']
 
-Could even these differences be ironed out?
-If you scroll through the many dunder methods in the `Python Data Model
-<https://docs.python.org/3/reference/datamodel.html>`_,
-your might be struck by a sudden wild hope
-when you see the `__dir__ method
-<https://docs.python.org/3/reference/datamodel.html#object.__dir__>`_ —
-surely this is the final secret to camouflaging your wrapper?
+이러한 차이점조차도 해결할 수 있을까요?
+`파이썬 데이터 모델 <https://docs.python.org/3/reference/datamodel.html>`_의
+많은 더블 언더스코어 메서드를 스크롤하다 보면
+`__dir__ 메서드 <https://docs.python.org/3/reference/datamodel.html#object.__dir__>`_를
+볼 때 갑자기 거친 희망에 사로잡힐 수 있습니다 —
+이것이 래퍼를 위장하는 마지막 비밀이 아닐까요?
 
-Alas, it will not be enough.
-Even if you implement ``__dir__()``
-and forward it through to the wrapped object,
-Python special-cases the ``__dict__`` attribute —
-accessing it always provides direct access
-to the dictionary that holds a Python class instance’s attributes.
+아아, 그것만으로는 충분하지 않을 것입니다.
+``__dir__()``을 구현하고 래핑된 객체로 전달하더라도,
+파이썬은 ``__dict__`` 속성을 특별하게 처리합니다 —
+액세스하면 항상 파이썬 클래스 인스턴스의 속성을 보유하는
+사전에 직접 액세스할 수 있습니다.
 
 >>> f.__dict__
 {'mode': 'r'}
 >>> w.__dict__
 {'_file': <_io.TextIOWrapper name='/etc/passwd' mode='r' encoding='UTF-8'>, '_logger': <RootLogger root (WARNING)>}
 
-You might begin to think of even more obscure ways
-to subvert Python’s introspection —
-at this point you might already be thinking of ``__slots__``,
-for example —
-but all roads lead to the same place.
-However clever and obscure your maneuvers,
-at least a small chink will still be left in your wrapper’s armor
-which will allow careful enough introspection to see the difference.
-Thus we are lead to a conclusion:
+파이썬의 성찰을 전복시키는 훨씬 더 모호한 방법을
+생각하기 시작할 수 있습니다 —
+이 시점에서 이미 ``__slots__``를 생각하고 있을 수 있습니다.
+예를 들어 —
+그러나 모든 길은 같은 곳으로 이어집니다.
+아무리 영리하고 모호한 기동을 하더라도,
+래퍼의 갑옷에는 적어도 작은 틈이 남아 있어
+충분히 주의 깊은 성찰을 통해 차이점을 볼 수 있습니다.
+따라서 우리는 다음과 같은 결론에 도달합니다.
 
-.. admonition:: Maxim
+.. admonition:: 격언
 
-   The Decorator Pattern in Python
-   supports *programming* — but not *metaprogramming*.
-   Code that is happy to simply access attributes
-   will be happy to accept a Decorator Pattern wrapper instead.
-   But code that indulges in introspection will see the difference.
+   파이썬의 데코레이터 패턴은
+   *프로그래밍*은 지원하지만 *메타프로그래밍*은 지원하지 않습니다.
+   단순히 속성에 액세스하는 데 만족하는 코드는
+   대신 데코레이터 패턴 래퍼를 기꺼이 받아들일 것입니다.
+   그러나 성찰에 빠지는 코드는 차이점을 볼 것입니다.
 
-Among other things,
-Python code that attempts to list an object’s attributes,
-examine its ``__class__``, or directly access its ``__dict__``
-will see differences between the object it expected
-and the decorator object you have in fact given it instead.
-Well-written application code would never do such things, of course —
-they are necessary only when implementing a developer tool
-like a framework, test harness, or debugger.
-But as you don’t always have the option
-of dealing solely with well-written libraries,
-be prepared to see and work around
-any symptoms of intrusive introspection
-as you deploy the Decorator Pattern.
+무엇보다도 객체의 속성을 나열하거나,
+``__class__``를 검사하거나, ``__dict__``에 직접 액세스하려고 시도하는
+파이썬 코드는 예상했던 객체와
+실제로 제공한 데코레이터 객체 간의 차이점을 볼 것입니다.
+잘 작성된 애플리케이션 코드는 물론 이러한 작업을 수행하지 않을 것입니다 —
+프레임워크, 테스트 하네스 또는 디버거와 같은 개발자 도구를
+구현할 때만 필요합니다.
+그러나 항상 잘 작성된 라이브러리만 다룰 수 있는 것은 아니므로,
+데코레이터 패턴을 배포할 때
+침입적인 성찰의 증상을 보고 해결할 준비를 하십시오.
 
-Hack: Monkey-patch each object
+해킹: 각 객체 몽키 패치
 ------------------------------
 
-There are two final approaches to decoration
-based on the questionable practice of monkey patching.
-The first approach takes each object that needs decoration
-and installs a new method directly on the object,
-shadowing the official method that remains on the class itself.
+몽키 패치라는 의심스러운 관행을 기반으로 한
+장식에 대한 두 가지 최종 접근 방식이 있습니다.
+첫 번째 접근 방식은 장식이 필요한 각 객체를 가져와
+객체에 직접 새 메서드를 설치하여
+클래스 자체에 남아 있는 공식 메서드를 가립니다.
 
-If you have ever attempted this maneuver yourself,
-you might have run aground on the fact
-that a function installed on a Python object instance
-does *not* receive an automatic ``self`` argument —
-instead, it sees only the arguments with which it is literally invoked.
-So a first try at supplementing a file’s ``write()`` with logging:
+이러한 기동을 직접 시도해 본 적이 있다면,
+파이썬 객체 인스턴스에 설치된 함수가
+자동 ``self`` 인수를 받지 않는다는 사실에 좌초했을 수 있습니다 —
+대신 문자 그대로 호출되는 인수만 봅니다.
+따라서 파일의 ``write()``를 로깅으로 보완하려는 첫 번째 시도:
 
 >>> def bind_write_method(logger):
-...     # Does not work: will not receive `self` argument
+...     # 작동하지 않음: `self` 인수를 받지 않음
 ...     def write_and_log(self, s):
 ...         self.write(s)
 ...         logger.debug('wrote %s bytes to %s', len(s), self._file)
 ...     return write_and_log
 
-— will die with an error
-because the new method sees only one argument, not two:
+—는 새 메서드가 두 개가 아닌 하나의 인수만 보기 때문에
+오류로 종료됩니다.
 
 >>> f = open('/dev/null', 'w')
 >>> f.write
@@ -443,10 +404,9 @@ Traceback (most recent call last):
   ...
 TypeError: write_and_log() missing 1 required positional argument: 's'
 
-The quick way to resolve the dilemma
-is to do the binding yourself,
-by providing the object instance
-to the closure that wraps the new method itself:
+딜레마를 해결하는 빠른 방법은
+객체 인스턴스를 새 메서드 자체를 래핑하는 클로저에 제공하여
+직접 바인딩하는 것입니다.
 
 >>> def bind_write_method(self, logger):
 ...     def write_and_log(s):
@@ -460,21 +420,19 @@ to the closure that wraps the new method itself:
 >>> f.write('Hello, world.')
 wrote 13 bytes to /dev/null
 
-While clunky,
-this approach does let you update the action of a single method
-on a single object instance
-while leaving the entire rest of its behavior alone.
+투박하지만, 이 접근 방식을 사용하면
+단일 객체 인스턴스에서 단일 메서드의 작업을 업데이트하면서
+나머지 동작은 모두 그대로 둘 수 있습니다.
 
-Hack: Monkey-patch the class
+해킹: 클래스 몽키 패치
 ----------------------------
 
-Another approach you might see in the wild
-is to create a subclass that has the desired behaviors overridden,
-and then to surgically change the class of the object instance.
-This is not, alas, possible in the general case,
-and in fact fails for our example here because the file class,
-like all built-in classes,
-does not permit assignment to its ``__class__`` attribute:
+야생에서 볼 수 있는 또 다른 접근 방식은
+원하는 동작이 재정의된 서브클래스를 만들고,
+그런 다음 객체 인스턴스의 클래스를 외과적으로 변경하는 것입니다.
+안타깝게도 이것은 일반적인 경우에 가능하지 않으며,
+실제로 여기 예제에서는 파일 클래스가 모든 내장 클래스와 마찬가지로
+``__class__`` 속성에 대한 할당을 허용하지 않기 때문에 실패합니다.
 
 >>> f = open('/etc/passwd')
 >>> class Foo(type(f)):
@@ -487,17 +445,16 @@ Traceback (most recent call last):
   ...
 TypeError: __class__ assignment only supported for heap types or ModuleType subclasses
 
-But in cases where the surgery does work,
-you will have an object whose behavior
-is that of your subclass rather than of its original class.
+그러나 수술이 작동하는 경우,
+원래 클래스가 아닌 서브클래스의 동작을 하는 객체를 갖게 됩니다.
 
-Further Reading
+추가 자료
 ---------------
 
-* If dynamic wrappers and monkey patching spur your interest,
-  check out Graham Dumpleton’s
-  `wrapt library <http://wrapt.readthedocs.io/en/latest/quick-start.html>`_,
-  his accompanying series of
-  `blog posts <http://blog.dscpl.com.au/p/decorators-and-monkey-patching.html>`_,
-  and his `monkey patching talk at Kiwi PyCon <https://www.youtube.com/watch?v=GCZmGgtWi3M>`_
-  that delve deep into the arcane technical details of the practice.
+* 동적 래퍼와 몽키 패치에 관심이 있다면,
+  Graham Dumpleton의
+  `wrapt 라이브러리 <http://wrapt.readthedocs.io/en/latest/quick-start.html>`_,
+  그의 함께 제공되는
+  `블로그 게시물 시리즈 <http://blog.dscpl.com.au/p/decorators-and-monkey-patching.html>`_,
+  그리고 Kiwi PyCon에서의 그의 `몽키 패치 강연 <https://www.youtube.com/watch?v=GCZmGgtWi3M>`_을
+  확인하십시오. 이 자료들은 이 관행의 불가사의한 기술적 세부 사항을 깊이 파고듭니다.

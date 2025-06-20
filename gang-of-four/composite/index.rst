@@ -1,48 +1,39 @@
-
 =======================
- The Composite Pattern
+ 컴포지트 패턴
 =======================
 
-*A “Structural Pattern” from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 "구조 패턴"*
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   The Composite Pattern can bring symmetry
-   not only to object hierarchies in Python,
-   but even to hierarchies exposed by low-level system calls
-   and high-level network applications.
-   In Python, the Composite Pattern can often be implemented
-   with less fuss than in tightly constrained object oriented languages.
-   You won’t be forced to inherit your container objects
-   and the objects inside of them
-   from a common parent class.
-   Instead, you can build classes
-   that share only a common interface rather than any implementation —
-   or that are simply duck typed to offer common behavior.
+   컴포지트 패턴은 파이썬의 객체 계층뿐만 아니라
+   저수준 시스템 호출 및 고수준 네트워크 애플리케이션에 의해 노출되는
+   계층에도 대칭성을 가져올 수 있습니다.
+   파이썬에서는 컴포지트 패턴을 엄격하게 제한된 객체 지향 언어보다
+   덜 번거롭게 구현할 수 있는 경우가 많습니다.
+   컨테이너 객체와 그 안의 객체를
+   공통 부모 클래스에서 상속하도록 강요받지 않습니다.
+   대신 구현이 아닌 공통 인터페이스만 공유하는 클래스를 빌드하거나
+   단순히 공통 동작을 제공하도록 덕 타이핑할 수 있습니다.
 
-The Composite Pattern suggests
-that whenever you design “container” objects
-that collect and organize what we’ll call “content” objects,
-you will simplify many operations
-if you give container objects and content objects a shared set of methods
-and thereby support as many operations as possible
-without the caller having to care
-whether they have been passed an individual content object
-or an entire container.
+컴포지트 패턴은 "콘텐츠" 객체라고 부르는 것을 수집하고 구성하는
+"컨테이너" 객체를 설계할 때마다
+컨테이너 객체와 콘텐츠 객체에 공유 메서드 세트를 제공하여
+호출자가 개별 콘텐츠 객체가 전달되었는지
+아니면 전체 컨테이너가 전달되었는지 신경 쓸 필요 없이
+가능한 한 많은 작업을 지원하면
+많은 작업을 단순화할 수 있다고 제안합니다.
 
-This is such a general idea
-that we can begin by stepping back from Python
-and even from object-based programming,
-and looking at how the Composite Pattern works
-at the level of an operating system.
+이것은 매우 일반적인 아이디어이므로
+파이썬과 객체 기반 프로그래밍에서 한 걸음 물러나
+운영 체제 수준에서 컴포지트 패턴이 어떻게 작동하는지 살펴보는 것으로 시작할 수 있습니다.
 
-Example: the UNIX file system
+예: UNIX 파일 시스템
 =============================
 
-The admirably pithy two-letter UNIX command ``ls``,
-according to its manual page, stands for “list directory”
-and when given the path to a directory
-will list the files and subdirectories inside.
+매뉴얼 페이지에 따르면 감탄할 정도로 간결한 두 글자 UNIX 명령어 ``ls``는
+"디렉터리 목록"을 의미하며 디렉터리 경로가 주어지면
+내부의 파일과 하위 디렉터리를 나열합니다.
 ::
 
     $ ls /usr
@@ -50,45 +41,36 @@ will list the files and subdirectories inside.
     adm/         gnu/         lib/         mail/        preserve/    src/
     admin/       include/     local/       news/        pub/         tmp/
 
-But the name “list directory” is misleadingly narrow,
-because ``ls`` is also happy to be given a single file’s path
-as its argument!
+그러나 "디렉터리 목록"이라는 이름은 오해의 소지가 있을 정도로 좁습니다.
+왜냐하면 ``ls``는 단일 파일 경로를 인수로 받는 것도 기꺼이 하기 때문입니다!
 ::
 
     $ ls /usr/bin/banner
     /usr/bin/banner
 
-Of course, users rarely invoke ``ls`` on a single file like this,
-without specifying any option;
-the only thing you learn is that the file exists
-(if it doesn’t, ``ls`` will complain “No such file or directory”).
-Its ability to accept single file names makes more sense
-when combined with its “long listing” option.
+물론 사용자는 옵션을 지정하지 않고 이와 같이 단일 파일에서 ``ls``를 거의 호출하지 않습니다.
+알 수 있는 유일한 것은 파일이 존재한다는 것입니다
+(존재하지 않으면 ``ls``는 "해당 파일 또는 디렉터리가 없습니다"라고 불평합니다).
+단일 파일 이름을 받아들이는 기능은 "긴 목록" 옵션과 결합될 때 더 의미가 있습니다.
 ::
 
     $ ls -l /usr/bin/banner
     -r-xr-xr-x   1 bin      bin        12620 Mar  3  1988 /usr/bin/banner
 
-This symmetry —
-that ``ls`` operates without complaint
-on both individual files and also on the directories that contain them —
-seems so natural to most users
-that you might not notice the powerful design decision behind it.
-It would have been very easy for an operating system author
-to provide one command for listing a directory,
-and an entirely different command
-to show the attributes of one particular file.
-But the lack of symmetry would have carried a cost.
-While exploring the filesystem,
-you would then have had to constantly remember
-to switch from one command to the other
-depending on whether the object of your attention was a directory or file.
+이러한 대칭성 — ``ls``가 개별 파일과 이를 포함하는 디렉터리 모두에서
+불만 없이 작동한다는 것 — 은 대부분의 사용자에게 너무 자연스러워서
+그 뒤에 있는 강력한 디자인 결정을 눈치채지 못할 수도 있습니다.
+운영 체제 작성자가 디렉터리 목록을 표시하는 명령 하나와
+특정 파일의 속성을 표시하는 완전히 다른 명령을 제공하는 것은 매우 쉬웠을 것입니다.
+그러나 대칭성이 부족하면 비용이 발생했을 것입니다.
+파일 시스템을 탐색하는 동안
+주의 대상이 디렉터리인지 파일인지에 따라
+한 명령에서 다른 명령으로 계속 전환해야 했을 것입니다.
 
-Worse yet, two separate commands
-would have provided no way to support wildcard operations
-that might match both files and directories.
-But, happily, ``ls`` has no problem with a heterogeneous
-argument list that has both individual files and also a directory inside:
+설상가상으로 두 개의 별도 명령은
+파일과 디렉터리 모두에 일치할 수 있는 와일드카드 작업을 지원할 방법이 없었을 것입니다.
+그러나 다행히도 ``ls``는 개별 파일과 디렉터리가 모두 포함된
+이기종 인수 목록에 문제가 없습니다.
 ::
 
     $ ls -C /etc/l*
@@ -97,304 +79,254 @@ argument list that has both individual files and also a directory inside:
     /etc/log:
     filesave.log
 
-Here, ``ls`` has transparently detected
-that four of the names matched by the wildcard ``/etc/l*`` are files
-but that ``/etc/log`` is a directory with more files inside.
-(Well, with one file inside.)
-Had UNIX supplied separate commands
-for listing a file and listing a directory,
-this wildcard could not safely have been an argument to either command.
+여기서 ``ls``는 와일드카드 ``/etc/l*``와 일치하는 이름 중 4개가 파일이지만
+``/etc/log``는 내부에 더 많은 파일이 있는 디렉터리라는 것을 투명하게 감지했습니다.
+(음, 내부에 파일 하나가 있습니다.)
+UNIX가 파일 목록과 디렉터리 목록을 표시하는 별도의 명령을 제공했다면
+이 와일드카드는 어느 명령에도 안전하게 인수가 될 수 없었을 것입니다.
 
-This, at the level of a command line interface,
-is the Composite Pattern.
-Operations like ``ls`` and ``du`` and ``chmod``
-that make sense on both files and directories
-are implemented so that they run transparently on both.
-This not only lowers cognitive overhead,
-but makes shell scripts easier to write —
-there are many operations that a script can simply run blindly
-without needing to stop and check first whether a path
-names a file or a directory.
+이것이 명령줄 인터페이스 수준에서의 컴포지트 패턴입니다.
+파일과 디렉터리 모두에 의미가 있는 ``ls``, ``du``, ``chmod``와 같은 작업은
+양쪽 모두에서 투명하게 실행되도록 구현됩니다.
+이는 인지적 부담을 낮출 뿐만 아니라 셸 스크립트 작성을 더 쉽게 만듭니다.
+경로가 파일인지 디렉터리인지 먼저 확인하지 않고
+스크립트가 단순히 맹목적으로 실행할 수 있는 많은 작업이 있습니다.
 
-The art of using the Composite Pattern
-is determining where to break the symmetry.
-For example, the UNIX filesystem provides completely different commands
-``touch`` for creating a new file
-and ``mkdir`` for creating a new directory.
-This could instead have been a single command
-with an option that flipped it from file-creating mode
-to directory-creating mode.
-But the designers thought that the two operations
-were conceptually different enough to deserve separate commands.
-The decision of how much symmetry to create
-will weigh upon each operation that a designer implements.
+컴포지트 패턴 사용 기술은 대칭성을 어디서 깨뜨릴지 결정하는 것입니다.
+예를 들어 UNIX 파일 시스템은 새 파일을 만드는 ``touch``와
+새 디렉터리를 만드는 ``mkdir``라는 완전히 다른 명령을 제공합니다.
+이는 파일 생성 모드에서 디렉터리 생성 모드로 전환하는 옵션이 있는
+단일 명령일 수도 있었습니다.
+그러나 설계자들은 두 작업이 개념적으로 충분히 달라서
+별도의 명령을 받을 자격이 있다고 생각했습니다.
+얼마나 많은 대칭성을 만들 것인지에 대한 결정은
+설계자가 구현하는 각 작업에 영향을 미칩니다.
 
-Forcing symmetry where there is really a difference
-can create awkward special cases.
-For example,
-two of the three permission bits in UNIX
-apply equally to directories and files:
-``r`` gives read permission and ``w`` gives write permission.
-But the symmetry breaks at ``x``, the third bit,
-which gives permission to “execute” a file
-but to “search” a directory by using it in a path.
-Should there have been two different ``chmod`` commands,
-one for files and one for directories?
-Or should the single ``chmod`` binary
-at least have used a different letter for that third bit,
-maybe ``x`` when applied to a file but ``s`` for “search”
-when applied to a directory?
-I myself think the designers of UNIX made the right decision here,
-because I find it easier to remember
-that ``x`` means something a little different for a directory
-than to remember a separate letter for directories,
-or a separate command.
-But the decision could have gone either way,
-and making decisions like these
-are where the designer applying the Composite Pattern needs finesse.
+실제로 차이가 있는 곳에 대칭성을 강요하면
+어색한 특수 사례가 발생할 수 있습니다.
+예를 들어 UNIX의 세 가지 권한 비트 중 두 개는
+디렉터리와 파일에 동일하게 적용됩니다.
+``r``은 읽기 권한을 부여하고 ``w``는 쓰기 권한을 부여합니다.
+그러나 대칭성은 세 번째 비트인 ``x``에서 깨집니다.
+이 비트는 파일을 "실행"할 권한을 부여하지만
+경로에서 사용하여 디렉터리를 "검색"할 권한을 부여합니다.
+파일용과 디렉터리용으로 두 가지 다른 ``chmod`` 명령이 있어야 했을까요?
+아니면 단일 ``chmod`` 바이너리가
+적어도 해당 세 번째 비트에 다른 문자를 사용해야 했을까요?
+파일에 적용될 때는 ``x``이지만 디렉터리에 적용될 때는 "검색"을 위해 ``s``일 수도 있습니다.
+저는 UNIX 설계자들이 여기서 올바른 결정을 내렸다고 생각합니다.
+왜냐하면 디렉터리에 대해 ``x``가 약간 다른 의미를 갖는다는 것을 기억하는 것이
+디렉터리에 대한 별도의 문자나 별도의 명령을 기억하는 것보다 쉽기 때문입니다.
+그러나 결정은 어느 쪽으로든 갈 수 있었고,
+이러한 결정을 내리는 것이
+컴포지트 패턴을 적용하는 설계자에게 기교가 필요한 부분입니다.
 
-It should be noted that the symmetries
-that exist between files and directories on the command line
-are not exactly the same symmetries that exist
-down beneath ``ls`` and ``chmod`` at the level of system calls.
-At each level, the Composite Pattern was applied a bit differently.
-For system calls, some symmetry does exist:
-``stat()`` and ``chmod()`` and ``chown()``
-operate happily on both files and directories.
+명령줄에서 파일과 디렉터리 사이에 존재하는 대칭성은
+``ls``와 ``chmod`` 아래 시스템 호출 수준에 존재하는 대칭성과
+정확히 동일하지 않다는 점에 유의해야 합니다.
+각 수준에서 컴포지트 패턴은 약간 다르게 적용되었습니다.
+시스템 호출의 경우 일부 대칭성이 존재합니다.
+``stat()``, ``chmod()``, ``chown()``은
+파일과 디렉터리 모두에서 행복하게 작동합니다.
 
-But ``ls`` is hiding the fact that if ``stat()``
-reveals that a path names a directory,
-then ``ls`` needs to switch to a directory-specific system call
-to list the files inside.
-There is no symmetry
-between the UNIX system call for reading a normal file’s content
-and the call for reading the list of files in a directory,
-and for a crucial reason:
-the two operations return different types of data.
-A file contains an unstructured stream of bytes;
-a directory, a series of distinct filenames.
-The question of return type
-will serve as a very important guardrail when you are designing in Python:
-if your desire to create symmetry between container and content
-leads you to engineer calls
-that require an ``if`` statement or ``isinstance()``
-to safely handle their return value,
-then the desire for symmetry has led you astray.
+그러나 ``ls``는 ``stat()``이 경로가 디렉터리 이름을 지정한다는 것을 나타내면
+``ls``가 내부 파일을 나열하기 위해 디렉터리별 시스템 호출로 전환해야 한다는 사실을 숨기고 있습니다.
+일반 파일의 내용을 읽는 UNIX 시스템 호출과
+디렉터리의 파일 목록을 읽는 호출 사이에는 대칭성이 없으며,
+중요한 이유가 있습니다.
+두 작업은 서로 다른 유형의 데이터를 반환합니다.
+파일에는 구조화되지 않은 바이트 스트림이 포함됩니다.
+디렉터리에는 일련의 고유한 파일 이름이 포함됩니다.
+반환 유형 문제는 파이썬에서 설계할 때 매우 중요한 보호 장치 역할을 합니다.
+컨테이너와 콘텐츠 사이에 대칭성을 만들려는 욕구가
+반환 값을 안전하게 처리하기 위해 ``if`` 문이나 ``isinstance()``가 필요한
+호출을 설계하도록 유도한다면
+대칭성에 대한 욕구가 잘못된 길로 이끈 것입니다.
 
-On hierarchies
+계층 구조에 대하여
 ==============
 
-As we now turn our attention
-to how the Composite Pattern looks in a programming language like Python,
-we should ponder a question
-that hangs above so much
-of the object-oriented and design-pattern literature
-from the 1990s:
+이제 파이썬과 같은 프로그래밍 언어에서 컴포지트 패턴이 어떻게 보이는지에 대한
+주의를 돌리면서,
+1990년대의 객체 지향 및 디자인 패턴 문헌의
+너무나 많은 부분 위에 걸려 있는 질문을 숙고해야 합니다.
 
-Where have all the hierarchies gone?
+모든 계층 구조는 어디로 갔을까요?
 
-The construction and manipulation of extensive hierarchies
-was both a frequent exercise for new programmers
-and a tedious labor for more experienced programmers.
-Hours were spent deciding how hierarchies would be constructed,
-what operations they would support,
-and how their destructors could be safely invoked.
-Hierarchies were everywhere.
+광범위한 계층 구조의 구성 및 조작은
+새로운 프로그래머에게는 빈번한 연습이었고
+경험이 많은 프로그래머에게는 지루한 노동이었습니다.
+계층 구조가 어떻게 구성될지, 어떤 작업을 지원할지,
+소멸자를 안전하게 호출하는 방법에 대해 결정하는 데 몇 시간이 걸렸습니다.
+계층 구조는 어디에나 있었습니다.
 
-And then they began to recede,
-like a tide that having run far up the sand
-begins to finally sweep out again.
+그리고 나서 그것들은 물러나기 시작했습니다.
+모래 위로 멀리 밀려왔던 파도가
+마침내 다시 쓸려나가는 것처럼 말입니다.
 
-* Popular languages in the late 1990s
-  went wild for deeply nested package namespaces.
-  To take a modern example from Go,
-  the package ``google.golang.org/appengine``, one must admit,
-  comes with a hard guarantee
-  that it won’t conflict with the name of a package from another firm.
-  The Zope 3 project, in its heyday,
-  happily festooned the Python Package Index
-  with multi-level package names
-  like ``zope.app.form`` and ``zope.app.i18n``.
-  But today most Python packages
-  opt for a simple non-compound name
-  that jostles alongside the names of all other Python packages.
-  And it almost never causes problems.
+* 1990년대 후반의 인기 있는 언어들은
+  깊이 중첩된 패키지 네임스페이스에 열광했습니다.
+  Go의 현대적인 예를 들자면,
+  ``google.golang.org/appengine`` 패키지는 다른 회사의 패키지 이름과
+  충돌하지 않는다는 강력한 보장을 제공한다는 것을 인정해야 합니다.
+  Zope 3 프로젝트는 전성기에
+  ``zope.app.form`` 및 ``zope.app.i18n``과 같은
+  다단계 패키지 이름으로 파이썬 패키지 인덱스를 행복하게 장식했습니다.
+  그러나 오늘날 대부분의 파이썬 패키지는
+  다른 모든 파이썬 패키지의 이름과 나란히 놓이는
+  단순한 복합이 아닌 이름을 선택합니다.
+  그리고 거의 문제를 일으키지 않습니다.
 
-* The programming curricula of yore were rife with binary search trees,
-  B+ trees, and tree balancing algorithms.
-  But in real code, trees are very scarce.
-  For every programmer who works on trees to, say,
-  to write a persistent storage engine like BoltDB or Redis,
-  a thousand programmers get to skip the exercise.
-  Python programmers don’t tend to use binary search trees;
-  we use the even faster hash table (the Python “dictionary”)
-  whose structure, as it happens, is entirely flat — not a hierarchy.
+* 옛날 프로그래밍 커리큘럼에는 이진 검색 트리,
+  B+ 트리 및 트리 균형 조정 알고리즘이 가득했습니다.
+  그러나 실제 코드에서는 트리가 매우 드뭅니다.
+  예를 들어 BoltDB 또는 Redis와 같은 영구 저장소 엔진을 작성하기 위해
+  트리에서 작업하는 모든 프로그래머에 대해
+  수천 명의 프로그래머가 이 연습을 건너뛸 수 있습니다.
+  파이썬 프로그래머는 이진 검색 트리를 사용하는 경향이 없습니다.
+  우리는 훨씬 빠른 해시 테이블(파이썬 "딕셔너리")을 사용하며,
+  우연히도 그 구조는 완전히 평평합니다 — 계층 구조가 아닙니다.
 
-* There was an era when hierarchy
-  was inherent in the structure of databases.
-  An employee record might hold a salary history right inside of it.
-  But while hierarchy continues to exist around the edges of data storage,
-  most recently in the form of NoSQL and document databases,
-  our workhorse data stores tend to be flat ones:
-  the relational database, the CSV file, the Pandas dataframe.
+* 데이터베이스 구조에 계층 구조가 내재되어 있던 시대가 있었습니다.
+  직원 기록에는 급여 내역이 바로 포함될 수 있었습니다.
+  그러나 계층 구조는 데이터 저장소의 가장자리 주변에 계속 존재하지만,
+  최근에는 NoSQL 및 문서 데이터베이스의 형태로 나타났습니다.
+  우리의 주력 데이터 저장소는 평평한 경향이 있습니다.
+  관계형 데이터베이스, CSV 파일, Pandas 데이터프레임입니다.
 
-Again and again our discipline seems to revert back, where we can,
-to tables and lists and arrays
-where hierarchies might have reigned instead.
-The principle has even been enshrined in the famous *Zen of Python:*
+계층 구조가 대신 지배했을 수도 있는 곳에서
+우리 분야는 반복해서 테이블, 목록 및 배열로 되돌아가는 것 같습니다.
+이 원칙은 유명한 *파이썬의 선*에도 명시되어 있습니다.
 
-    “Flat is better than nested.”
+    "중첩된 것보다 평평한 것이 낫다."
 
-The big exception,
-the realm in which hierarchy does reign supreme today,
-is the document.
-Documents are almost universally processed and represented
-as a hierarchy of sections and paragraphs
-beneath which are spans of bold and italics and hyperlinks.
-But the whole point of their being documents
-is that we aren’t always forced
-to build them in code using object and method calls.
-Instead, when we can, we parse them from a native representation
-that makes the hierarchy explicit and natural.
-The great monument to the Composite Pattern on today’s web
-is not document construction —
-documents are usually delivered as HTML —
-but document manipulation,
-through the Document Object Model exposed for the use of JavaScript code.
+큰 예외, 오늘날 계층 구조가 최고를 지배하는 영역은
+문서입니다.
+문서는 거의 보편적으로 섹션과 단락의 계층 구조로 처리되고 표현되며,
+그 아래에는 굵게, 기울임꼴 및 하이퍼링크 범위가 있습니다.
+그러나 문서라는 것의 전체 요점은
+객체 및 메서드 호출을 사용하여 코드에서 항상 빌드하도록 강요받지 않는다는 것입니다.
+대신 가능하면 계층 구조를 명시적이고 자연스럽게 만드는
+네이티브 표현에서 구문 분석합니다.
+오늘날 웹에서 컴포지트 패턴에 대한 위대한 기념물은
+문서 구성이 아닙니다 — 문서는 일반적으로 HTML로 제공됩니다 —
+JavaScript 코드 사용을 위해 노출된 문서 객체 모델을 통한
+문서 조작입니다.
 
-I will leave for another time
-my discussion of how the Document Object Model delivered a hierarchy,
-so programmers invented jQuery because they preferred an array instead.
+문서 객체 모델이 계층 구조를 제공한 방법에 대한 논의는
+다른 시간으로 미루겠습니다.
+그래서 프로그래머들은 대신 배열을 선호했기 때문에 jQuery를 발명했습니다.
 
-Let’s now turn to what the Composite pattern looks like in code.
+이제 코드에서 컴포지트 패턴이 어떻게 보이는지 살펴보겠습니다.
 
-Example: GUI programming with Tkinter
+예: Tkinter를 사용한 GUI 프로그래밍
 =====================================
 
-Let’s imagine that we want to print to the screen
-the hierarchy of frames and buttons
-out of which we have built a graphical user interface (GUI) using Tkinter,
-which comes built in to Python.
+파이썬에 내장된 Tkinter를 사용하여 그래픽 사용자 인터페이스(GUI)를 구축한
+프레임과 버튼의 계층 구조를 화면에 인쇄하고 싶다고 상상해 봅시다.
 
-It would have been easy enough for Tkinter’s designers
-to have decided that only ``Frame`` containers
-needed ``winfo_children()`` methods to list their children —
-after all, simpler widgets like ``Label`` and ``Button``
-aren’t supposed to contain children,
-and could have omitted the method entirely.
-But that asymmetry would have forced an ``if`` statement
-into any routine that wanted to visit both frames and their children::
+Tkinter 설계자들이 ``Frame`` 컨테이너만
+자식 목록을 표시하는 ``winfo_children()`` 메서드가 필요하다고 결정하는 것은
+충분히 쉬웠을 것입니다.
+결국 ``Label`` 및 ``Button``과 같은 간단한 위젯은
+자식을 포함하도록 되어 있지 않으며
+메서드를 완전히 생략할 수도 있었습니다.
+그러나 이러한 비대칭성은 프레임과 해당 자식을 모두 방문하려는
+모든 루틴에 ``if`` 문을 강요했을 것입니다.
 
-    # If Frame objects alone had offered winfo_children()
+    # Frame 객체만 winfo_children()을 제공했다면
 
     if isinstance(widget, Frame):
         children = widget.winfo_children()
         ...
     else:
-        # carefully avoid calling winfo_children()
+        # winfo_children() 호출을 신중하게 피함
         ...
 
-This pattern, when it can’t be avoided,
-can at least be improved by dodging the ``isinstance()`` call
-and instead using ``getattr()`` with three arguments
-to safely examine whether the object has the necessary method.
-This decouples the code from the vexed question
-of whether any other Tkinter widgets besides ``Frame``,
-either today or in the future,
-can also include children widgets inside::
+이 패턴은 피할 수 없을 때
+적어도 ``isinstance()`` 호출을 피하고
+대신 세 개의 인수가 있는 ``getattr()``를 사용하여
+객체에 필요한 메서드가 있는지 안전하게 검사함으로써 개선할 수 있습니다.
+이렇게 하면 오늘날이든 미래이든 ``Frame`` 외에 다른 Tkinter 위젯이
+내부에 자식 위젯을 포함할 수 있는지 여부에 대한
+골치 아픈 문제로부터 코드를 분리합니다.
 
-    # Improvement: check for methods, not classes
+    # 개선: 클래스가 아닌 메서드 확인
     ...
     winfo_children = getattr(Frame, 'winfo_children', None)
     if winfo_children is not None:
         children = winfo_children()
         ...
 
-In either case,
-the difference between container widgets and normal widgets
-would have haunted every piece of code
-that wanted to perform general processing.
+어느 경우든 컨테이너 위젯과 일반 위젯 간의 차이점은
+일반적인 처리를 수행하려는 모든 코드 조각을 괴롭혔을 것입니다.
 
-But the authors of Tk chose, happily, to implement the Composite Pattern.
-Instead of making ``winfo_children()`` a special method
-that only ``Frame`` widgets offer,
-they made it a general method that is available
-on *every single widget object!*
-You never need to check whether it is present.
-For containers, it returns their list of child widgets.
-For other widgets? It simply returns an empty list.
+그러나 Tk 작성자는 다행히도 컴포지트 패턴을 구현하기로 선택했습니다.
+``winfo_children()``을 ``Frame`` 위젯만 제공하는 특수 메서드로 만드는 대신,
+*모든 단일 위젯 객체*에서 사용할 수 있는 일반 메서드로 만들었습니다!
+존재 여부를 확인할 필요가 없습니다.
+컨테이너의 경우 자식 위젯 목록을 반환합니다.
+다른 위젯의 경우? 단순히 빈 목록을 반환합니다.
 
-Your code can therefore fly forward
-and always assume the presence of the method.
-Here, so that you can see a working example,
-is a complete program that builds a simple Tkinter GUI
-that can print out the widget hierarchy to the terminal:
+따라서 코드는 앞으로 나아가
+항상 메서드의 존재를 가정할 수 있습니다.
+다음은 작동하는 예제를 볼 수 있도록
+간단한 Tkinter GUI를 빌드하고
+위젯 계층 구조를 터미널에 인쇄할 수 있는 전체 프로그램입니다.
 
 .. literalinclude:: tk_example.py
 
-The resulting printout looks like::
+결과 출력은 다음과 같습니다.
 
     * <tkinter.Frame object .!frame>
         * <tkinter.Button object .!frame.!button>
         * <tkinter.Button object .!frame.!button2>
 
-Thanks to the Composite Pattern symmetry between widgets,
-no ``if`` statement is necessary
-to handle whatever kind of widget is passed to ``print_tree()``.
+위젯 간의 컴포지트 패턴 대칭성 덕분에
+``print_tree()``에 어떤 종류의 위젯이 전달되든 처리하는 데
+``if`` 문이 필요하지 않습니다.
 
-Note that there is controversy among Composite Pattern
-enthusiasts over whether all widgets should really act like containers —
-isn’t it fraudulent, they ask,
-for a widget to implement ``winfo_children()``
-if it’s not going to let you add child widgets?
-What sense does it make for it to act like a halfway container
-that supports read operations (“list children”)
-without the corresponding write operations (“add child”)?
-The more restrictive option
-would be to avoid putting ``winfo_children()`` on all widgets
-and instead only making truly general operations
-like ``winfo_rootx()`` universal
-(general, because all widgets have an *x*\ -coordinate).
-I myself tend to enjoy interfaces more
-when there is as much symmetry as possible.
+컴포지트 패턴 애호가들 사이에서는 모든 위젯이 실제로 컨테이너처럼 작동해야 하는지에 대한
+논란이 있다는 점에 유의하십시오.
+자식 위젯을 추가할 수 없게 하려면
+위젯이 ``winfo_children()``을 구현하는 것이 사기성이 있지 않느냐고 묻습니다.
+해당 쓰기 작업("자식 추가") 없이
+읽기 작업("자식 목록")을 지원하는 절반 컨테이너처럼 작동하는 것이
+무슨 의미가 있습니까?
+더 제한적인 옵션은 모든 위젯에 ``winfo_children()``을 넣는 것을 피하고
+대신 ``winfo_rootx()``와 같이 진정으로 일반적인 작업만 보편적으로 만드는 것입니다
+(모든 위젯에는 *x* 좌표가 있으므로 일반적입니다).
+저는 개인적으로 가능한 한 많은 대칭성이 있을 때
+인터페이스를 더 즐기는 경향이 있습니다.
 
-If you study the Tkinter library —
-which is perhaps the most classic object oriented module
-in the entire Python Standard Library —
-you will find several more instances
-where a method that could have been limited to a few widgets
-was instead made a common operation on them all
-for the sake of simplicity
-and for the convenience of all the code that uses them.
-This is the Composite Pattern.
+파이썬 표준 라이브러리 전체에서 아마도 가장 고전적인 객체 지향 모듈인
+Tkinter 라이브러리를 연구하면
+몇몇 위젯으로 제한될 수 있었던 메서드가
+단순성과 이를 사용하는 모든 코드의 편의를 위해
+대신 모든 위젯에 대한 공통 작업으로 만들어진
+몇 가지 추가 사례를 찾을 수 있습니다.
+이것이 컴포지트 패턴입니다.
 
-Implementation: to inherit, or not?
+구현: 상속할 것인가, 말 것인가?
 ===================================
 
-The benefits of the symmetry that the Composite Pattern creates
-between containers and their contents
-only accrue if the symmetry makes the objects interchangeable.
-But here, some statically typed languages impose an obstacle.
+컴포지트 패턴이 컨테이너와 해당 내용 사이에 만드는 대칭성의 이점은
+대칭성이 객체를 상호 교환 가능하게 만드는 경우에만 발생합니다.
+그러나 여기서 일부 정적으로 유형이 지정된 언어는 장애물을 부과합니다.
 
-One problem is posed by the most limited of the static languages.
-In those languages,
-objects of two different classes are only interchangeable
-if they are subclasses of a single parent class
-that implements the methods they have in common —
-or, if one of the two classes inherits directly from the other.
+한 가지 문제는 가장 제한적인 정적 언어에 의해 제기됩니다.
+이러한 언어에서는 두 개의 서로 다른 클래스의 객체는
+공통적으로 갖는 메서드를 구현하는 단일 부모 클래스의 하위 클래스이거나
+두 클래스 중 하나가 다른 클래스에서 직접 상속받는 경우에만 상호 교환 가능합니다.
 
-In static languages that are a bit more powerful,
-the restriction is gentler.
-There is no strict need for a container and its contents
-to share an implementation.
-As long as both of them conform to an “interface”
-that declares exactly which methods they implement in common,
-the objects can be called symmetrically.
+조금 더 강력한 정적 언어에서는 제한이 더 부드럽습니다.
+컨테이너와 해당 내용이 구현을 공유해야 한다는 엄격한 필요는 없습니다.
+둘 다 공통적으로 구현하는 메서드를 정확히 선언하는 "인터페이스"를 준수하는 한
+객체를 대칭적으로 호출할 수 있습니다.
 
-In Python, both of these restrictions evaporate!
-You are free to position your code anywhere along the spectrum
-of safety versus brevity that you prefer.
-You can go the classic route and have a common superclass::
+파이썬에서는 이러한 제한이 모두 사라집니다!
+선호하는 안전성 대 간결성 스펙트럼의 어느 곳에나 코드를 자유롭게 배치할 수 있습니다.
+고전적인 경로를 따라 공통 슈퍼클래스를 가질 수 있습니다.
 
     class Widget(object):
         def children(self):
@@ -411,11 +343,10 @@ You can go the classic route and have a common superclass::
         def __init__(self, text):
             self.text = text
 
-Or your objects can simply duck type the same interface,
-and you can rely on tests to help you maintain the symmetries
-between containers and contents.
-(Where, for very simple scripts,
-your “test” might simply be the fact that the code runs.)
+또는 객체가 단순히 동일한 인터페이스를 덕 타이핑하고
+테스트에 의존하여 컨테이너와 내용 간의 대칭성을 유지할 수 있습니다.
+(매우 간단한 스크립트의 경우
+"테스트"는 단순히 코드가 실행된다는 사실일 수 있습니다.)
 ::
 
     class Frame(object):
@@ -432,31 +363,26 @@ your “test” might simply be the fact that the code runs.)
         def children(self):
             return []
 
-Or you can choose another point
-on the design spectrum between these two extremes.
-Python supports many approaches:
+또는 이 두 극단 사이의 디자인 스펙트럼에서 다른 지점을 선택할 수 있습니다.
+파이썬은 다음과 같은 다양한 접근 방식을 지원합니다.
 
-* The classic common superclass architecture,
-  shown in the first example above.
+* 위 첫 번째 예에 표시된 고전적인 공통 슈퍼클래스 아키텍처입니다.
 
-* Making the superclass an abstract base class
-  with the tools inside Standard Library’s ``abc`` module.
+* 표준 라이브러리의 ``abc`` 모듈 내부 도구를 사용하여
+  슈퍼클래스를 추상 기본 클래스로 만듭니다.
 
-* Having the two classes share an interface,
-  like those supported by the old ``zope.interface`` package.
+* 두 클래스가 이전 ``zope.interface`` 패키지에서 지원하는 것과 같은
+  인터페이스를 공유하도록 합니다.
 
-* You could spin up a type checking library like MyPy
-  and use annotations to ask for hard guarantees
-  that all of the objects processed by your code —
-  both container and contents —
-  implement the runtime behaviors that your code requires.
+* MyPy와 같은 유형 검사 라이브러리를 시작하고
+  주석을 사용하여 코드에서 처리하는 모든 객체(컨테이너와 내용 모두)가
+  코드가 요구하는 런타임 동작을 구현한다는
+  강력한 보장을 요청할 수 있습니다.
 
-* You could duck type, and ask for neither permission or forgiveness!
+* 덕 타이핑을 하고 허가나 용서를 구하지 않을 수 있습니다!
 
-Because Python offers this whole range of approaches,
-I choose not to define the Composite Pattern classically,
-where it’s defined as one particular mechanism (a superclass)
-for creating or enforcing symmetry.
-Instead, I define it simply as the creation of symmetry
-— by whatever means —
-among the objects involved in concentric object hierarchies.
+파이썬은 이러한 모든 접근 방식을 제공하기 때문에
+컴포지트 패턴을 고전적으로 정의하지 않기로 선택했습니다.
+여기서 대칭성을 생성하거나 적용하기 위한 특정 메커니즘(슈퍼클래스)으로 정의됩니다.
+대신 동심 객체 계층에 관련된 객체 간의
+어떤 수단으로든 대칭성을 생성하는 것으로 간단히 정의합니다.

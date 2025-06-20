@@ -1,122 +1,109 @@
 ============================
- The Factory Method Pattern
+ 팩토리 메서드 패턴
 ============================
 
-*A “Creational Pattern” from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 "생성 패턴"*
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   The “Factory Method” pattern is a poor fit for Python.
-   It was designed for underpowered programming languages
-   where classes and functions
-   can’t be passed as parameters or stored as attributes.
-   In those languages,
-   the Factory Method serves as an awkward but necessary escape route.
-   But it’s not a good design for Python applications.
+   "팩토리 메서드" 패턴은 파이썬에 적합하지 않습니다.
+   클래스와 함수를 매개변수로 전달하거나
+   속성으로 저장할 수 없는 저능력 프로그래밍 언어를 위해 설계되었습니다.
+   이러한 언어에서 팩토리 메서드는 어색하지만
+   필수적인 탈출구 역할을 합니다.
+   그러나 파이썬 애플리케이션에는 좋은 디자인이 아닙니다.
 
-You will often create objects in Python
-that themselves need to turn around and create more objects.
-Imagine an HTTP connection pool, for example,
-that sometimes needs to create new connections
-to replace old connections as they time out and close.
+파이썬에서는 종종 객체를 생성하는데,
+이 객체 자체도 더 많은 객체를 생성해야 하는 경우가 있습니다.
+예를 들어 HTTP 연결 풀을 생각해 보십시오.
+오래된 연결이 시간 초과되어 닫히면
+새 연결로 대체하기 위해 때때로 새 연결을 만들어야 합니다.
 
-Now comes the challenge.
-What if your program will run behind a special corporate proxy,
-and the HTTP connection pool will only be able to communicate
-if it creates and uses specially configured network connections
-instead of the generic sockets that it usually creates?
+이제 문제가 발생합니다.
+프로그램이 특수 회사 프록시 뒤에서 실행되고,
+HTTP 연결 풀이 일반적으로 생성하는 일반 소켓 대신
+특별히 구성된 네트워크 연결을 만들고 사용해야만
+통신할 수 있다면 어떻게 될까요?
 
-The Factory Method is one pattern
-by which the HTTP connection pool class
-could offer you a way to choose what kind of connection it creates.
-Before learning how this awkward pattern works,
-let’s review the Pythonic design patterns that solve the same problem.
+팩토리 메서드는 HTTP 연결 풀 클래스가
+생성하는 연결 종류를 선택할 수 있는 방법을 제공하는
+하나의 패턴입니다.
+이 어색한 패턴이 어떻게 작동하는지 배우기 전에,
+동일한 문제를 해결하는 파이썬다운 디자인 패턴을 검토해 보겠습니다.
 
-Dodge: use Dependency Injection
+회피: 의존성 주입 사용
 ===============================
 
-First, we should stop for a moment and double-check something.
-Does the class you’re designing
-*really* need to go around creating other classes?
+먼저, 잠시 멈춰서 무언가를 다시 확인해야 합니다.
+설계 중인 클래스가 *정말로* 다른 클래스를 만들어야 할까요?
 
-If you know up front all the objects that the class will need,
-you should consider providing them to the class yourself
-through Dependency Injection.
+클래스에 필요한 모든 객체를 미리 알고 있다면,
+의존성 주입을 통해 클래스에 직접 제공하는 것을 고려해야 합니다.
 
-You will see excellent examples of this simpler pattern
-everywhere that Python libraries let you pass an already-open file object
-instead of making you supply a path
-and insisting on opening the file themselves.
-Take the Standard Library’s JSON parser as an example.
-Instead of asking for a path,
-its ``load()`` method lets you open the file::
+경로를 제공하고 직접 파일을 열도록 강요하는 대신
+이미 열려 있는 파일 객체를 전달하도록 허용하는
+파이썬 라이브러리 어디에서나 이 간단한 패턴의 훌륭한 예를 볼 수 있습니다.
+표준 라이브러리의 JSON 파서를 예로 들어 보겠습니다.
+경로를 요청하는 대신 ``load()`` 메서드를 사용하면 파일을 열 수 있습니다.
 
     import json
     with open('input_data.json') as f:
         data = json.load(f)
 
-By leaving you in charge of instantiating the file object,
-this maneuver accomplishes many goals at once.
+파일 객체 인스턴스화를 사용자에게 맡김으로써
+이 기동은 한 번에 여러 목표를 달성합니다.
 
-* **Decoupling:** the library doesn’t need to know
-  all the parameters accepted by the `open()` method,
-  and doesn’t need to accept every one of them as a parameter itself.
-  If the file object were to grow more creation parameters in the future,
-  ``json.load()`` won’t need to change.
+* **분리:** 라이브러리는 `open()` 메서드가 허용하는
+  모든 매개변수를 알 필요가 없으며,
+  모든 매개변수를 자체 매개변수로 받을 필요도 없습니다.
+  나중에 파일 객체에 더 많은 생성 매개변수가 추가되더라도
+  ``json.load()``는 변경할 필요가 없습니다.
 
-* **Efficiency:** If you already have the file open for other reasons,
-  you can go ahead and provide the open file object.
-  The library won’t insist on re-opening the file.
-  This is crucial if the file is a read-once source of data
-  like an anonymous pipe.
+* **효율성:** 다른 이유로 이미 파일이 열려 있는 경우,
+  열려 있는 파일 객체를 제공할 수 있습니다.
+  라이브러리는 파일을 다시 열도록 강요하지 않습니다.
+  파일이 익명 파이프와 같이 한 번만 읽을 수 있는 데이터 소스인 경우
+  이는 매우 중요합니다.
 
-* **Flexibility:** You can pass any file-like object you want.
-  It can be a subclass of the standard file object,
-  or be completely independent.
-  You could pass a ``StringIO`` that operates directly on data in RAM
-  instead of needing the JSON written to disk first.
-  Or you could offer a wrapper around a socket
-  that lets you parse JSON data as it arrives off the network
-  without needing to be stored locally first.
+* **유연성:** 원하는 모든 파일 유사 객체를 전달할 수 있습니다.
+  표준 파일 객체의 하위 클래스이거나 완전히 독립적일 수 있습니다.
+  JSON을 먼저 디스크에 쓸 필요 없이 RAM의 데이터에서 직접 작동하는
+  ``StringIO``를 전달할 수 있습니다.
+  또는 네트워크에서 도착하는 JSON 데이터를 로컬에 먼저 저장할 필요 없이
+  구문 분석할 수 있도록 소켓 주위에 래퍼를 제공할 수 있습니다.
 
-In a simple case like this,
-the Dependency Injection pattern completely eliminates
-the need for an object like a JSON parser
-to have its design made more complicated
-by the details of how other objects get created.
+이와 같은 간단한 경우,
+의존성 주입 패턴은 JSON 파서와 같은 객체가
+다른 객체가 생성되는 방식의 세부 정보로 인해
+디자인이 더 복잡해질 필요성을 완전히 제거합니다.
 
-So (a) if your class always needs a particular object built,
-and (b) if users will normally want to at least customize
-the parameters with which it is instantiated,
-you should strongly consider Dependency Injection.
-In that case, you might want to read Miško Hevery’s
-`2008 post about dependency injection <https://web.archive.org/web/20230321074829/http://misko.hevery.com/2008/10/21/dependency-injection-myth-reference-passing/>`_
-for an important note about the dangers
-of applying Dependency Injection halfway!
+따라서 (a) 클래스가 항상 특정 객체를 빌드해야 하고,
+(b) 사용자가 일반적으로 최소한 인스턴스화되는 매개변수를
+사용자 정의하려고 하는 경우,
+의존성 주입을 강력히 고려해야 합니다.
+이 경우 미슈코 헤버리의
+`의존성 주입에 대한 2008년 게시물 <https://web.archive.org/web/20230321074829/http://misko.hevery.com/2008/10/21/dependency-injection-myth-reference-passing/>`_을
+읽어보는 것이 좋습니다.
+의존성 주입을 중간에 적용하는 위험에 대한 중요한 참고 사항입니다!
 
-Instead: use a Class Attribute Factory
+대신: 클래스 속성 팩토리 사용
 ======================================
 
-The next alternative comes to us from the 1990s.
-The class that needs to be created
-can be attached as an attribute on the class
-that will be doing the creating.
+다음 대안은 1990년대부터 우리에게 왔습니다.
+생성해야 하는 클래스는 생성 작업을 수행할 클래스에
+속성으로 첨부할 수 있습니다.
 
-You can see this pattern in some of the older modules
-in the Python Standard Library.
-For example,
-when an ``HTTPConnection`` is done sending a request,
-it expects to receive and parse a response.
-But what class should it use to parse and represent the response?
-What if you happen to be talking to a server
-that sends non-standard information in its response
-for which you require special handling?
+파이썬 표준 라이브러리의 일부 이전 모듈에서 이 패턴을 볼 수 있습니다.
+예를 들어, ``HTTPConnection``이 요청 전송을 완료하면
+응답을 받고 구문 분석할 것으로 예상합니다.
+그러나 응답을 구문 분석하고 나타내는 데 어떤 클래스를 사용해야 할까요?
+응답에 비표준 정보가 포함되어 있어 특별한 처리가 필요한 서버와
+통신하고 있다면 어떻게 될까요?
 
-What I will here call the Class Attribute Factory pattern
-takes advantage of the fact that classes are first-class objects in Python.
-It simply attaches the class as an attribute
-of the class that will be doing the creating.
-You’ll find the following code in the Standard Library::
+여기서 클래스 속성 팩토리 패턴이라고 부르는 것은
+파이썬에서 클래스가 일급 객체라는 사실을 활용합니다.
+단순히 클래스를 생성 작업을 수행할 클래스의 속성으로 첨부합니다.
+표준 라이브러리에서 다음 코드를 찾을 수 있습니다.
 
     class HTTPConnection:
         ...
@@ -127,61 +114,53 @@ You’ll find the following code in the Standard Library::
             response = self.response_class(self.sock, method=self._method)
             ...
 
-This gives the code using the ``HTTPConnection``
-complete control over what happens when it is time to build a response.
-All it has to do is create a subclass and use the subclass instead::
+이렇게 하면 ``HTTPConnection``을 사용하는 코드가
+응답을 빌드할 때 발생하는 일을 완벽하게 제어할 수 있습니다.
+하위 클래스를 만들고 대신 하위 클래스를 사용하기만 하면 됩니다.
 
     class SpecialHTTPConnection(HTTPConnection):
         response_class = SpecialHTTPResponse
 
-That’s all there is to it!
-While subclassing generally means
-that a software design is running
-at least somewhat against the grain of the Python language,
-the approach will still work well.
-The subclass will behave exactly
-like a normal Standard Library HTTP connection
-except when the moment comes to instantiate a response.
-At that point the connection will access its ``response_class`` attribute,
-receive the alternative class you provided instead of the normal one,
-and the alternative response class will then be in control.
+이것이 전부입니다!
+일반적으로 서브클래싱은 소프트웨어 디자인이
+파이썬 언어의 본질에 다소 어긋나게 실행됨을 의미하지만,
+이 접근 방식은 여전히 잘 작동합니다.
+서브클래스는 응답을 인스턴스화할 때를 제외하고는
+일반 표준 라이브러리 HTTP 연결과 정확히 동일하게 작동합니다.
+그 시점에서 연결은 ``response_class`` 속성에 액세스하고,
+일반 클래스 대신 제공한 대체 클래스를 받고,
+그런 다음 대체 응답 클래스가 제어권을 갖게 됩니다.
 
-There is more flexibility here we should explore,
-but first let’s look at the more modern alternative
-to the Class Attribute Factory.
+여기서 탐색해야 할 더 많은 유연성이 있지만,
+먼저 클래스 속성 팩토리에 대한 최신 대안을 살펴보겠습니다.
 
-Instead: use an Instance Attribute Factory
+대신: 인스턴스 속성 팩토리 사용
 ==========================================
 
-Why should you have to subclass an object merely to customize its behavior?
+단순히 동작을 사용자 정의하기 위해 객체를 서브클래싱해야 하는 이유는 무엇입니까?
 
-It’s a serious question — very serious,
-for at one point in the history of programming
-some adherents of a doctrine called “object orientation”
-were suggesting that if you wanted a button that said “Submit”
-that you shouldn’t be able to simply instantiate a button
-with a parameter like ``label="Submit"``
-but that you should instead have to subclass the button
-and override its default ``label()`` method to return something new.
+심각한 질문입니다 — 프로그래밍 역사상 어느 시점에서
+"객체 지향"이라는 교리의 일부 지지자들은
+"제출"이라고 표시된 버튼을 원한다면
+단순히 ``label="Submit"``과 같은 매개변수로 버튼을 인스턴스화할 수 없어야 하며,
+대신 버튼을 서브클래싱하고 기본 ``label()`` 메서드를 재정의하여
+새로운 것을 반환해야 한다고 제안했습니다.
 
-Happily,
-an alternative to subclass-powered customization
-has swept the Python community:
-what I’ll call the Instance Attribute Factory.
-Among the many good examples of its practice
-is the ``json`` module in the Standard Library,
-which was added around 2008.
+다행히도 서브클래스 기반 사용자 정의에 대한 대안이
+파이썬 커뮤니티를 휩쓸었습니다.
+인스턴스 속성 팩토리라고 부르는 것입니다.
+그 실천의 많은 좋은 예 중 하나는
+2008년경에 추가된 표준 라이브러리의 ``json`` 모듈입니다.
 
-Here’s one example from the ``json`` module.
-Every time the JSON module encounters a number in its input,
-it has to instantiate some kind of Python object
-capable of representing the number.
-But which number class should it instantiate?
-An integer, if the fractional part of the number is zero?
-A float, the only numeric type in JavaScript?
-Or a ``Decimal`` that’s guaranteed to not lose any precision?
+다음은 ``json`` 모듈의 한 예입니다.
+JSON 모듈이 입력에서 숫자를 만날 때마다
+숫자를 나타낼 수 있는 어떤 종류의 파이썬 객체를 인스턴스화해야 합니다.
+그러나 어떤 숫자 클래스를 인스턴스화해야 할까요?
+숫자의 소수 부분이 0이면 정수일까요?
+자바스크립트의 유일한 숫자 유형인 부동 소수점일까요?
+아니면 정밀도를 잃지 않는 것이 보장되는 ``Decimal``일까요?
 
-Watch how elegantly the ``json`` module handles the question::
+``json`` 모듈이 이 질문을 얼마나 우아하게 처리하는지 보십시오.
 
     class JSONDecoder(object):
         ...
@@ -190,166 +169,149 @@ Watch how elegantly the ``json`` module handles the question::
             self.parse_float = parse_float or float
             ...
 
-Whenever it encounters a number in its input,
-it simply calls ``self.parse_float()`` with the string as input.
+입력에서 숫자를 만날 때마다
+문자열을 입력으로 사용하여 ``self.parse_float()``를 호출하기만 하면 됩니다.
 
-This is Python code that’s running on all pistons.
-If the developer does not intervene,
-each number is interpreted using a lighting-fast call
-to the ``float`` type itself.
-If instead the developer has provided their own callable for parsing numbers,
-then that callable is transparently used instead.
+이것은 모든 피스톤에서 실행되는 파이썬 코드입니다.
+개발자가 개입하지 않으면
+각 숫자는 ``float`` 타입 자체에 대한 매우 빠른 호출을 사용하여 해석됩니다.
+대신 개발자가 숫자 구문 분석을 위해 자체 호출 가능 객체를 제공한 경우,
+해당 호출 가능 객체가 투명하게 대신 사용됩니다.
 
-The beauty is that it all happens without a single additional class!
-Instead of forcing the programmer
-to create a new class each time they want to customize behavior,
-individual ``JSONDecoder`` instances can each be configured directly.
-You can create a custom decoder with a single line of code::
+아름다움은 단일 추가 클래스 없이 모든 것이 발생한다는 것입니다!
+프로그래머가 동작을 사용자 정의할 때마다 새 클래스를 만들도록 강요하는 대신,
+개별 ``JSONDecoder`` 인스턴스를 각각 직접 구성할 수 있습니다.
+한 줄의 코드로 사용자 지정 디코더를 만들 수 있습니다.
 
     from decimal import Decimal
     from json import JSONDecoder
 
     my_decoder = JSONDecoder(parse_float=Decimal)
 
-Besides the benefits of clarity and brevity,
-an advantage of customizing an object through its parameters
-is that parameters compose so beautifully in Python.
-If several pieces of code have parameters for the decoder
-that they need to combine,
-the task is no more difficult than building an empty ``dict``
-and then using ``update()`` to fill it with each set of parameters,
-setting the parameters last
-that should be allowed to override the earlier ones.
+명확성과 간결성의 이점 외에도
+매개변수를 통해 객체를 사용자 정의하는 것의 장점은
+파이썬에서 매개변수가 매우 아름답게 구성된다는 것입니다.
+여러 코드 조각에 디코더에 대한 매개변수가 있고
+이를 결합해야 하는 경우,
+작업은 빈 ``dict``를 빌드하고 ``update()``를 사용하여
+각 매개변수 세트로 채우는 것보다 어렵지 않으며,
+이전 매개변수를 재정의하도록 허용해야 하는 매개변수를 마지막으로 설정합니다.
 
-Instance attributes override class attributes
+인스턴스 속성이 클래스 속성을 재정의합니다.
 =============================================
 
-I should admit that the previous two design patterns
-are not as completely different as I have tried to make it sound.
-At bottom, both classes — the ``HTTPConnection`` and the ``JSONDecoder`` —
-make the exact same move when they are ready to create a new object:
-they start with ``self`` and use ``.``
-to access some specific attribute on it.
-The only difference in the two design patterns above
-is in how they choose to supply the attribute.
-The first pattern happens to use a class attribute,
-while the second uses an instance attribute.
+이전 두 디자인 패턴이 제가 설명하려고 했던 것만큼
+완전히 다르지 않다는 것을 인정해야 합니다.
+결국 두 클래스(``HTTPConnection``과 ``JSONDecoder``) 모두
+새 객체를 만들 준비가 되면 정확히 동일한 작업을 수행합니다.
+``self``로 시작하여 ``.``을 사용하여 특정 속성에 액세스합니다.
+위의 두 디자인 패턴의 유일한 차이점은
+속성을 제공하는 방식입니다.
+첫 번째 패턴은 클래스 속성을 사용하고,
+두 번째 패턴은 인스턴스 속성을 사용합니다.
 
-But the two are not mutually exclusive.
-There is no rule that if you have a class attribute named ``.response_class``
-that you can’t also have an instance attribute named ``.response_class`` —
-and the rule in the case where you have both is simple:
-the instance attribute wins.
+그러나 두 가지는 상호 배타적이지 않습니다.
+``.response_class``라는 클래스 속성이 있으면
+``.response_class``라는 인스턴스 속성을 가질 수 없다는 규칙은 없으며,
+두 가지 모두 있는 경우의 규칙은 간단합니다.
+인스턴스 속성이 우선합니다.
 
-Which means I should admit that, really,
-even though I made a big deal about claiming
-that the ``HTTPConnection`` forces you to subclass it,
-it’s not true.
-You can override the default but just setting an instance attribute instead,
-just like the ``JSONDecoder`` does!
-The only difference is that the ``HTTPConnection``
-won’t give you any help —
-you’ll have to reach in and set the instance attribute yourself::
+즉, ``HTTPConnection``이 서브클래싱하도록 강요한다고 주장했지만,
+실제로는 그렇지 않다는 것을 인정해야 합니다.
+``JSONDecoder``가 하는 것처럼 기본값을 재정의하고
+대신 인스턴스 속성을 설정할 수 있습니다!
+유일한 차이점은 ``HTTPConnection``이
+아무런 도움도 주지 않는다는 것입니다 —
+직접 인스턴스 속성을 설정해야 합니다.
 
     conn = HTTPConnection()
     conn.response_class = SpecialHTTPResponse
 
-So even when an old-fashioned class
-looks like it wants you to create a subclass
-that specifies a new value for one of its class attributes,
-you can often use the more modern Instance Attribute Factory instead!
+따라서 구식 클래스가 클래스 속성 중 하나의 새 값을 지정하는
+서브클래스를 만들도록 원하는 것처럼 보이더라도
+대신 더 현대적인 인스턴스 속성 팩토리를 사용할 수 있는 경우가 많습니다!
 
-There are tiny differences in semantics and performance
-between class attributes and instance attributes,
-but I’ll refer you to the Python documentation and to Stack Overflow
-if you think your code is wandering towards an edge case
-where you care about the difference.
+클래스 속성과 인스턴스 속성 사이에는
+의미론과 성능에 약간의 차이가 있지만,
+차이점에 대해 신경 쓰는 예외적인 경우로 코드가 방황하고 있다고 생각되면
+파이썬 설명서와 스택 오버플로를 참조하십시오.
 
-In general you should choose between the above patterns based on readability.
-If you can imagine developers ever wanting to customize object creation,
-then go ahead and try making the object creation routine (the “factory”)
-a parameter in your ``__init__()`` method
-and store it as an instance attribute.
-If instead you think that customization will be extremely rare,
-then make it a class attribute,
-remembering that the developer can always reach in
-and override it in those rare cases where they need to.
+일반적으로 가독성을 기준으로 위의 패턴 중에서 선택해야 합니다.
+개발자가 객체 생성을 사용자 정의하기를 원할 것이라고 상상할 수 있다면,
+객체 생성 루틴("팩토리")을 ``__init__()`` 메서드의 매개변수로 만들고
+인스턴스 속성으로 저장해 보십시오.
+대신 사용자 정의가 매우 드물 것이라고 생각되면
+클래스 속성으로 만들고, 개발자가 필요한 드문 경우에
+항상 재정의할 수 있다는 것을 기억하십시오.
 
-Any callables accepted
+모든 호출 가능 객체 허용
 ======================
 
-In the examples above,
-we used actual classes like ``Decimal``
-and the fictional ``SpecialHTTPResponse``
-when setting an attribute like ``response_class`` or ``parse_float``.
-But you’ll note that the only thing the callers cared about
-was that these classes were callables.
-There’s happily no ``new`` keyword in Python,
-so object instantiation looks exactly like
-a normal function or method call.
+위의 예에서 ``response_class`` 또는 ``parse_float``와 같은 속성을 설정할 때
+``Decimal``과 같은 실제 클래스와
+가상의 ``SpecialHTTPResponse``를 사용했습니다.
+그러나 호출자가 신경 쓴 유일한 것은
+이러한 클래스가 호출 가능 객체라는 점입니다.
+다행히 파이썬에는 ``new`` 키워드가 없으므로
+객체 인스턴스화는 일반 함수 또는 메서드 호출과 정확히 동일하게 보입니다.
 
-This means that you can substitute a function for any of these callbacks,
-and it will work just as well!
-For example, you could provide the JSON decoder
-with a function like this as its ``parse_float`` parameter::
+이는 이러한 콜백 중 어느 것에 대해서든 함수를 대체할 수 있으며,
+마찬가지로 잘 작동한다는 것을 의미합니다!
+예를 들어, JSON 디코더에 ``parse_float`` 매개변수로
+다음과 같은 함수를 제공할 수 있습니다.
 
     def parse_number(string):
         if '.' in string:
             return Decimal(string)
         return int(string)
 
-You can provide not only a function,
-but any other kind of callable as well —
-maybe a bound method,
-or a class method like an alternative constructor.
-You could even provide a callable
-that you’ve spun up dynamically
-using functional programming techniques
-like partial application::
+함수뿐만 아니라 바인딩된 메서드나
+대체 생성자와 같은 클래스 메서드와 같은
+다른 종류의 호출 가능 객체도 제공할 수 있습니다.
+부분 적용과 같은 함수형 프로그래밍 기술을 사용하여
+동적으로 생성한 호출 가능 객체를 제공할 수도 있습니다.
 
     from decimal import Context, ROUND_DOWN
     from functools import partial
 
     parse_number = partial(Decimal, context=Context(2, ROUND_DOWN))
 
-Feel free to enjoy this Pythonic freedom of providing any kind of callable,
-and not limiting yourself to just providing classes,
-whether you are using the Class Attribute Factory
-or an Instance Attribute Factory.
+클래스 속성 팩토리를 사용하든
+인스턴스 속성 팩토리를 사용하든,
+모든 종류의 호출 가능 객체를 제공하고
+클래스만 제공하는 것으로 제한하지 않는
+이러한 파이썬다운 자유를 마음껏 누리십시오.
 
-Implementing
+구현
 ============
 
-Having described the happy alternatives,
-I should finish by showing you the Factory Method itself.
-Imagine that you were using a language where:
+행복한 대안을 설명했으므로,
+팩토리 메서드 자체를 보여주는 것으로 마무리해야 합니다.
+다음과 같은 언어를 사용하고 있다고 상상해 보십시오.
 
-* Classes are not first-class objects.
-  You are not allowed to leave a class sitting around
-  as an attribute of either a class instance or of another class itself.
+* 클래스는 일급 객체가 아닙니다.
+  클래스를 클래스 인스턴스나 다른 클래스 자체의 속성으로
+  남겨둘 수 없습니다.
 
-* Functions are not first-class objects.
-  You’re not allowed to save a function
-  as an instance of a class or class instance.
+* 함수는 일급 객체가 아닙니다.
+  함수를 클래스나 클래스 인스턴스의 인스턴스로 저장할 수 없습니다.
 
-* No other kind of callable exists
-  that can be dynamically specified
-  and attached to an object at runtime.
+* 런타임에 동적으로 지정하고
+  객체에 첨부할 수 있는 다른 종류의 호출 가능 객체가 없습니다.
 
-Under such dire constraints,
-you would turn to subclassing as a natural way
-to attach verbs — new actions — to existing classes,
-and you might use method overriding
-as a basic means of customizing behavior.
-And if on one of your classes you designed a special method
-whose only purpose was to isolate the act of creating new objects,
-then you’d be using the Factory Method pattern.
+이러한 심각한 제약 조건 하에서,
+기존 클래스에 동사(새 작업)를 첨부하는 자연스러운 방법으로
+서브클래싱을 사용하고,
+동작을 사용자 정의하는 기본 수단으로 메서드 재정의를 사용할 수 있습니다.
+그리고 클래스 중 하나에 새 객체를 만드는 행위를 격리하는 것이
+유일한 목적인 특수 메서드를 설계했다면
+팩토리 메서드 패턴을 사용하는 것입니다.
 
-The Factory Method pattern can often be observed
-anywhere that code from an underpowered but object-oriented language
-has been translated straight into Python.
-The ``logging`` module from the Standard Library comes immediately to mind.
-Here’s an excerpt::
+팩토리 메서드 패턴은 종종
+저능력이지만 객체 지향적인 언어의 코드가
+파이썬으로 직접 번역된 곳 어디에서나 관찰할 수 있습니다.
+표준 라이브러리의 ``logging`` 모듈이 즉시 떠오릅니다.
+다음은 발췌문입니다.
 
     class Handler(Filterer):
         ...
@@ -364,17 +326,14 @@ Here’s an excerpt::
             self.lock = threading.RLock()
         ...
 
-What if you wanted to create a ``Handler`` that uses a special kind of lock?
-The intention here
-is that you subclass ``Hander`` and override ``createLock()``
-to return your own favorite kind of lock instead.
-It’s a clunky approach,
-it takes several lines of code,
-and it won’t compose well
-if there are several ways you want to customize ``Handler`` objects
-in a variety of situations —
-you’ll wind up with classes all over the place.
+특수 종류의 잠금을 사용하는 ``Handler``를 만들고 싶다면 어떻게 해야 할까요?
+여기서 의도는 ``Hander``를 서브클래싱하고 ``createLock()``을 재정의하여
+대신 자신이 가장 좋아하는 종류의 잠금을 반환하는 것입니다.
+투박한 접근 방식이며, 여러 줄의 코드가 필요하며,
+다양한 상황에서 ``Handler`` 객체를 사용자 정의하려는
+여러 가지 방법이 있는 경우 잘 구성되지 않습니다 —
+결국到处都是类。
 
-But it will work.
+그러나 작동할 것입니다.
 
-It just won’t be very Pythonic.
+단지 그다지 파이썬답지 않을 뿐입니다.

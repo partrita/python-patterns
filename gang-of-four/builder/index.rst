@@ -1,79 +1,66 @@
-
 =====================
- The Builder Pattern
+ 빌더 패턴
 =====================
 
-*A “Creational Pattern” from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 "생성 패턴"*
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   The full-fledged Builder Pattern as imagined by the Gang of Four
-   arranged for a single series of method calls
-   to power the creation of several different object hierarchies —
-   but that use of the pattern
-   has turned out to be vanishingly rare in Python.
-   Instead, the Builder is wildly popular
-   simply for its convenience.
+   갱 오브 포가 구상한 완전한 빌더 패턴은
+   단일 메서드 호출 시리즈를 통해
+   여러 다른 객체 계층을 생성하도록 배열되었지만 —
+   이 패턴의 사용은 파이썬에서 극히 드문 것으로 나타났습니다.
+   대신 빌더는 단순히 편의성 때문에 널리 사용됩니다.
 
-   You might also have seen a more recent pattern
-   calling itself the “Builder”
-   which pairs each immutable class in a program
-   with a more convenient builder class.
-   That pattern, happily, is never necessary in Python
-   since the language itself provides built-in syntactic support
-   for optional constructor arguments.
+   프로그램의 각 불변 클래스를
+   더 편리한 빌더 클래스와 쌍을 이루는
+   "빌더"라고 부르는 최신 패턴을 보았을 수도 있습니다.
+   다행히도 이 패턴은 파이썬에서 전혀 필요하지 않습니다.
+   언어 자체가 선택적 생성자 인수에 대한
+   기본 제공 구문 지원을 제공하기 때문입니다.
 
-.. contents:: Contents:
+.. contents:: 목차:
    :backlinks: none
 
-.. TODO link to Facade pattern once that one gets written up
+.. TODO Facade 패턴이 작성되면 링크 추가
 
-The Builder pattern has a most interesting history.
-Its primary intent,
-as described by the Gang of Four in the very first sentence
-of their chapter on the pattern,
-has wound being the rarest purpose for which the pattern is used.
-Instead, the Builder is used almost everywhere
-for what the Gang of Four considered a secondary benefit:
-its convenience.
+빌더 패턴은 매우 흥미로운 역사를 가지고 있습니다.
+갱 오브 포가 패턴에 대한 장의 첫 문장에서 설명했듯이,
+주요 의도는 패턴이 사용되는 가장 드문 목적이 되었습니다.
+대신 빌더는 갱 오브 포가 부차적인 이점으로 간주했던
+편의성 때문에 거의 모든 곳에서 사용됩니다.
 
-More recently,
-an even simpler pattern has adopted the name “Builder”
-that appears in certain less expressive programming languages
-to make up for their lack of optional parameters
-in a call to a constructor.
+최근에는 생성자 호출에서 선택적 매개변수가 부족한
+덜 표현적인 특정 프로그래밍 언어에서 나타나는
+"빌더"라는 이름을 채택한 훨씬 간단한 패턴이 있습니다.
 
-This article will start by describing
-the Builder pattern’s most popular use in Python programs.
-Next we will glance at what the Gang of Four
-thought the pattern’s primary purpose was going to be,
-and explore why it is rarely used that way in Python.
-Finally, for completeness,
-we will look at the more recent use of the pattern
-to help languages whose syntax is less flexible than Python’s.
+이 글에서는 파이썬 프로그램에서 빌더 패턴의 가장 인기 있는 사용법을 설명하는 것으로 시작합니다.
+다음으로 갱 오브 포가 패턴의 주요 목적이라고 생각했던 것을 살펴보고,
+파이썬에서 거의 그런 방식으로 사용되지 않는 이유를 탐색합니다.
+마지막으로 완전성을 기하기 위해,
+파이썬보다 덜 유연한 구문을 가진 언어를 돕기 위해
+패턴을 최근에 사용하는 방법을 살펴보겠습니다.
 
-The Builder as convenience
+편의로서의 빌더
 ==========================
 
-The Builder pattern is wildly popular in Python
-because it lets client code stay simple and sleek
-even while directing the creation of an elaborate hierarchy of objects.
+빌더 패턴은 파이썬에서 매우 인기가 있습니다.
+정교한 객체 계층 생성을 지시하면서도
+클라이언트 코드를 단순하고 세련되게 유지할 수 있기 때문입니다.
 
-The formal definition is that the Builder pattern is present
-whenever a library lets you make
-a simple series of function and method calls that,
-behind the scenes,
-the library reacts to by building a whole hierarchy of objects.
-Thanks to the Builder pattern,
-the caller is exempted
-from needing to manually instantiate each object
-or understand how the objects fit together once constructed.
+공식적인 정의는 라이브러리가
+간단한 함수 및 메서드 호출 시리즈를 만들 수 있도록 할 때마다
+빌더 패턴이 존재한다는 것입니다.
+이면에서 라이브러리는 전체 객체 계층을 빌드하여 반응합니다.
+빌더 패턴 덕분에 호출자는
+각 객체를 수동으로 인스턴스화하거나
+생성된 객체가 어떻게 맞춰지는지 이해할 필요가 없습니다.
 
-A classic example in Python
-is the `matplotlib <https://matplotlib.org/>`_ library’s
-``pyplot`` interface.
-It lets the caller build a simple plot with just a single line of code,
-and save the diagram to disk with just one line more:
+파이썬의 고전적인 예는
+`matplotlib <https://matplotlib.org/>`_ 라이브러리의
+``pyplot`` 인터페이스입니다.
+호출자가 단 한 줄의 코드로 간단한 플롯을 빌드하고,
+단 한 줄만 더 추가하여 다이어그램을 디스크에 저장할 수 있도록 합니다.
 
 .. testsetup::
 
@@ -95,12 +82,11 @@ and save the diagram to disk with just one line more:
 
 .. image:: sine.png
 
-What the pyplot interface has hidden from the caller
-is that more than a dozen objects had to be created
-for matplotlib to represent even this simple plot.
-Here, for example, are eight of the objects
-that were generated behind the scenes
-by the ``plot()`` call above:
+pyplot 인터페이스가 호출자에게 숨긴 것은
+matplotlib이 이 간단한 플롯조차도 나타내기 위해
+12개 이상의 객체를 만들어야 했다는 것입니다.
+예를 들어, 다음은 위 ``plot()`` 호출에 의해
+이면에서 생성된 8개의 객체입니다.
 
 >>> plt.gcf()
 <Figure size 640x480 with 1 Axes>
@@ -119,38 +105,35 @@ TransformedBbox(
                  [  0. 100.   0.]
                  [  0.   0.   1.]]))))
 
-While matplotlib will let us provide more keyword arguments
-or make additional calls to customize the plot,
-``pyplot`` is happy to insulate us from all of the details
-of how plots are represented as objects.
+matplotlib은 더 많은 키워드 인수를 제공하거나
+플롯을 사용자 정의하기 위해 추가 호출을 할 수 있도록 하지만,
+``pyplot``은 플롯이 객체로 표현되는 방식의
+모든 세부 정보로부터 우리를 기꺼이 격리합니다.
 
-The Builder pattern is now deeply ingrained in Python culture
-thanks in part to the pressure that library authors feel
-to make the sample code on their front page
-as impressively brief as possible.
-But even in the face of this pressure,
-there still exist libraries that expect you —
-their caller — to build an entire object hierarchy yourself
-in the course of using the library.
+빌더 패턴은 이제 파이썬 문화에 깊이 뿌리내렸습니다.
+부분적으로는 라이브러리 작성자가 첫 페이지의 샘플 코드를
+가능한 한 인상적으로 간결하게 만들어야 한다는 압박감 때문입니다.
+그러나 이러한 압박감에도 불구하고,
+여전히 라이브러리를 사용하는 과정에서
+호출자가 직접 전체 객체 계층을 빌드할 것으로 예상하는
+라이브러리가 존재합니다.
 
-The fact that some libraries
-rely on their callers to tediously instantiate objects
-is even used as advertisement by their competitors.
-For example,
-the `Requests library <http://docs.python-requests.org/en/master/>`_
-famously introduces itself to users
-by comparing its one-liner for an HTTP request with authentication
-to the same maneuver performed with the old
-`urllib2 <https://docs.python.org/2/library/urllib2.html>`_
-Standard Library module —
-which, in fairness, does require the caller to build a small pile of objects
-any time they want to do anything interesting.
-The “Examples” section of the ``urllib2`` documentation
-provides an illustration::
+일부 라이브러리가 호출자에게 지루하게 객체를 인스턴스화하도록
+의존한다는 사실은 경쟁업체에서 광고로 사용되기도 합니다.
+예를 들어,
+`Requests 라이브러리 <http://docs.python-requests.org/en/master/>`_는
+인증을 사용한 HTTP 요청에 대한 한 줄짜리 코드를
+이전 `urllib2 <https://docs.python.org/2/library/urllib2.html>`_
+표준 라이브러리 모듈로 수행한 동일한 기동과 비교하여
+사용자에게 유명하게 소개합니다.
+공정하게 말하면, 흥미로운 작업을 수행하려면
+호출자가 작은 객체 더미를 빌드해야 합니다.
+``urllib2`` 설명서의 "예제" 섹션은
+다음과 같은 그림을 제공합니다.
 
     import urllib2
 
-    # Create an OpenerDirector with support for Basic HTTP Authentication...
+    # 기본 HTTP 인증을 지원하는 OpenerDirector 만들기...
 
     auth_handler = urllib2.HTTPBasicAuthHandler()
     auth_handler.add_password(realm='PDQ Application',
@@ -159,84 +142,77 @@ provides an illustration::
                               passwd='kadidd!ehopper')
     opener = urllib2.build_opener(auth_handler)
 
-    # ...and install it globally so it can be used with urlopen.
+    # ...그리고 urlopen과 함께 사용할 수 있도록 전역적으로 설치합니다.
 
     urllib2.install_opener(opener)
     urllib2.urlopen('http://www.example.com/login.html')
 
-Had the Builder pattern been used here,
-the library would instead have offered functions or methods
-that concealed from client code
-the structure and classes
-in the opener - builder - authentication handler hierarchy.
+여기서 빌더 패턴이 사용되었다면,
+라이브러리는 대신 클라이언트 코드에서
+오프너 - 빌더 - 인증 핸들러 계층의
+구조와 클래스를 숨기는 함수나 메서드를 제공했을 것입니다.
 
-Nuance
+뉘앙스
 ======
 
-My claim that the matplotlib ``pyplot`` interface is a Builder
-is complicated by the second-to-last paragraph in the Gang of Four’s
-chapter on the Builder:
+matplotlib ``pyplot`` 인터페이스가 빌더라고 주장하는 것은
+갱 오브 포의 빌더에 대한 장의 끝에서 두 번째 단락에 의해 복잡해집니다.
 
-    “Builder **returns the product as a final step**, but as far as the
-    Abstract Factory pattern is concerned, the product gets returned
-    immediately.”
+    "빌더는 **최종 단계로 제품을 반환하지만**, 추상 팩토리 패턴에 관한 한 제품은 즉시 반환됩니다."
 
-While this stipulation focuses on the difference between the Builder
-and the :doc:`Abstract Factory </gang-of-four/abstract-factory/index>`,
-it makes clear that — for the Gang of Four —
-both patterns are supposed to conclude
-with the return of the constructed object to the caller.
-Absent the crucial final step of returning the object that has been built,
-the Builder arguably devolves into the Facade pattern instead.
+이 규정은 빌더와 :doc:`추상 팩토리 </gang-of-four/abstract-factory/index>` 간의 차이점에 초점을 맞추지만,
+갱 오브 포에게는 두 패턴 모두 생성된 객체를 호출자에게 반환하는 것으로
+결론을 내려야 한다는 것을 분명히 합니다.
+빌드된 객체를 반환하는 중요한 최종 단계가 없다면,
+빌더는 대신 Facade 패턴으로 격하될 수 있습니다.
 
-So by the strict definition,
-``pyplot`` might not qualify as a Builder in my example code above
-because I never ask for an actual reference to the object
-that my ``plot()`` call constructed.
-To rescue my example in case anyone decides to press the point,
-I can ask for a reference to the plot
-and ask the plot itself to save a rendered image to a file.
+따라서 엄격한 정의에 따르면,
+위의 예제 코드에서 ``pyplot``은 빌더로 인정되지 않을 수 있습니다.
+내 ``plot()`` 호출이 생성한 객체에 대한 실제 참조를
+요청하지 않기 때문입니다.
+누군가가 이 점을 지적할 경우 내 예제를 구출하기 위해,
+플롯에 대한 참조를 요청하고
+플롯 자체에 렌더링된 이미지를 파일에 저장하도록 요청할 수 있습니다.
 
 ::
 
    plt.plot(x, np.sin(x))
-   sine_figure = plt.gcf()  # “gcf” = “get current figure”
+   sine_figure = plt.gcf()  # "gcf" = "get current figure"
    sine_figure.savefig('sine.png')
 
-Such are the demands of pedantry: an extra line of code.
+이것이 현학의 요구 사항입니다. 추가 코드 한 줄입니다.
 
-Dueling builders
+결투 빌더
 ================
 
-When the Gang of Four introduced the Builder,
-they had greater ambitions for the pattern
-than mere convenience and encapsulation.
-The opening sentence of their chapter on the Builder
-declared the following “Intent”:
+갱 오브 포가 빌더를 소개했을 때,
+그들은 단순한 편의성과 캡슐화보다
+패턴에 대한 더 큰 야망을 가지고 있었습니다.
+빌더에 대한 장의 첫 문장은
+다음과 같은 "의도"를 선언했습니다.
 
-    “Separate the construction of a complex object from its
-    representation so that the same construction process can create
-    different representations.”
+    "복잡한 객체의 구성을 해당 표현과 분리하여
+    동일한 구성 프로세스가 다른 표현을 생성할 수 있도록 합니다."
 
-For the Gang of Four, then,
-the Builder pattern is only operating at full tilt
-when a library offers several implementations of the same Builder,
-each of which returns a different hierarchy of objects
-in response to the same series of client calls.
+따라서 갱 오브 포에게는,
+라이브러리가 동일한 빌더의 여러 구현을 제공할 때만
+빌더 패턴이 최대한으로 작동합니다.
+각 구현은 동일한 클라이언트 호출 시리즈에 응답하여
+다른 객체 계층을 반환합니다.
 
-I cannot find evidence that the full-tilt Builder pattern
-is in frequent use across today’s most popular python libraries.
+오늘날 가장 인기 있는 파이썬 라이브러리에서
+완전한 빌더 패턴이 자주 사용된다는 증거를 찾을 수 없습니다.
 
-Why has the pattern not come into widespread use?
+왜 패턴이 널리 사용되지 않았을까요?
 
-I think the answer is the supremacy of data, and of data structures,
-as the common currency that is usually passed
-between one phase of a Python program’s execution and the next.
-To understand why,
-let’s turn to the Gang of Four’s own sample code.
-Here, for example, is one situation in which their Builder is placed
-as it responds to calls describing the creation of a maze
-(the example has been lightly edited to translate it into Python):
+답은 파이썬 프로그램 실행의 한 단계에서 다음 단계로
+일반적으로 전달되는 공통 통화로서의
+데이터와 데이터 구조의 우위라고 생각합니다.
+이유를 이해하기 위해,
+갱 오브 포의 자체 샘플 코드로 돌아가 봅시다.
+예를 들어, 다음은 미로 생성에 대한 호출에 응답할 때
+빌더가 배치되는 한 가지 상황입니다.
+(예제는 파이썬으로 번역하기 위해 약간 편집되었습니다.)
 
 .. testcode::
 
@@ -250,136 +226,126 @@ as it responds to calls describing the creation of a maze
             room1.set_side(common_wall(r1, r2), d)
             room2.set_side(common_wall(r2, r1), d);
 
-Notice the awkward responsive pattern into which the code is forced.
-It knows that a maze is under construction,
-but has to recover a reference to the maze
-by asking ``self`` for its ``current_maze`` attribute.
-It then has to make several adjustments
-to update the room objects with the new information
-so that subsequent interactions will start from a new state.
-This looks suspiciously like I/O code
-that has been contorted into a series of callbacks,
-each needing to re-fetch and re-assemble the current state of the world
-in order to ratchet its state machine forward one further click.
+코드가 강요되는 어색한 응답 패턴에 유의하십시오.
+미로가 구성 중이라는 것을 알고 있지만,
+``self``에게 ``current_maze`` 속성을 요청하여
+미로에 대한 참조를 복구해야 합니다.
+그런 다음 새 정보로 방 객체를 업데이트하기 위해
+몇 가지 조정을 해야 하므로
+후속 상호 작용이 새 상태에서 시작됩니다.
+이것은 콜백 시리즈로 왜곡된 I/O 코드처럼 의심스럽게 보입니다.
+각 콜백은 상태 기계를 한 번 더 클릭하여 앞으로 나아가기 위해
+현재 세계 상태를 다시 가져오고 다시 조립해야 합니다.
 
-If a modern Python Library
-does want to drive two very different kinds of activity
-from the same series of client constructor calls,
-it would be very unusual for that library
-to offer two completely separate implementations
-of the same Builder interface —
-two builders that both have to be capable
-of being prodded through the same series of incremental
-client-driven updates
-to produce a coherent result.
+최신 파이썬 라이브러리가
+동일한 클라이언트 생성자 호출 시리즈에서
+두 가지 매우 다른 종류의 활동을 추진하려는 경우,
+해당 라이브러리가 동일한 빌더 인터페이스의
+두 가지 완전히 별개의 구현을 제공하는 것은 매우 드뭅니다.
+두 빌더 모두 동일한 점진적인
+클라이언트 중심 업데이트 시리즈를 통해
+일관된 결과를 생성할 수 있어야 합니다.
 
-Instead, modern python libraries are overwhelmingly likely
-to have a single implementation of a given Builder,
-one that produces a single well-defined intermediate representation
-from the caller’s function and method invocations.
-That representation,
-whether publicly documented or private and internal to the library,
-can then be provided as the input
-to any number of downstream transformation or output routines —
-whose processing will now be simpler
-because they are free to roam across the intermediate data structure
-at their own pace and in whatever order they want.
+대신, 최신 파이썬 라이브러리는 압도적으로
+주어진 빌더의 단일 구현을 가질 가능성이 높습니다.
+호출자의 함수 및 메서드 호출에서
+단일하고 잘 정의된 중간 표현을 생성하는 구현입니다.
+공개적으로 문서화되었든 라이브러리에 비공개 및 내부적이든,
+해당 표현은 다운스트림 변환 또는 출력 루틴의
+입력으로 제공될 수 있습니다.
+이제 중간 데이터 구조를 가로질러
+자신의 속도와 원하는 순서대로 자유롭게 이동할 수 있으므로
+처리가 더 간단해집니다.
 
-To compare the popularity of callback programming
-with the popularity of foregrounding an intermediate representation,
-compare the paltry number of Python libraries that use the |sax|_ —
-which learns about a document by responding to a long series
-of ``startElement()`` and ``endElement()`` calls —
-with the wide popularity of the
-`ElementTree <https://docs.python.org/3/library/xml.etree.elementtree.html>`_
-API that presumes the XML is already completely parsed
-and offers the caller a Document Object Module
-to traverse in whatever order it wants.
+콜백 프로그래밍의 인기와
+중간 표현을 전면에 내세우는 것의 인기를 비교하려면,
+|sax|_를 사용하는 파이썬 라이브러리의 빈약한 수와 —
+긴 ``startElement()`` 및 ``endElement()`` 호출 시리즈에 응답하여
+문서에 대해 학습합니다 —
+`ElementTree <https://docs.python.org/3/library/xml.etree.elementtree.html>`_ API의
+광범위한 인기를 비교하십시오.
+이 API는 XML이 이미 완전히 구문 분석되었다고 가정하고
+호출자에게 원하는 순서대로 트래버스할 수 있는
+문서 객체 모듈을 제공합니다.
 
-.. |sax| replace:: Standard Library ``lmx.sax`` package
+.. |sax| replace:: 표준 라이브러리 ``lmx.sax`` 패키지
 .. _sax: https://docs.python.org/3/library/xml.sax.html
 
-It is, therefore, probably Python’s very rich collection of data types
-for representing deep compound information —
-tuples, lists, dictionaries, classes —
-and the convenience of writing code to traverse them
-that has produced almost an entire absence
-of the full-tilt Builder pattern
-from today's popular Python libraries.
+따라서 깊은 복합 정보를 나타내는
+튜플, 리스트, 딕셔너리, 클래스와 같은
+파이썬의 매우 풍부한 데이터 타입 모음과
+이를 트래버스하는 코드를 작성하는 편의성 때문에
+오늘날 인기 있는 파이썬 라이브러리에서
+완전한 빌더 패턴이 거의 완전히 사라졌을 것입니다.
 
-A degenerate case: simulating optional arguments
+퇴화된 경우: 선택적 인수 시뮬레이션
 ================================================
 
-For the sake of completeness,
-I should describe an alternative Builder pattern
-that differs from the pattern described by the Gang of Four,
-in case you have seen it in blog posts or books
-and have been confused by the difference.
-It has arisen recently
-in some of the less convenient programming languages than Python,
-and substitutes for those languages’ lack
-of optional parameters.
+완전성을 기하기 위해,
+갱 오브 포가 설명한 패턴과 다른
+대안적인 빌더 패턴을 설명해야 합니다.
+블로그 게시물이나 책에서 보았고
+차이점에 혼란스러워했을 경우를 대비해서입니다.
+최근 파이썬보다 덜 편리한 일부 프로그래밍 언어에서
+발생했으며, 해당 언어의 선택적 매개변수 부족을 대체합니다.
 
-The degenerate Builder addresses this problem:
+퇴화된 빌더는 이 문제를 해결합니다.
 
-* A programmer designs a class
-  with immutable attributes.
-  Once a class instance is created,
-  its attributes will be impossible to modify.
+* 프로그래머는 불변 속성을 가진 클래스를 설계합니다.
+  클래스 인스턴스가 생성되면
+  해당 속성을 수정하는 것이 불가능합니다.
 
-* The class has not just one or two, but many attributes —
-  imagine that it has a dozen.
+* 클래스에는 한두 개가 아니라 많은 속성이 있습니다 —
+  12개라고 상상해 보십시오.
 
-* The programmer is trapped in a programming language
-  that lacks Python’s support for optional arguments.
-  A call to the class constructor will need to supply a value
-  for every single attribute each time the class is instantiated.
+* 프로그래머는 파이썬의 선택적 인수 지원이 부족한
+  프로그래밍 언어에 갇혀 있습니다.
+  클래스 생성자를 호출하면 클래스가 인스턴스화될 때마다
+  모든 단일 속성에 대한 값을 제공해야 합니다.
 
-You can imagine the verbose and unhappy consequences.
-Not only will every single object instantiation
-have to specify every one of the dozen attributes,
-but if the language does not support keyword arguments
-then each value in the long list of attributes will also be unlabeled.
-Imagine reading a long list of values like
-``None`` ``None`` ``0`` ``''`` ``None``
-and trying to visually pair each value
-with the corresponding name in the attribute list.
-A comment next to each value can improve readability,
-but the language will not provide any guard rail
-if a later edit accidentally moves the comments out of sync
-with the actual attributes.
+장황하고 불행한 결과를 상상할 수 있습니다.
+모든 단일 객체 인스턴스화가
+12개의 모든 속성을 지정해야 할 뿐만 아니라,
+언어가 키워드 인수를 지원하지 않으면
+긴 속성 목록의 각 값도 레이블이 지정되지 않습니다.
+``None`` ``None`` ``0`` ``''`` ``None``과 같은
+긴 값 목록을 읽고 각 값을
+속성 목록의 해당 이름과 시각적으로 연결하려고 한다고 상상해 보십시오.
+각 값 옆의 주석은 가독성을 향상시킬 수 있지만,
+나중에 편집하여 주석이 실수로
+실제 속성과 동기화되지 않게 되면
+언어는 어떤 보호 장치도 제공하지 않습니다.
 
-To escape their dilemma
-and achieve some approximation of the happy brevity
-that Python programmers take for granted,
-programmers facing this situation
-can supplement each class they write with a second class
-that serves as a builder for the first.
-The differences between the builder and the class it constructs are that:
+딜레마에서 벗어나
+파이썬 프로그래머가 당연하게 여기는
+행복한 간결함에 어느 정도 근접하기 위해,
+이러한 상황에 직면한 프로그래머는
+작성하는 각 클래스를 두 번째 클래스로 보완할 수 있습니다.
+이 두 번째 클래스는 첫 번째 클래스의 빌더 역할을 합니다.
+빌더와 빌더가 생성하는 클래스 간의 차이점은 다음과 같습니다.
 
-* The Builder class carries all the same attributes as the target class.
+* 빌더 클래스는 대상 클래스와 동일한 모든 속성을 전달합니다.
 
-* The Builder class is *not* immutable.
+* 빌더 클래스는 불변이 *아닙니다*.
 
-* The Builder class requires very few arguments to instantiate.
-  Most or all of its attributes start off with default values.
+* 빌더 클래스는 인스턴스화하는 데 거의 인수가 필요하지 않습니다.
+  대부분 또는 모든 속성이 기본값으로 시작합니다.
 
-* The Builder offers a mechanism
-  for each attribute that starts with a default value
-  to be rewritten with a different value.
+* 빌더는 기본값으로 시작하는 각 속성에 대해
+  다른 값으로 다시 작성할 수 있는 메커니즘을 제공합니다.
 
-* Finally, the Builder offers a method
-  that creates an instance of the original immutable class
-  whose attributes are copied from the corresponding attributes
-  of the Builder instance.
+* 마지막으로 빌더는 원래 불변 클래스의 인스턴스를 생성하는
+  메서드를 제공합니다.
+  이 인스턴스의 속성은 빌더 인스턴스의
+  해당 속성에서 복사됩니다.
 
-Here is a tiny example in Python —
-non-tiny examples are, alas, painful to read
-because of their rampant repetition:
+다음은 파이썬의 작은 예입니다 —
+안타깝게도 작은 예가 아닌 예는
+만연한 반복 때문에 읽기가 고통스럽습니다.
 
 .. testcode::
 
-   # Slightly less convenient in Python < 3.6:
+   # 파이썬 < 3.6에서는 약간 덜 편리합니다.
 
    from typing import NamedTuple
 
@@ -388,19 +354,19 @@ because of their rampant repetition:
        name: str = ''
        protocol: str = ''
 
-   # Real Python code takes advantage of optional arguments
-   # to specify whatever combination of attributes it wants:
+   # 실제 파이썬 코드는 선택적 인수를 활용하여
+   # 원하는 속성 조합을 지정합니다.
 
    Port(2)
    Port(7, 'echo')
    Port(69, 'tftp', 'UDP')
 
-   # Keyword arguments even let you skip earlier arguments:
+   # 키워드 인수를 사용하면 이전 인수를 건너뛸 수도 있습니다.
 
    Port(517, protocol='UDP')
 
-   # But what if Python lacked optional arguments?
-   # Then we might engage in contortions like:
+   # 하지만 파이썬에 선택적 인수가 없다면 어떨까요?
+   # 그러면 다음과 같은 왜곡을 할 수 있습니다.
 
    class PortBuilder(object):
        def __init__(self, port):
@@ -411,42 +377,39 @@ because of their rampant repetition:
        def build(self):
            return Port(self.port, self.name, self.protocol)
 
-   # The Builder lets the caller create a Port without
-   # needing to specify a value for every attribute.
-   # Here we skip providing a “name”:
+   # 빌더를 사용하면 호출자가 모든 속성에 대한 값을
+   # 지정할 필요 없이 Port를 생성할 수 있습니다.
+   # 여기서는 "name" 제공을 건너뜁니다.
 
    b = PortBuilder(517)
    b.protocol = 'UDP'
    b.build()
 
-At the expense of a good deal of boilerplate —
-which becomes even worse if the author
-insists on writing a setter for each of the Builder’s attributes —
-this pattern allows programmers in deeply compromised programming languages
-to enjoy some of the same conveniences
-that are built into the design of the Python “call” operator.
+상당한 양의 상용구 코드를 희생하여 —
+작성자가 빌더의 각 속성에 대한 세터를 작성하려고 하면
+더욱 악화됩니다 —
+이 패턴을 사용하면 심각하게 손상된 프로그래밍 언어의 프로그래머가
+파이썬 "호출" 연산자의 디자인에 내장된
+동일한 편의 기능 중 일부를 즐길 수 있습니다.
 
-This is clearly not the Builder pattern from the Gang of Four.
-It fails to achieve every one of the “Consequences”
-their chapter lists for the Builder pattern:
-its ``build()`` method always returns the same class,
-instead of exercising the freedom
-to return any of several subclasses of the target class;
-it does not isolate the caller
-from how the target class represents its data
-since the builder and target attributes correspond one-to-one;
-and no fine control over the build process is achieved
-since the effect is the same — though less verbose —
-as if the caller had simply instantiated the target class directly.
+이것은 분명히 갱 오브 포의 빌더 패턴이 아닙니다.
+빌더 패턴에 대해 해당 장에서 나열한 "결과" 중
+어느 것도 달성하지 못합니다.
+``build()`` 메서드는 항상 동일한 클래스를 반환하며,
+대상 클래스의 여러 하위 클래스 중 하나를 반환하는
+자유를 행사하는 대신입니다.
+빌더와 대상 속성이 일대일로 해당하므로
+대상 클래스가 데이터를 나타내는 방식으로부터
+호출자를 격리하지 않습니다.
+호출자가 대상 클래스를 직접 인스턴스화한 경우와
+효과는 동일하지만 덜 장황하므로
+빌드 프로세스에 대한 세밀한 제어가 달성되지 않습니다.
 
-Hopefully you will never see a Builder like this in Python,
-even to correct the awkward fact that named tuples
-provide no obvious way to set a default value for each field —
-the
-`excellent answers to this Stack Overflow question <https://stackoverflow.com/questions/11351032/namedtuple-and-default-values-for-optional-keyword-arguments>`_
-provide several more Pythonic alternatives.
-But you might see it in other languages
-when reading or even porting their code,
-in which case you will want to recognize the pattern
-so that you can replace it with something simpler
-if the code is re-implemented in Python.
+명명된 튜플이 각 필드에 대한 기본값을 설정하는
+명확한 방법을 제공하지 않는다는 어색한 사실을 수정하기 위해서라도
+파이썬에서 이와 같은 빌더를 절대 보지 않기를 바랍니다 —
+`이 스택 오버플로 질문에 대한 훌륭한 답변 <https://stackoverflow.com/questions/11351032/namedtuple-and-default-values-for-optional-keyword-arguments>`_은
+몇 가지 더 파이썬다운 대안을 제공합니다.
+그러나 다른 언어에서 코드를 읽거나 포팅할 때 볼 수 있으며,
+이 경우 코드가 파이썬으로 다시 구현되면
+더 간단한 것으로 대체할 수 있도록 패턴을 인식해야 합니다.
