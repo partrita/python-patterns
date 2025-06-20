@@ -1,0 +1,9 @@
+{
+  "name": "python-patterns",
+  "version": "1.0.0",
+  "description": "reStructuredText documentation deployed on Vercel",
+  "scripts": {
+    "build": "pip install -r requirements.txt && sphinx-build -b html docs/source docs/build",
+    "dev": "sphinx-autobuild docs/source docs/build"
+  }
+}
