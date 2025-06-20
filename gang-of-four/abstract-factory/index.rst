@@ -1,81 +1,69 @@
-
 ==============================
- The Abstract Factory Pattern
+ 추상 팩토리 패턴
 ==============================
 
-*A “Creational Pattern” from the* :doc:`/gang-of-four/index`
+*:doc:`/gang-of-four/index`의 "생성 패턴"*
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   The Abstract Factory is an awkward workaround
-   for the lack of first-class functions and classes
-   in less powerful programming languages.
-   It is a poor fit for Python,
-   where we can instead simply pass a class or a factory function
-   when a library needs to create objects on our behalf.
+   추상 팩토리는 덜 강력한 프로그래밍 언어에서
+   일급 함수 및 클래스가 부족한 점을 해결하기 위한 어색한 해결 방법입니다.
+   라이브러리가 우리를 대신하여 객체를 생성해야 할 때
+   클래스나 팩토리 함수를 간단히 전달할 수 있는 파이썬에는 적합하지 않습니다.
 
-The Python Standard Library’s ``json`` module
-is a good example of a library
-that needs to instantiate objects on behalf of its caller.
-Consider a JSON string like this one:
+파이썬 표준 라이브러리의 ``json`` 모듈은
+호출자를 대신하여 객체를 인스턴스화해야 하는
+라이브러리의 좋은 예입니다.
+다음과 같은 JSON 문자열을 고려하십시오.
 
 .. testcode::
 
     text = '{"total": 9.61, "items": ["Americano", "Omelet"]}'
 
-By default, the ``json`` module’s ``loads()`` function
-will create ``unicode`` objects
-for the strings ``"Americano"`` and ``"Omelet"``,
-a ``list`` to hold them,
-a Python ``float`` for ``9.61``,
-and a ``dict`` with ``unicode`` keys for the top-level JSON object.
+기본적으로 ``json`` 모듈의 ``loads()`` 함수는
+문자열 ``"Americano"`` 및 ``"Omelet"``에 대해 ``unicode`` 객체를 생성하고,
+이를 담을 ``list``를 생성하고,
+``9.61``에 대해 파이썬 ``float``를 생성하고,
+최상위 JSON 객체에 대해 ``unicode`` 키를 가진 ``dict``를 생성합니다.
 
-But some users will not be content with these defaults.
-For example, an accountant would probably be unhappy
-with the choice of a ``float``
-to represent an exact amount like “9 dollars 61 cents”
-and would prefer an exact ``Decimal`` instead.
+그러나 일부 사용자는 이러한 기본값에 만족하지 않을 것입니다.
+예를 들어, 회계사는 아마도 "9달러 61센트"와 같은 정확한 금액을 나타내기 위해
+``float``를 선택하는 것에 만족하지 않고
+대신 정확한 ``Decimal``을 선호할 것입니다.
 
-The need to control what kind of numeric object the ``json`` module creates
-is a specific instance of a general problem:
+``json`` 모듈이 생성하는 숫자 객체의 종류를 제어해야 하는 필요성은
+일반적인 문제의 특정 사례입니다.
 
-* In the course of performing its duties,
-  a routine is going to need to create a number of objects
-  on behalf of the caller.
+* 루틴은 업무를 수행하는 과정에서
+  호출자를 대신하여 여러 객체를 생성해야 합니다.
 
-* But the class that the routine would instantiate by default
-  does not cover all possible cases.
+* 그러나 루틴이 기본적으로 인스턴스화하는 클래스는
+  모든 가능한 경우를 다루지 않습니다.
 
-* So instead of hard-coding that default class
-  and making customization impossible,
-  the routine wants to let the caller specify which classes
-  it will instantiate.
+* 따라서 해당 기본 클래스를 하드코딩하고 사용자 정의를 불가능하게 만드는 대신,
+  루틴은 호출자가 인스턴스화할 클래스를 지정하도록 허용하려고 합니다.
 
-First, we’ll look at the Pythonic approach to this problem.
-Then we’ll start placing a series of restrictions on our Python code
-to more closely model legacy object oriented languages,
-until the Abstract Factory pattern emerges
-as the best solution within those limitations.
+먼저, 이 문제에 대한 파이썬다운 접근 방식을 살펴보겠습니다.
+그런 다음 레거시 객체 지향 언어를 보다 가깝게 모델링하기 위해
+파이썬 코드에 일련의 제한을 두기 시작하여,
+이러한 제한 내에서 최상의 솔루션으로 추상 팩토리 패턴이 등장할 때까지 진행합니다.
 
-The Pythonic approach: callable factories
+파이썬다운 접근 방식: 호출 가능한 팩토리
 =========================================
 
-In Python, a “callable” —
-any object ``f`` that executes code
-when invoked using the syntax ``f(a, b, c)`` —
-is a first-class object.
-To be “first class” means that a callable can be passed as a parameter,
-returned as a return value,
-and can even be stored in a data structure
-like a list or dictionary.
+파이썬에서 "호출 가능 객체" —
+구문 ``f(a, b, c)``를 사용하여 호출될 때 코드를 실행하는 모든 객체 ``f`` —
+는 일급 객체입니다.
+"일급"이라는 것은 호출 가능 객체를 매개변수로 전달하고,
+반환 값으로 반환하며,
+리스트나 딕셔너리와 같은 데이터 구조에 저장할 수도 있음을 의미합니다.
 
-First-class callables offer a powerful mechanism
-for implementing object “factories”,
-a fancy term for “routines that build and return new objects.”
+일급 호출 가능 객체는 객체 "팩토리"를 구현하기 위한 강력한 메커니즘을 제공합니다.
+"새 객체를 빌드하고 반환하는 루틴"이라는 멋진 용어입니다.
 
-A beginning Python programmer might expect
-that each time they need to supply a factory,
-they will be responsible for writing a function:
+초급 파이썬 프로그래머는
+팩토리를 제공해야 할 때마다
+함수를 작성해야 할 것으로 예상할 수 있습니다.
 
 .. testcode::
 
@@ -91,24 +79,24 @@ they will be responsible for writing a function:
 
     {'total': Decimal('9.61'), 'items': ['Americano', 'Omelet']}
 
-This simple factory ran successfully!
-The number returned is a decimal instead of a float.
+이 간단한 팩토리가 성공적으로 실행되었습니다!
+반환된 숫자는 부동 소수점 대신 십진수입니다.
 
-(Note my choice of a verb ``build_decimal()`` as the name of this function,
-instead of a noun like ``decimal_factory()`` —
-I find a function name easier to read when it tells me what the function *does*
-instead of telling me what *kind* of function it is.)
+(이 함수의 이름으로 ``decimal_factory()``와 같은 명사 대신
+동사 ``build_decimal()``을 선택한 점에 유의하십시오. —
+함수가 *어떤 종류*의 함수인지 알려주는 것보다
+함수가 *무엇을 하는지* 알려주는 함수 이름이 더 읽기 쉽다고 생각합니다.)
 
-While the above function will certainly work,
-there is an elision we can perform
-thanks to the fact that Python types are themselves callables.
-Because ``Decimal`` is a callable taking a string argument
-and returning a decimal object instance,
-we can dispense with our own factory
-and pass the ``Decimal`` type directly to the JSON loader!
-Unless we need to edit the string first,
-like by removing a leading currency symbol,
-``Decimal`` can completely replace our little factory:
+위의 함수는 확실히 작동하지만,
+파이썬 타입 자체가 호출 가능하다는 사실 덕분에
+수행할 수 있는 생략이 있습니다.
+``Decimal``은 문자열 인수를 사용하고
+십진수 객체 인스턴스를 반환하는 호출 가능 객체이므로,
+우리 자신의 팩토리를 생략하고
+``Decimal`` 타입을 JSON 로더에 직접 전달할 수 있습니다!
+선행 통화 기호를 제거하는 것처럼
+문자열을 먼저 편집할 필요가 없다면,
+``Decimal``은 우리의 작은 팩토리를 완전히 대체할 수 있습니다.
 
 .. testcode::
 
@@ -118,81 +106,79 @@ like by removing a leading currency symbol,
 
     {'total': Decimal('9.61'), 'items': ['Americano', 'Omelet']}
 
-There is one implementation detail that deserves mention.
-If you study the ``json`` module
-you will discover that ``load()`` is simply a wrapper
-around the ``JSONDecoder`` class.
-How does the decoder instance itself support an alternative factory?
-Its initialization method stores the ``parse_float`` argument
-as an instance attribute,
-defaulting to Python’s built-in ``float`` type if no override was specified::
+언급할 만한 구현 세부 정보가 하나 있습니다.
+``json`` 모듈을 연구하면
+``load()``가 단순히 ``JSONDecoder`` 클래스를 둘러싼
+래퍼라는 것을 알게 될 것입니다.
+디코더 인스턴스 자체는 대체 팩토리를 어떻게 지원합니까?
+초기화 메서드는 ``parse_float`` 인수를
+인스턴스 속성으로 저장하며,
+재정의가 지정되지 않은 경우 파이썬의 내장 ``float`` 타입으로 기본 설정됩니다.
 
     self.parse_float = parse_float or float
 
-It can then invoke it later as ``self.parse_float(…)``.
+그런 다음 나중에 ``self.parse_float(...)``로 호출할 수 있습니다.
 
-If you are interested in variations on this pattern —
-where a class uses its instance attributes
-to remember how it’s supposed to create a specific kind of object —
-then try reading about
-the :doc:`Factory Method </gang-of-four/factory-method/index>`
-which explores several variations on this maneuver.
+이 패턴의 변형에 관심이 있다면 —
+클래스가 인스턴스 속성을 사용하여
+특정 종류의 객체를 생성하는 방법을 기억하는 경우 —
+:doc:`팩토리 메서드 </gang-of-four/factory-method/index>`에 대해 읽어보십시오.
+이 기동에 대한 몇 가지 변형을 탐색합니다.
 
-But to arrive at the Abstract Factory pattern,
-we need to head in a different direction.
-Here we’ll pursue what happens to an object factory itself —
-whether ``Decimal()`` or our hand-written ``build_decimal()`` —
-if we begin restricting the set of Python features we let ourselves use.
+그러나 추상 팩토리 패턴에 도달하려면
+다른 방향으로 나아가야 합니다.
+여기서는 객체 팩토리 자체 —
+``Decimal()``이든 직접 작성한 ``build_decimal()``이든 —
+에 어떤 일이 발생하는지 추적할 것입니다.
+만약 우리가 사용하도록 허용하는 파이썬 기능 세트를 제한하기 시작한다면 말입니다.
 
-Restriction: outlaw passing callables
+제한: 호출 가능 객체 전달 금지
 =====================================
 
-What if Python didn’t let you pass callables as parameters?
+파이썬이 호출 가능 객체를 매개변수로 전달하는 것을 허용하지 않는다면 어떻게 될까요?
 
-That restriction would remove an entire dimension from Python’s flexibility.
-Instead of supporting both “nouns” and “verbs” as arguments —
-both class instances and callable functions —
-some legacy languages only support passing class instances.
-Under that restriction,
-every simple factory would need to pivot from a function to a method:
+그 제한은 파이썬의 유연성에서 전체 차원을 제거할 것입니다.
+인수로서 "명사"와 "동사"를 모두 지원하는 대신 —
+클래스 인스턴스와 호출 가능한 함수 모두 —
+일부 레거시 언어는 클래스 인스턴스 전달만 지원합니다.
+그 제한 하에서,
+모든 간단한 팩토리는 함수에서 메서드로 전환해야 합니다.
 
 .. testcode::
 
-    # In Python: a factory function.
+    # 파이썬에서: 팩토리 함수.
 
     def build_decimal(string):
         return Decimal(string.lstrip('$'))
 
-    # In some legacy languages: the code must
-    # move inside a class method instead.
+    # 일부 레거시 언어에서: 코드는 대신
+    # 클래스 메서드 내부로 이동해야 합니다.
 
     class DecimalFactory(object):
         @staticmethod
         def build(string):
             return Decimal(string.lstrip('$'))
 
-In traditional Object Oriented programming,
-the word “factory” is the name of this kind of class —
-a class that offers a method that builds an object.
-In naming the equivalent Python function ``build_decimal()``,
-therefore,
-I’m not only indulging in my own preference
-for giving functions verb-names rather than noun-names,
-but being as precise as possible in naming:
-the “factory” is not the callable,
-but the class that holds it.
+전통적인 객체 지향 프로그래밍에서,
+"팩토리"라는 단어는 이러한 종류의 클래스의 이름입니다 —
+객체를 빌드하는 메서드를 제공하는 클래스입니다.
+따라서 동등한 파이썬 함수 ``build_decimal()``의 이름을 지정할 때,
+나는 함수에 명사 이름 대신 동사 이름을 부여하는 것을 선호할 뿐만 아니라,
+이름을 가능한 한 정확하게 지정하고 있습니다.
+"팩토리"는 호출 가능 객체가 아니라,
+그것을 담고 있는 클래스입니다.
 
-Instead of continuing our earlier example of JSON parsing,
-let’s switch to a simpler task that can fit in a couple of lines of code:
-parsing a comma-separated list of numbers.
-Here’s how the parser would invoke the builder method on our factory class.
+JSON 구문 분석의 이전 예제를 계속하는 대신,
+몇 줄의 코드로 표현할 수 있는 더 간단한 작업으로 전환해 보겠습니다.
+쉼표로 구분된 숫자 목록을 구문 분석하는 것입니다.
+다음은 파서가 팩토리 클래스에서 빌더 메서드를 호출하는 방법입니다.
 
 .. testcode::
 
     class Loader(object):
         @staticmethod
         def load(string, factory):
-            string = string.rstrip(',')  # allow trailing comma
+            string = string.rstrip(',')  # 후행 쉼표 허용
             return [factory.build(item) for item in string.split(',')]
 
     result = Loader.load('464.80, 993.68', DecimalFactory)
@@ -202,24 +188,22 @@ Here’s how the parser would invoke the builder method on our factory class.
 
     [Decimal('464.80'), Decimal('993.68')]
 
-Note that,
-thanks to the fact that Python classes offer static and class methods
-that can be invoked without an instance,
-we have not yet been reduced to needing to instantiate the factory class —
-we are simply passing the Python class in as a first-class object.
+파이썬 클래스가 인스턴스 없이 호출할 수 있는
+정적 및 클래스 메서드를 제공한다는 사실 덕분에,
+아직 팩토리 클래스를 인스턴스화할 필요가 없다는 점에 유의하십시오 —
+우리는 단순히 파이썬 클래스를 일급 객체로 전달하고 있습니다.
 
-Restriction: outlaw passing classes
+제한: 클래스 전달 금지
 ===================================
 
-Next, let’s also pretend that a Python class cannot be passed as a value,
-but that only object instances can be assigned to names
-and passed as parameters.
+다음으로, 파이썬 클래스를 값으로 전달할 수 없다고 가정해 봅시다.
+오직 객체 인스턴스만 이름에 할당되고
+매개변수로 전달될 수 있다고 가정합니다.
 
-This restriction is going to prevent us
-from passing the ``DecimalFactory`` class
-as an argument to the ``load()`` method.
-Instead, we’re going to have to uselessly instantiate ``DecimalFactory``
-and pass the resulting object:
+이 제한은 ``DecimalFactory`` 클래스를
+``load()`` 메서드의 인수로 전달하는 것을 막을 것입니다.
+대신, 우리는 쓸모없이 ``DecimalFactory``를 인스턴스화하고
+결과 객체를 전달해야 합니다.
 
 .. testcode::
 
@@ -232,40 +216,38 @@ and pass the resulting object:
 
     [Decimal('464.80'), Decimal('993.68')]
 
-Note the difference
-between this pattern
-and the :doc:`Factory Method </gang-of-four/factory-method/index>`.
-Here, we are neither asked nor required to subclass ``Loader`` itself
-in order to customize the objects it creates.
-Instead, object creation is entirely parametrized
-by the separate factory object we choose to pass in.
+이 패턴과
+:doc:`팩토리 메서드 </gang-of-four/factory-method/index>` 간의 차이점에 유의하십시오.
+여기서는 생성하는 객체를 사용자 정의하기 위해
+``Loader`` 자체를 서브클래싱하도록 요청받거나 요구되지 않습니다.
+대신, 객체 생성은 전적으로
+전달하기로 선택한 별도의 팩토리 객체에 의해 매개변수화됩니다.
 
-Note also the clear warning sign in the factory’s own code
-that ``build()`` should, in Python, not really be the method of an object.
-Scroll back up and read the method’s code.
-Where does it accept as an argument, or use in its result,
-the object ``self`` on which it is being invoked?
-It makes no use of it at all!
-The method never mentions ``self`` in its code.
-As Jack Diederich propounded in his famous talk
-`Stop Writing Classes <https://www.youtube.com/watch?v=o9pEzgHorH0>`_,
-a method that never uses ``self``
-should not actually be a method in Python.
-But such are the depths
-to which we’ve been driven by these artificial restrictions.
+또한 팩토리 자체 코드에서 ``build()``가
+파이썬에서 실제로 객체의 메서드가 아니어야 한다는
+명확한 경고 신호에 유의하십시오.
+위로 스크롤하여 메서드의 코드를 읽어보십시오.
+호출되는 객체 ``self``를 인수로 받아들이거나 결과에 사용하는 곳은 어디입니까?
+전혀 사용하지 않습니다!
+메서드는 코드에서 ``self``를 전혀 언급하지 않습니다.
+잭 디더리히가 그의 유명한 강연
+`클래스 작성 중단 <https://www.youtube.com/watch?v=o9pEzgHorH0>`_에서 주장했듯이,
+``self``를 사용하지 않는 메서드는
+파이썬에서 실제로 메서드가 아니어야 합니다.
+그러나 이러한 인위적인 제한으로 인해
+우리가 처한 깊이는 이와 같습니다.
 
-Generalizing: the complete Abstract Factory
+일반화: 완전한 추상 팩토리
 ===========================================
 
-Two final moves will illustrate the full design pattern.
+두 가지 최종 이동은 전체 디자인 패턴을 보여줍니다.
 
-First, let’s expand our factory
-to create every kind of object that the loader needs to create —
-in this case, not just the numbers that are being parsed,
-but even the container that will hold them.
-Now that we have switched to instantiating the factory,
-we can write these as plain methods
-instead of static methods:
+먼저, 팩토리를 확장하여
+로더가 생성해야 하는 모든 종류의 객체를 생성하도록 합시다 —
+이 경우, 구문 분석되는 숫자뿐만 아니라,
+그것들을 담을 컨테이너까지도 생성합니다.
+이제 팩토리를 인스턴스화하도록 전환했으므로,
+정적 메서드 대신 일반 메서드로 작성할 수 있습니다.
 
 .. testcode::
 
@@ -276,7 +258,7 @@ instead of static methods:
         def build_number(self, string):
             return Decimal(string)
 
-And here is an updated loader that uses this factory:
+다음은 이 팩토리를 사용하는 업데이트된 로더입니다.
 
 .. testcode::
 
@@ -297,24 +279,23 @@ And here is an updated loader that uses this factory:
 
     [Decimal('1.23'), Decimal('4.56')]
 
-Every choice it needs to make about object instantiation
-is deferred to the factory instead of taking place in the parser itself.
+객체 인스턴스화에 대해 내려야 하는 모든 선택은
+파서 자체에서 발생하는 대신 팩토리에 위임됩니다.
 
-Second, consider the behavior of languages that force you
-to declare ahead of time the type of each method parameter.
-You would overly restrict your future choices
-if your code insisted that the ``factory`` parameter
-could only ever be an instance of this particular class ``Factory``
-because then you could never pass in anything
-that didn’t inherit from it.
+둘째, 각 메서드 매개변수의 타입을 미리 선언하도록 강제하는
+언어의 동작을 고려하십시오.
+코드가 ``factory`` 매개변수가
+이 특정 클래스 ``Factory``의 인스턴스여야 한다고 주장한다면
+미래의 선택을 지나치게 제한하게 될 것입니다.
+왜냐하면 그렇게 하면 그로부터 상속받지 않은 것은
+절대로 전달할 수 없기 때문입니다.
 
-Instead, to more happily separate specification from implementation,
-you would create an abstract class.
-It’s this final step that merits the word “abstract”
-in the pattern’s name “Abstract Factory”.
-Your abstract class would merely promise
-that the ``factory`` argument to ``load()``
-would be a class adhering to the required interface:
+대신, 사양과 구현을 더 행복하게 분리하려면,
+추상 클래스를 생성할 것입니다.
+패턴 이름 "추상 팩토리"에서 "추상"이라는 단어를 사용할 가치가 있는 것은
+바로 이 마지막 단계입니다.
+추상 클래스는 단지 ``load()``에 대한 ``factory`` 인수가
+필요한 인터페이스를 준수하는 클래스일 것이라고 약속할 뿐입니다.
 
 .. testcode::
 
@@ -330,13 +311,13 @@ would be a class adhering to the required interface:
         def build_number(self, string):
             pass
 
-Once the abstract class is in place and ``Factory`` inherits from it,
-though, the operations that take place at runtime
-are exactly the same as they were before.
-The factory’s methods are called with various arguments,
-which direct them to create various kinds of object,
-which they construct and return
-without the caller needing to know the details.
+추상 클래스가 제자리에 있고 ``Factory``가 그것으로부터 상속받으면,
+런타임에 발생하는 작업은
+이전과 정확히 동일합니다.
+팩토리의 메서드는 다양한 인수로 호출되며,
+이는 다양한 종류의 객체를 생성하도록 지시하고,
+호출자가 세부 정보를 알 필요 없이
+이를 구성하고 반환합니다.
 
-It’s like something you might do in Python, but made overly complicated.
-So avoid the Abstract Factory and use callables as factories instead.
+파이썬에서 할 수 있는 일과 같지만 지나치게 복잡하게 만들어졌습니다.
+따라서 추상 팩토리를 피하고 대신 호출 가능 객체를 팩토리로 사용하십시오.

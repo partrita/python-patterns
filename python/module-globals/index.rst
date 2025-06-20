@@ -1,86 +1,77 @@
-
 ===========================
- The Global Object Pattern
+ 전역 객체 패턴
 ===========================
 
-.. admonition:: Verdict
+.. admonition:: 결론
 
-   Like several other scripting languages,
-   Python parses the outer level of each module as normal code.
-   Un-indented assignment statements, expressions,
-   and even loops and conditionals
-   will execute as the module is imported.
-   This presents an excellent opportunity
-   to supplement a module’s classes and functions
-   with constants and data structures that callers will find useful —
-   but also offers dangerous temptations:
-   mutable global objects can wind up coupling distant code,
-   and I/O operations impose import-time expense and side effects.
+   다른 여러 스크립팅 언어와 마찬가지로,
+   파이썬은 각 모듈의 외부 수준을 일반 코드로 구문 분석합니다.
+   들여쓰기되지 않은 할당문, 표현식,
+   심지어 루프와 조건문까지도
+   모듈을 가져올 때 실행됩니다.
+   이는 모듈의 클래스와 함수를
+   호출자가 유용하게 사용할 수 있는 상수 및 데이터 구조로 보완할 수 있는
+   훌륭한 기회를 제공하지만,
+   위험한 유혹도 제공합니다.
+   변경 가능한 전역 객체는 멀리 떨어진 코드를 결합하게 될 수 있으며,
+   I/O 작업은 가져오기 시 비용과 부작용을 발생시킵니다.
 
-.. TODO Add this one I do the singleton:
-   These are sometimes called “singletons.”
-   Module globals are more common in Python
-   than the Gang of Four’s :doc:`gang-of-four/singleton`,
-   which was a trick to avoid creating any more global names than necessary
-   in languages without the benefit of a module system.
+.. TODO 싱글턴을 작업할 때 이것을 추가합니다:
+   이것들은 때때로 "싱글턴"이라고 불립니다.
+   모듈 전역 변수는 Gang of Four의 :doc:`gang-of-four/singleton`보다
+   파이썬에서 더 일반적입니다. 이는 모듈 시스템의 이점 없이
+   언어에서 필요 이상으로 많은 전역 이름을 만드는 것을 피하기 위한 트릭이었습니다.
 
-.. TODO mention how for verbs, not nouns, we put methods in the global
-   namespace; exmaples are random and json modules
+.. TODO 동사가 아닌 명사의 경우 전역 네임스페이스에 메서드를 넣는 방법을 언급합니다.
+   예시는 random 및 json 모듈입니다.
 
-Every Python module is a separate namespace.
-A module like ``json`` can offer a ``loads()`` function
-without conflicting with, replacing, or overwriting
-the completely different ``loads()`` function
-defined over in the ``pickle`` module.
+모든 파이썬 모듈은 별도의 네임스페이스입니다.
+``json``과 같은 모듈은 ``pickle`` 모듈에 정의된
+완전히 다른 ``loads()`` 함수와 충돌하거나,
+대체하거나, 덮어쓰지 않고 ``loads()`` 함수를 제공할 수 있습니다.
 
-Separate namespaces are crucial to making a programming language tractable.
-If Python modules were not separate namespaces,
-you would be unable to read or write Python code
-by keeping your attention focused on the module in front of you —
-a line of code might use, or accidentally conflict with,
-a name defined anywhere else in the Standard Library
-or a third-party module you have installed.
-Upgrading a third-party module could break your entire program
-if the new version defined a new global that conflicted with yours.
-Programmers who are forced to code in a language without namespaces
-soon find themselves festooning global names
-with prefixes, suffixes, and extra punctuation
-in a desperate race to keep them from conflicting.
+별도의 네임스페이스는 프로그래밍 언어를 다루기 쉽게 만드는 데 중요합니다.
+파이썬 모듈이 별도의 네임스페이스가 아니라면,
+눈앞의 모듈에 주의를 집중하면서 파이썬 코드를 읽거나 쓸 수 없을 것입니다 —
+코드 한 줄이 표준 라이브러리나 설치한 타사 모듈의
+다른 곳에 정의된 이름을 사용하거나 우연히 충돌할 수 있습니다.
+타사 모듈을 업그레이드하면 새 버전이 사용자의 것과 충돌하는
+새 전역 변수를 정의하는 경우 전체 프로그램이 손상될 수 있습니다.
+네임스페이스가 없는 언어로 코딩해야 하는 프로그래머는
+곧 전역 이름이 충돌하는 것을 막기 위한 필사적인 경쟁 속에서
+접두사, 접미사 및 추가 구두점으로 전역 이름을 장식하게 됩니다.
 
-While every function and class is, of course, an object —
-in Python, everything is an object —
-the Module Global pattern more specifically refers
-to normal object instances
-that are given names at the global level of a module.
+모든 함수와 클래스는 물론 객체이지만 —
+파이썬에서는 모든 것이 객체입니다 —
+모듈 전역 패턴은 보다 구체적으로 모듈의 전역 수준에서
+이름이 지정된 일반 객체 인스턴스를 나타냅니다.
 
-Two patterns use Module Globals
-but are important enough to warrant their own articles:
+두 가지 패턴은 모듈 전역 변수를 사용하지만
+자체 문서를 보증할 만큼 중요합니다.
 
-* :doc:`Prebound Methods </python/prebound-methods/index>`
-  are generated when a module builds an object
-  and then assigns one or more of the object’s bound methods
-  to names at the module’s global level.
-  The names can be used to call the methods later
-  without needing to find the object itself.
+* :doc:`사전 바인딩된 메서드 </python/prebound-methods/index>`는
+  모듈이 객체를 빌드한 다음 객체의 바인딩된 메서드 중 하나 이상을
+  모듈의 전역 수준 이름에 할당할 때 생성됩니다.
+  이 이름은 나중에 객체 자체를 찾을 필요 없이 메서드를 호출하는 데 사용할 수 있습니다.
 
-* While a :doc:`Sentinel Object </python/sentinel-object/index>`
-  doesn’t have to live in a module’s global namespace —
-  some sentinel objects are defined as class attributes,
-  while others are private and live inside of a closure —
-  many sentinels, both in the Standard Library and beyond,
-  are defined and accessed as module globals.
+* :doc:`감시 객체 </python/sentinel-object/index>`는
+  모듈의 전역 네임스페이스에 있을 필요는 없지만 —
+  일부 감시 객체는 클래스 속성으로 정의되고
+  다른 일부는 비공개이며 클로저 내부에 있습니다 —
+  표준 라이브러리와 그 밖의 많은 감시 객체는
+  모듈 전역 변수로 정의되고 액세스됩니다.
 
-This article will cover some other common cases.
+이 문서에서는 다른 일반적인 경우를 다룹니다.
 
 .. underscore ForkingPickler = context.reduction.ForkingPickler
 
-The Constant Pattern
+상수 패턴
 ====================
 
-Modules often assign useful numbers, strings, and other values
-to names in their global scope.
-The Standard Library includes many such assignments,
-from which we can excerpt a few examples.
+모듈은 종종 유용한 숫자, 문자열 및 기타 값을
+전역 범위의 이름에 할당합니다.
+표준 라이브러리에는 이러한 할당이 많이 포함되어 있으며,
+여기서 몇 가지 예를 발췌할 수 있습니다.
 
 ::
 
@@ -91,9 +82,9 @@ from which we can excerpt a few examples.
   TICK = "'"                    # email.utils.py
   CRLF = "\r\n"                 # smtplib.py
 
-Remember that these are “constants” only in the sense
-that the objects themselves are immutable.
-The names can still be reassigned.
+이것들은 객체 자체가 변경 불가능하다는 의미에서만
+"상수"라는 점을 기억하십시오.
+이름은 여전히 다시 할당될 수 있습니다.
 
 .. testcode::
 
@@ -105,7 +96,7 @@ The names can still be reassigned.
 
    13
 
-Or deleted, for that matter.
+또는 삭제될 수도 있습니다.
 
 .. testcode::
 
@@ -118,25 +109,26 @@ Or deleted, for that matter.
      ...
    AttributeError: module 'calendar' has no attribute 'January'
 
-In addition to integers, floats, and strings,
-constants also include immutable containers like tuples and frozen sets::
+정수, 부동 소수점 및 문자열 외에도
+상수에는 튜플 및 고정 세트와 같은 변경 불가능한 컨테이너도 포함됩니다.
+
+::
 
   all_errors = (Error, OSError, EOFError)  # ftplib.py
   bytes_types = (bytes, bytearray)         # pickle.py
   DIGITS = frozenset("0123456789")         # sre_parse.py
 
-More specialized immutable data types also serve as constants::
+보다 특수한 변경 불가능한 데이터 유형도 상수로 사용됩니다.
+
+::
 
   _EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)  # datetime
 
-On rare occasions,
-a module global
-which the code clearly never intends to modify
-uses a mutable data structure anyway.
-Plain mutable sets
-are common in code that pre-dates the invention of the ``frozenset``.
-Dictionaries are still used today
-because, alas, the Standard Library doesn’t offer a frozen dictionary.
+드물게 코드가 명확하게 수정할 의도가 없는
+모듈 전역 변수가 어쨌든 변경 가능한 데이터 구조를 사용합니다.
+일반 변경 가능한 세트는 ``frozenset``이 발명되기 이전 코드에서 일반적입니다.
+딕셔너리는 표준 라이브러리가 고정된 딕셔너리를 제공하지 않기 때문에
+오늘날에도 여전히 사용됩니다.
 
 ::
 
@@ -154,106 +146,86 @@ because, alas, the Standard Library doesn’t offer a frozen dictionary.
     0x0435: "zu_ZA", # Zulu
   }
 
-Constants are often introduced as a refactoring:
-the programmer notices that the same value ``60.0``
-is appearing repeatedly in their code,
-and so introduces a constant ``SSL_HANDSHAKE_TIMEOUT``
-for the value instead.
-Each use of the name
-will now incur the slight cost of a search into the global scope,
-but this is balanced by a couple of advantages.
-The constant’s name now documents the value’s meaning,
-improving the code’s readability.
-And the constant’s assignment statement
-now provides a single location
-where the value can be edited in the future
-without needing to hunt through the code for each place ``60.0`` was used.
+상수는 종종 리팩토링으로 도입됩니다.
+프로그래머는 동일한 값 ``60.0``이 코드에 반복적으로 나타나는 것을 발견하고
+대신 값에 대해 상수 ``SSL_HANDSHAKE_TIMEOUT``을 도입합니다.
+이름을 사용할 때마다 이제 전역 범위로 약간의 검색 비용이 발생하지만,
+몇 가지 이점으로 균형을 이룹니다.
+상수 이름은 이제 값의 의미를 문서화하여 코드의 가독성을 향상시킵니다.
+그리고 상수 할당문은 이제 ``60.0``이 사용된 각 위치를
+코드를 통해 찾을 필요 없이 나중에 값을 편집할 수 있는 단일 위치를 제공합니다.
 
-These advantages are weighty enough
-that a constant is sometimes introduced
-even for a value that’s used only once,
-hoisting a literal that was hidden deep in the code
-up into visibility as a global.
+이러한 이점은 한 번만 사용되는 값에 대해서도
+상수가 때때로 도입될 만큼 중요하며,
+코드 깊숙이 숨겨져 있던 리터럴을 전역 변수로 끌어올려 가시성을 확보합니다.
 
-Some programmers place constant assignments
-close to the code that use them;
-others put all constants at the top of the file.
-Unless a constant is placed so close to its code
-that it will always be in view of human readers,
-it can be more friendly to put constants at the top of the module
-for the easy reference of readers
-who haven’t yet configured their editors to support jump-to-definition.
+일부 프로그래머는 상수 할당을 사용하는 코드 가까이에 배치합니다.
+다른 프로그래머는 모든 상수를 파일 맨 위에 둡니다.
+상수가 항상 사람이 읽을 수 있도록 코드에 너무 가깝게 배치되지 않는 한,
+아직 편집기에서 정의로 이동 기능을 구성하지 않은 독자를 위해
+모듈 맨 위에 상수를 두는 것이 더 친숙할 수 있습니다.
 
-Another kind of constant is not directed inwards,
-towards the code in the module itself,
-but outwards as part of the module’s advertised API.
-A constant like ``WARNING`` from the ``logging`` module
-offers the advantages of a constant to the caller:
-code will be more readable,
-and the constant’s value could be adjusted later
-without every caller needing to edit their code.
+또 다른 종류의 상수는 모듈 자체의 코드를 향하는 것이 아니라
+모듈의 광고된 API의 일부로 외부를 향합니다.
+``logging`` 모듈의 ``WARNING``과 같은 상수는
+호출자에게 상수의 이점을 제공합니다.
+코드가 더 읽기 쉬워지고 나중에 모든 호출자가 코드를 편집할 필요 없이
+상수 값을 조정할 수 있습니다.
 
-You might expect that a constant intended for the module’s own use,
-but not intended for callers,
-would always start with an underscore to mark it private.
-But Python programmers are not consistent in marking constants private,
-perhaps because the cost of needing to keep a constant around forever
-because a caller might have decided to start using it
-is smaller than the cost of having
-a helper function or class’s API forever locked up.
+모듈 자체에서 사용하기 위한 것이지만 호출자를 위한 것이 아닌 상수는
+항상 밑줄로 시작하여 비공개로 표시될 것으로 예상할 수 있습니다.
+그러나 파이썬 프로그래머는 상수를 비공개로 표시하는 데 일관성이 없습니다.
+아마도 호출자가 사용하기로 결정했기 때문에 상수를 영원히 유지해야 하는 비용이
+도우미 함수나 클래스의 API가 영원히 잠기는 비용보다 작기 때문일 수 있습니다.
 
-Import-time computation
+가져오기 시 계산
 =======================
 
-Sometimes constants are introduced for efficiency,
-to avoid recomputing a value every time code is called.
-For example,
-even though math operations involving literal numbers
-are in fact optimized away in all modern Python implementations,
-developers often still feel more comfortable
-making it explicit that the math should be done at import time
-by assigning the result to a module global::
+때로는 코드가 호출될 때마다 값을 다시 계산하는 것을 피하기 위해
+효율성을 위해 상수가 도입됩니다.
+예를 들어, 리터럴 숫자를 포함하는 수학 연산은
+실제로 모든 최신 파이썬 구현에서 최적화되지만,
+개발자는 종종 결과를 모듈 전역 변수에 할당하여
+가져오기 시 수학이 수행되어야 한다는 것을 명시적으로 만드는 것을
+더 편안하게 생각합니다.
+
+::
 
   # zipfile.py
   ZIP_FILECOUNT_LIMIT = (1 << 16) - 1
 
-When the math expression is complicated,
-assigning a name also enhances the code’s readability.
+수학 표현식이 복잡하면 이름을 할당하면 코드의 가독성도 향상됩니다.
 
-As another example,
-there exist special floating point values
-that cannot be written in Python as literals;
-they can only be generated by passing a string to the float type.
-To avoid calling ``float()`` with ``'nan'`` or ``'inf'``
-every single time such a value is needed,
-modules often build such values only once as module globals.
+또 다른 예로, 파이썬에서 리터럴로 작성할 수 없는
+특수 부동 소수점 값이 있습니다.
+이러한 값은 부동 소수점 유형에 문자열을 전달하여 생성할 수만 있습니다.
+이러한 값이 필요할 때마다 ``'nan'`` 또는 ``'inf'``로 ``float()``를 호출하는 것을 피하기 위해
+모듈은 종종 이러한 값을 모듈 전역 변수로 한 번만 빌드합니다.
 
 ::
 
   # encoder.py
   INFINITY = float('inf')
 
-A constant can also capture the result of a conditional
-to avoid re-evaluating it each time the value is needed —
-as long, of course, as the condition
-won’t be changing while the program is running.
+상수는 조건이 프로그램 실행 중에 변경되지 않는 한,
+값이 필요할 때마다 다시 평가하는 것을 피하기 위해
+조건부 결과를 캡처할 수도 있습니다.
 
 ::
 
   # shutil.py
   COPY_BUFSIZE = 1024 * 1024 if _WINDOWS else 16 * 1024
 
-My favorite example of computed constants in the Standard Library
-is the ``types`` module.
-I had always assumed it was implemented in C,
-to gain special access to built-in type objects like ``FunctionType``
-and ``LambdaType`` that are defined by the language implementation itself.
+표준 라이브러리에서 계산된 상수의 가장 좋아하는 예는 ``types`` 모듈입니다.
+나는 항상 언어 구현 자체에서 정의된 ``FunctionType`` 및
+``LambdaType``과 같은 내장 유형 객체에 특별한 액세스 권한을 얻기 위해
+C로 구현되었다고 가정했습니다.
 
-It turns out? I was wrong. The ``types`` module is written in plain Python!
+알고 보니? 내가 틀렸습니다. ``types`` 모듈은 일반 파이썬으로 작성되었습니다!
 
-Without any special access to language internals,
-it does what anyone else would do to learn what type functions have.
-It creates a function, then asks its type:
+언어 내부에 대한 특별한 액세스 권한 없이
+함수 유형을 배우기 위해 다른 사람이 하는 것과 동일한 작업을 수행합니다.
+함수를 만든 다음 해당 유형을 묻습니다.
 
 ::
 
@@ -261,51 +233,45 @@ It creates a function, then asks its type:
   def _f(): pass
   FunctionType = type(_f)
 
-.. amazingly, the “re” module also has to learn its own types empirically!
+.. 놀랍게도 "re" 모듈도 자체 유형을 경험적으로 배워야 합니다!
 
    Lib/re.py
    Pattern = type(sre_compile.compile('', 0))
    Match = type(sre_compile.compile('', 0).match(''))
 
-On the one hand,
-this makes the ``types`` module seem almost superfluous —
-you could always use the same trick to discover ``FunctionType`` yourself.
-But on the other hand,
-importing it from ``types``
-lets both major benefits of the Constant Pattern shine:
-code becomes more readable
-because ``FunctionType`` will have the same name everywhere,
-and more efficient
-because the constant only needs to be computed once
-no matter how many modules in a large system might use it.
+한편으로 이것은 ``types`` 모듈을 거의 불필요하게 만드는 것처럼 보입니다 —
+항상 동일한 트릭을 사용하여 ``FunctionType``을 직접 검색할 수 있습니다.
+그러나 다른 한편으로 ``types``에서 가져오면
+상수 패턴의 두 가지 주요 이점이 모두 빛을 발합니다.
+``FunctionType``이 모든 곳에서 동일한 이름을 갖기 때문에 코드가 더 읽기 쉬워지고,
+대규모 시스템의 얼마나 많은 모듈이 사용하든
+상수를 한 번만 계산하면 되므로 더 효율적입니다.
 
-.. This might be my favorite constant computation in the Standard Library.
-   Not sure it belongs in the text, though.
+.. 이것은 표준 라이브러리에서 내가 가장 좋아하는 상수 계산일 수 있습니다.
+   하지만 텍스트에 포함되어야 하는지는 확실하지 않습니다.
 
  _use_fd_functions = ({os.open, os.stat, os.unlink, os.rmdir} <=
                       os.supports_dir_fd and
                       os.scandir in os.supports_fd and
                       os.stat in os.supports_follow_symlinks)
 
-Dunder Constants
+던더 상수
 ================
 
-A special case of constants defined at a module’s global level
-are “dunder” constants whose names start and end with double underscores.
+모듈의 전역 수준에서 정의된 상수의 특별한 경우는
+이름이 이중 밑줄로 시작하고 끝나는 "던더" 상수입니다.
 
-Several Module Global dunder constants are set by the language itself.
-For the official list,
-look for the “Modules” subheading in the Python Reference’s section on
-`the standard type hierarchy <https://docs.python.org/3/reference/datamodel.html#the-standard-type-hierarchy>`_.
-The two encountered most often are ``__name__``,
-which programs need to check because of Python’s awful design decision
-to assign the fake name ``'__main__'``
-to the module invoked from the command line,
-and ``__file__``,
-the full filesystem path to the module’s Python file itself —
-which is almost universally used to find data files included in a package,
-even though the official recommendation these days
-is to use |pkgutil_get_data|_ instead.
+여러 모듈 전역 던더 상수는 언어 자체에서 설정됩니다.
+공식 목록은 파이썬 참조의
+`표준 유형 계층 <https://docs.python.org/3/reference/datamodel.html#the-standard-type-hierarchy>`_ 섹션에서
+"모듈" 하위 제목을 찾으십시오.
+가장 자주 접하는 두 가지는 ``__name__``과 ``__file__``입니다.
+``__name__``은 파이썬이 명령줄에서 호출된 모듈에
+가짜 이름 ``'__main__'``을 할당하는 끔찍한 디자인 결정 때문에
+프로그램에서 확인해야 하며,
+``__file__``은 모듈의 파이썬 파일 자체에 대한 전체 파일 시스템 경로입니다.
+이는 요즘 공식 권장 사항이 |pkgutil_get_data|_를 사용하는 것이지만
+패키지에 포함된 데이터 파일을 찾는 데 거의 보편적으로 사용됩니다.
 
 .. |pkgutil_get_data| replace:: ``pkgutil.get_data()``
 .. _pkgutil_get_data: https://docs.python.org/3/library/pkgutil.html#pkgutil.get_data
@@ -314,32 +280,28 @@ is to use |pkgutil_get_data|_ instead.
 
   here = os.path.dirname(__file__)
 
-Beyond the dunder constants set by the language runtime,
-there is one Python recognizes if a module chooses to set it:
-if ``__all__`` is assigned a sequence of identifiers,
-then only those names will be imported into another module
-that does ``from … import *``.
-You might have expected ``__all__`` to become less popular
-as ``import *`` gained a reputation as an anti-pattern,
-but it has gained a happy second career
-limiting the list of symbols included
-by automatic documentation engines like
-`Sphinx autodoc module <http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_.
+언어 런타임에서 설정한 던더 상수 외에도
+모듈이 설정하도록 선택하면 파이썬이 인식하는 것이 하나 있습니다.
+``__all__``에 식별자 시퀀스가 할당되면
+``from … import *``를 수행하는 다른 모듈로 해당 이름만 가져옵니다.
+``import *``가 안티 패턴으로 명성을 얻으면서
+``__all__``이 덜 인기를 얻을 것으로 예상했을 수 있지만,
+`Sphinx autodoc 모듈 <http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_과 같은
+자동 문서화 엔진에 포함된 기호 목록을 제한하는
+행복한 두 번째 경력을 얻었습니다.
 
-Even though most modules never plan to modify ``__all__``,
-they inexplicably specify it as a Python list.
-It is more elegant to use a tuple.
+대부분의 모듈은 ``__all__``을 수정할 계획이 없지만
+설명할 수 없이 파이썬 목록으로 지정합니다.
+튜플을 사용하는 것이 더 우아합니다.
 
-Beyond these official dunder constants,
-some modules add even more.
-Assignments to names like ``__author__`` and ``__version__``
-are scattered across the Standard Library and beyond.
-Tools tend to ignore these non-standard names,
-but a human reader might occasionally find them informative.
+이러한 공식 던더 상수 외에도 일부 모듈은 더 많은 것을 추가합니다.
+``__author__`` 및 ``__version__``과 같은 이름에 대한 할당은
+표준 라이브러리와 그 이상에 흩어져 있습니다.
+도구는 이러한 비표준 이름을 무시하는 경향이 있지만
+사람이 읽는 사람은 때때로 유익하다고 생각할 수 있습니다.
 
-Beware that there does not seem to be agreement,
-even within the Standard Library,
-about what type ``__author__`` should have.
+표준 라이브러리 내에서도 ``__author__``가
+어떤 유형이어야 하는지에 대한 합의가 없는 것 같습니다.
 
 ::
 
@@ -352,13 +314,12 @@ about what type ``__author__`` should have.
   __author__ = ('Ka-Ping Yee <ping@lfw.org>',
                 'Yury Selivanov <yselivanov@sprymix.com>')
 
-Why not ``author`` and ``version`` instead, without the dunders?
-An early reader probably misunderstood dunders,
-which really meant “special to the Python language runtime,”
-as a vague indication
-that a value was module metadata rather than module code.
-A few Standard Library modules do offer their version without dunders,
-but without even agreeing on the capitalization.
+던더 없이 ``author``와 ``version``을 대신 사용하지 않는 이유는 무엇입니까?
+초기 독자는 아마도 "파이썬 언어 런타임에 특별함"을 실제로 의미하는
+던더를 값이 모듈 코드가 아닌 모듈 메타데이터라는
+모호한 표시로 오해했을 것입니다.
+몇몇 표준 라이브러리 모듈은 던더 없이 버전을 제공하지만
+대문자 표기에 대해서도 동의하지 않습니다.
 
 ::
 
@@ -366,308 +327,278 @@ but without even agreeing on the capitalization.
   version = "0.20"   # sax/expatreader.py
   version = "0.9.0"  # tarfile.py
 
-To avoid the inconsistencies surrounding
-these informal and ad-hoc metadata conventions,
-a package that expects to be installed with ``pip``
-can learn the names and versions of other installed packages
-directly from the Python package installation system.
-More information is available in the |pkg_resources module|_.
+이러한 비공식적이고 임시적인 메타데이터 규칙을 둘러싼
+불일치를 피하기 위해 ``pip``로 설치될 것으로 예상되는 패키지는
+파이썬 패키지 설치 시스템에서 직접
+다른 설치된 패키지의 이름과 버전을 알 수 있습니다.
+자세한 내용은 |pkg_resources module|_에서 확인할 수 있습니다.
 
-.. |pkg_resources module| replace:: setuptools documentation on the ``pkg_resources`` module
+.. |pkg_resources module| replace:: ``pkg_resources`` 모듈에 대한 setuptools 설명서
 .. _pkg_resources module: https://setuptools.readthedocs.io/en/latest/pkg_resources.html
 
-The Global Object Pattern
+전역 객체 패턴
 =========================
 
-In the full-fledged Global Object pattern,
-as in the Constant pattern,
-a module instantiates an object at import time
-and assigns it a name in the module’s global scope.
-But the object does not simply serve as data;
-it is not merely an integer, string, or data structure.
-Instead, the object is made available
-for the sake of the methods it offers — for the actions it can perform.
+완전한 전역 객체 패턴에서는 상수 패턴에서와 마찬가지로
+모듈이 가져오기 시 객체를 인스턴스화하고
+모듈의 전역 범위에 이름을 할당합니다.
+그러나 객체는 단순히 데이터 역할을 하는 것이 아닙니다.
+단순히 정수, 문자열 또는 데이터 구조가 아닙니다.
+대신 객체는 제공하는 메서드를 위해, 즉 수행할 수 있는 작업을 위해 제공됩니다.
 
-The simplest Global Objects are immutable.
-A common example is a compiled regular expression —
-here are a few examples from the Standard Library::
+가장 간단한 전역 객체는 변경 불가능합니다.
+일반적인 예는 컴파일된 정규 표현식입니다.
+다음은 표준 라이브러리의 몇 가지 예입니다.
+
+::
 
   escapesre = re.compile(r'[\\"]')       # email/utils.py
   magic_check = re.compile('([*?[])')    # glob.py
   commentclose = re.compile(r'--\s*>')   # html/parser.py
   HAS_UTF8 = re.compile(b'[\x80-\xff]')  # json/encoder.py
 
-Compiling a regular expression as a module global
-is a good example of the more general Global Object pattern.
-It achieves an elegant and safe transfer of expense
-from later in a program’s runtime to import time instead.
-The tradeoffs are:
+모듈 전역 변수로 정규 표현식을 컴파일하는 것은
+보다 일반적인 전역 객체 패턴의 좋은 예입니다.
+프로그램 런타임 후반에서 가져오기 시로 비용을
+우아하고 안전하게 이전합니다.
+절충안은 다음과 같습니다.
 
-* The cost of importing the module increases
-  by the cost of compiling the regular expression
-  (plus the tiny cost of assigning it to a global name).
+* 모듈 가져오기 비용은 정규 표현식 컴파일 비용만큼 증가합니다
+  (전역 이름에 할당하는 약간의 비용 추가).
 
-* The import-time cost is now borne by every program that imports the module.
-  Even if a program doesn’t happen to call any code
-  that uses the ``HAS_UTF8`` regular expression shown above,
-  it will incur the expense of compiling it
-  whenever it imports the ``json`` module.
-  (Plot twist: in Python 3, the pattern is no longer even used in the module!
-  But its name was not marked private with a leading underscore,
-  so I suppose it’s not safe to remove —
-  and every ``import json`` gets to pay its cost forever?)
+* 가져오기 시 비용은 이제 모듈을 가져오는 모든 프로그램에서 부담합니다.
+  프로그램이 위에서 보여준 ``HAS_UTF8`` 정규 표현식을 사용하는
+  코드를 호출하지 않더라도 ``json`` 모듈을 가져올 때마다
+  컴파일 비용이 발생합니다.
+  (반전: 파이썬 3에서는 패턴이 모듈에서 더 이상 사용되지도 않습니다!
+  그러나 이름이 선행 밑줄로 비공개로 표시되지 않았으므로
+  제거하는 것이 안전하지 않다고 생각합니다.
+  그리고 모든 ``import json``은 영원히 비용을 지불해야 합니까?)
 
-* But functions and methods that do, in fact,
-  need to use the regular expression
-  will no longer incur a repeated cost for its compilation.
-  The compiled regular expression
-  is ready to start scanning a string immediately!
-  If the regular expression is used frequently,
-  like in the inner loop of a costly operation like parsing,
-  the savings can be considerable.
+* 그러나 실제로 정규 표현식을 사용해야 하는 함수와 메서드는
+  컴파일에 대한 반복적인 비용이 더 이상 발생하지 않습니다.
+  컴파일된 정규 표현식은 즉시 문자열 검색을 시작할 준비가 되었습니다!
+  구문 분석과 같은 비용이 많이 드는 작업의 내부 루프에서와 같이
+  정규 표현식을 자주 사용하는 경우 상당한 비용을 절감할 수 있습니다.
 
-* The global name will make calling code more readable
-  than if the regular expression, when used locally,
-  is used anonymously in a larger expression.
-  (If readability is the only concern, though,
-  remember that you can define the regular expression’s string as a global
-  but skip the cost of compiling it at module level.)
+* 전역 이름은 정규 표현식이 로컬에서 사용될 때
+  더 큰 표현식에서 익명으로 사용되는 경우보다
+  호출 코드를 더 읽기 쉽게 만듭니다.
+  (가독성만이 유일한 관심사라면 정규 표현식 문자열을
+  전역 변수로 정의하되 모듈 수준에서 컴파일 비용을 건너뛸 수 있다는 점을 기억하십시오.)
 
-This list of tradeoffs is about the same, by the way,
-if you move a regular expression out into a class attribute
-instead of moving it all the way out to the global scope.
-When I finally get around to writing about Python and classes,
-I’ll link from here to further thoughts on class attributes.
+이 절충안 목록은 정규 표현식을 클래스 속성으로 옮기는 대신
+전역 범위로 완전히 옮기는 경우에도 거의 동일합니다.
+마침내 파이썬과 클래스에 대해 글을 쓰게 되면
+여기에서 클래스 속성에 대한 추가 생각으로 연결할 것입니다.
 
-.. TODO talk sometime about Global Objects vs class attributes
+.. TODO 전역 객체 대 클래스 속성에 대해 언젠가 이야기합니다.
 
-Global Objects that are mutable
+변경 가능한 전역 객체
 ===============================
 
-But what about Global Objects that are mutable?
+그러나 변경 가능한 전역 객체는 어떻습니까?
 
-They are easiest to justify when they wrap system resources
-that are by their nature also global to an operating system process.
-One example in the Standard Library itself is the ``environ``
-`object <https://docs.python.org/3/library/os.html#os.environ>`_
-that gives your Python program the “environment” —
-the text keys and values supplying your timezone, terminal type, so forth —
-that was passed to your Python program from its parent process.
+운영 체제 프로세스에 대해서도 본질적으로 전역적인 시스템 리소스를
+래핑할 때 가장 쉽게 정당화됩니다.
+표준 라이브러리 자체의 한 가지 예는 ``environ``
+`객체 <https://docs.python.org/3/library/os.html#os.environ>`_입니다.
+이는 파이썬 프로그램에 "환경"(시간대, 터미널 유형 등을 제공하는
+텍스트 키 및 값)을 제공하며,
+이는 부모 프로세스에서 파이썬 프로그램으로 전달되었습니다.
 
-Now,
-it is arguable whether your program
-should really be writing new values into its environment as it runs.
-If you’re launching a subprocess
-that needs an environment variable adjusted,
-the ``subprocess`` routines offer an ``env`` parameter.
-But if code does need to manipulate this global resource,
-then it makes sense for that access to be mediated
-by a correspondingly global Python object::
+이제 프로그램이 실행되는 동안 환경에 새 값을 실제로 작성해야 하는지
+여부는 논쟁의 여지가 있습니다.
+환경 변수를 조정해야 하는 하위 프로세스를 시작하는 경우
+``subprocess`` 루틴은 ``env`` 매개변수를 제공합니다.
+그러나 코드가 이 전역 리소스를 조작해야 하는 경우
+해당 액세스는 해당 전역 파이썬 객체를 통해 조정되는 것이 합리적입니다.
+
+::
 
     # os.py
     environ = _createenviron()
 
-Through this global object,
-the various routines, and perhaps threads, in a Python program
-coordinate their access to this process-wide resource.
-Any change:
+이 전역 객체를 통해 파이썬 프로그램의 다양한 루틴과 스레드는
+이 프로세스 전체 리소스에 대한 액세스를 조정합니다.
+모든 변경 사항:
 
 .. testcode::
 
     import os
     os.environ['TERM'] = 'xterm'
 
-— will be immediately visible to any other part of the program
-that reads that environment key::
+— 해당 환경 키를 읽는 프로그램의 다른 부분에 즉시 표시됩니다.
+
+::
 
     >>> os.environ['TERM']
     'xterm'
 
-The problems with coupling distant parts of your codebase,
-and even unrelated parts of different libraries,
-through a unique global object are well known.
+코드베이스의 멀리 떨어진 부분, 심지어 다른 라이브러리의 관련 없는 부분까지
+고유한 전역 객체를 통해 결합하는 문제점은 잘 알려져 있습니다.
 
-* Tests that were previously independent
-  are suddenly coupled through the global object
-  and can no longer safely be run in parallel.
-  If one test makes a temporary assignment to ``environ['PATH']``
-  just before another test launches a binary with ``subprocess``,
-  the binary will inherit the test value of ``$PATH`` —
-  possibly causing an error.
+* 이전에는 독립적이었던 테스트가 갑자기 전역 객체를 통해 결합되어
+  더 이상 병렬로 안전하게 실행할 수 없습니다.
+  한 테스트가 다른 테스트가 ``subprocess``로 바이너리를 시작하기 직전에
+  ``environ['PATH']``에 임시 할당을 하면
+  바이너리는 ``$PATH``의 테스트 값을 상속받아
+  오류가 발생할 수 있습니다.
 
-* You can sometimes serialize access to a global object through a lock.
-  But unless you do a thorough audit
-  of all of the libraries your code uses,
-  and continue to audit them when upgrading to new versions,
-  it can be difficult to even know which tests call code
-  that ultimately touches particular global object like ``environ``.
+* 때로는 잠금을 통해 전역 객체에 대한 액세스를 직렬화할 수 있습니다.
+  그러나 코드가 사용하는 모든 라이브러리를 철저히 감사하고
+  새 버전으로 업그레이드할 때 계속 감사하지 않는 한,
+  어떤 테스트가 궁극적으로 ``environ``과 같은 특정 전역 객체를 건드리는
+  코드를 호출하는지 알기 어려울 수 있습니다.
 
-* Even tests run serially, not in parallel, will now wind up coupled
-  if one test fails to restore ``environ`` to its original state
-  before the next test runs.
-  This can, it’s true, be mitigated with teardown routines
-  or with mocks that automatically restore state.
-  But unless every single test is perfectly cautious,
-  your test suite can still suffer from exceptions
-  that depend on random test ordering
-  or on whether a previous test succeeded or exited early.
+* 병렬이 아닌 직렬로 실행되는 테스트조차도 이제 한 테스트가
+  다음 테스트가 실행되기 전에 ``environ``을 원래 상태로 복원하지 못하면
+  결합됩니다.
+  이는 해체 루틴이나 자동으로 상태를 복원하는 모의 객체로
+  완화될 수 있다는 것은 사실입니다.
+  그러나 모든 단일 테스트가 완벽하게 신중하지 않는 한
+  테스트 제품군은 여전히 임의의 테스트 순서나
+  이전 테스트가 성공했는지 또는 일찍 종료되었는지에 따라
+  예외가 발생할 수 있습니다.
 
-* These dangers beset not only tests but production runs as well.
-  Even if your application doesn’t launch multiple threads,
-  there can be surprising cases
-  where a refactoring winds up calling code
-  that performs one operation on ``environ``
-  right in the middle of another routine
-  that was also in the middle of transforming its state.
+* 이러한 위험은 테스트뿐만 아니라 프로덕션 실행에도 해당됩니다.
+  애플리케이션이 여러 스레드를 시작하지 않더라도
+  리팩토링으로 인해 다른 루틴이 상태를 변환하는 중간에
+  ``environ``에서 한 가지 작업을 수행하는 코드를 호출하는
+  놀라운 경우가 있을 수 있습니다.
 
-The Standard Library has more examples of the Mutable Global pattern —
-both public globals and private ones litter its modules.
-Some correspond to unique resources at the system level::
+표준 라이브러리에는 변경 가능한 전역 패턴의 예가 더 많이 있습니다 —
+공개 전역 변수와 비공개 전역 변수 모두 모듈에 흩어져 있습니다.
+일부는 시스템 수준의 고유한 리소스에 해당합니다.
+
+::
 
     # Lib/multiprocessing/process.py
     _current_process = _MainProcess()
     _process_counter = itertools.count(1)
 
-Others correspond to no outside resource
-but instead serve as single points of coordination
-for a process-wide activity like logging::
+다른 것들은 외부 리소스에 해당하지 않고
+대신 로깅과 같은 프로세스 전체 활동에 대한
+단일 조정 지점 역할을 합니다.
+
+::
 
     # Lib/logging/__init__.py
     root = RootLogger(WARNING)
 
-Third-party libraries can supply dozens of more examples,
-from global HTTP thread pools and database connections
-to registries of request handlers, library plugins, and third-party codecs.
-But in every case,
-the Mutable Global courts all of the dangers listed above
-in return for the convenience
-of putting a resource where every module can reach it.
+타사 라이브러리는 전역 HTTP 스레드 풀 및 데이터베이스 연결에서
+요청 처리기, 라이브러리 플러그인 및 타사 코덱 레지스트리에 이르기까지
+수십 가지 더 많은 예를 제공할 수 있습니다.
+그러나 모든 경우에 변경 가능한 전역 변수는
+모든 모듈이 접근할 수 있는 곳에 리소스를 두는 편리함을 대가로
+위에 나열된 모든 위험을 감수합니다.
 
-My advice, to the extent that you can,
-is to write code that accepts arguments
-and returns values computed from them.
-Failing that, try passing database connections or open sockets
-to code that will need to interact with the outside world.
-It is a compromise
-for code that finds itself stranded from the resources it needs
-to resort to accessing a global.
+가능한 한 인수를 받아들이고 그로부터 계산된 값을 반환하는
+코드를 작성하라는 것이 제 조언입니다.
+그렇지 않으면 데이터베이스 연결이나 열린 소켓을
+외부 세계와 상호 작용해야 하는 코드에 전달해 보십시오.
+필요한 리소스에서 고립된 코드가 전역 변수에 액세스하는 것은
+타협안입니다.
 
-The glory of Python, of course,
-is that it usually makes even anti-patterns and compromises
-read fairly elegantly in code.
-An assignment statement at the global level of a module
-is as easy to write and read as any other assignment statement,
-and callers can access the Mutable Global
-through exactly the same import statement
-they use for functions and classes.
+물론 파이썬의 장점은 일반적으로 안티 패턴과 타협안조차도
+코드에서 상당히 우아하게 읽힌다는 것입니다.
+모듈의 전역 수준에서 할당문은 다른 할당문만큼 쉽게 작성하고 읽을 수 있으며,
+호출자는 함수 및 클래스에 사용하는 것과 정확히 동일한 가져오기 문을 통해
+변경 가능한 전역 변수에 액세스할 수 있습니다.
 
-.. TODO link this to the Singleton when I write it, and link back here
+.. TODO 이것을 작성할 때 싱글턴에 연결하고 여기로 다시 연결합니다.
 
-.. TODO link to the Clean Architecture once I have examples of avoiding globals
+.. TODO 전역 변수를 피하는 예가 있으면 클린 아키텍처에 연결합니다.
 
-   don’t do I/O at top level to create object
-   if you really need to have a separate init or setup routine for it
-   lazy instantiation or lazy calls
-   or have them call something first to be less magic
+   객체를 만들기 위해 최상위 수준에서 I/O를 수행하지 마십시오.
+   정말로 별도의 초기화 또는 설정 루틴이 필요한 경우
+   지연 인스턴스화 또는 지연 호출
+   또는 덜 마법처럼 보이도록 먼저 무언가를 호출하도록 합니다.
 
-Import-time I/O
+가져오기 시 I/O
 ===============
 
-Many of the worst Global Objects are those
-that perform file or network I/O at import time.
-They not only impose the cost of that I/O
-on every library, script, and test that need the module,
-but expose them to failure if a file or network is not available.
+최악의 전역 객체 중 다수는 가져오기 시 파일 또는 네트워크 I/O를 수행하는 객체입니다.
+이러한 객체는 해당 I/O 비용을 모듈이 필요한 모든 라이브러리, 스크립트 및 테스트에
+부과할 뿐만 아니라 파일이나 네트워크를 사용할 수 없는 경우 실패에 노출시킵니다.
 
-Library authors have an unfortunate tendency to make assumptions like
-“the file ``/etc/hosts`` will always exist”
-when, in fact, they can’t know ahead of time
-all the exotic environments their code will one day face —
-maybe a tiny embedded system that in fact lacks that file;
-maybe a continuous integration environment
-spinning up containers that lack any network configuration at all.
+라이브러리 작성자는 "``/etc/hosts`` 파일은 항상 존재할 것이다"와 같은
+가정을 하는 안타까운 경향이 있습니다.
+사실 그들은 언젠가 코드가 직면하게 될 모든 이국적인 환경을
+미리 알 수 없습니다 —
+아마도 해당 파일이 실제로 없는 작은 임베디드 시스템일 수도 있고,
+네트워크 구성이 전혀 없는 컨테이너를 시작하는
+지속적인 통합 환경일 수도 있습니다.
 
-Even when faced with this possibility,
-a module author might still try to defend their import-time I/O:
-“But delaying the I/O until after import time
-simply postpones the inevitable —
-if the system doesn’t have ``/etc/hosts``
-then the user will get exactly the same exception later anyway.”
-The attempt to make this excuse reveals three misunderstandings:
+이러한 가능성에 직면하더라도 모듈 작성자는 여전히
+가져오기 시 I/O를 방어하려고 할 수 있습니다.
+"그러나 가져오기 시간 이후로 I/O를 지연시키는 것은
+불가피한 일을 미루는 것일 뿐입니다 —
+시스템에 ``/etc/hosts``가 없으면 사용자는 어쨌든 나중에
+정확히 동일한 예외를 받게 될 것입니다."
+이 변명을 하려는 시도는 세 가지 오해를 드러냅니다.
 
-1. Errors at import time are far more serious than errors at runtime.
-   Remember that at the moment your package is imported,
-   the program’s main routine has probably not started running —
-   the caller is usually still up in the middle
-   of the stack of ``import`` statements at the top of their file.
-   They have probably not yet set up logging
-   and have not yet entered their application’s main ``try…except``
-   block that catches and reports failures,
-   so any errors during import
-   will probably print directly to the standard output
-   instead of getting properly reported.
+1. 가져오기 시 오류는 런타임 시 오류보다 훨씬 심각합니다.
+   패키지를 가져오는 순간 프로그램의 주 루틴이
+   아직 실행되지 않았을 가능성이 높다는 점을 기억하십시오 —
+   호출자는 일반적으로 파일 맨 위에 있는 ``import`` 문 스택의
+   중간에 여전히 있습니다.
+   아마도 아직 로깅을 설정하지 않았고
+   실패를 포착하고 보고하는 애플리케이션의 주 ``try…except`` 블록에
+   아직 들어가지 않았을 것입니다.
+   따라서 가져오기 중 오류는 제대로 보고되는 대신
+   표준 출력으로 직접 인쇄될 가능성이 높습니다.
 
-2. Applications are often written
-   to survive the failure of some operations
-   so that in an emergency they can still perform other functions.
-   Even if features that need your library will now hit an exception,
-   the application might have many others it can continue to offer —
-   or could,
-   if you didn’t kill it with an exception at import time.
+2. 애플리케이션은 종종 일부 작업의 실패를 견디도록 작성되어
+   비상시에도 다른 기능을 계속 수행할 수 있습니다.
+   라이브러리가 필요한 기능이 이제 예외를 발생시키더라도
+   애플리케이션은 계속 제공할 수 있는 다른 많은 기능이 있을 수 있습니다 —
+   또는 가져오기 시 예외로 종료하지 않았다면 가능했을 것입니다.
 
-3. Finally, library authors need to keep in mind
-   that a Python program that imports their library
-   might not even use it!
-   Never assume that simply because your code has been imported,
-   it will be used.
-   There are many situations where a module gets imported incidentally,
-   as the dependency of yet further modules,
-   but never happens to get called.
-   By performing I/O at import time,
-   you could impose expense and risk on hundreds of programs and tests
-   that don’t even need or care about your network port,
-   connection pool, or open file.
+3. 마지막으로 라이브러리 작성자는 라이브러리를 가져오는 파이썬 프로그램이
+   라이브러리를 사용하지 않을 수도 있다는 점을 명심해야 합니다!
+   코드가 가져왔다고 해서 사용될 것이라고 가정하지 마십시오.
+   모듈이 다른 모듈의 종속성으로 우연히 가져와지지만
+   호출되지 않는 경우가 많습니다.
+   가져오기 시 I/O를 수행하면 네트워크 포트,
+   연결 풀 또는 열린 파일에 대해 신경 쓰거나 필요하지도 않은
+   수백 개의 프로그램과 테스트에 비용과 위험을 부과할 수 있습니다.
 
-For all of these reasons,
-it’s best for your global objects
-to wait until they’re first called
-before opening files and creating sockets —
-because it’s at the moment of that first call
-that the library knows the main program is now up and running,
-and knows that its services are in fact definitely needed
-in this particular run of the program.
+이러한 모든 이유로 전역 객체는 파일을 열고 소켓을 만들기 전에
+처음 호출될 때까지 기다리는 것이 가장 좋습니다 —
+왜냐하면 라이브러리가 주 프로그램이 이제 실행 중이고
+이 특정 프로그램 실행에서 서비스가 실제로 필요하다는 것을 아는 것은
+바로 그 첫 번째 호출 순간이기 때문입니다.
 
-I’ll admit that,
-when my package needs to load a small data file
-that’s embedded in the package itself,
-I do sometimes break this rule.
+패키지 자체에 포함된 작은 데이터 파일을 로드해야 할 때
+때때로 이 규칙을 어긴다는 것을 인정합니다.
 
-.. TODO do lazy mechanisms deserve their own page?
+.. TODO 지연 메커니즘이 자체 페이지를 가질 자격이 있습니까?
 
-.. Some other examples
+.. 기타 예시
 
-   File: Lib/signal.py
+   파일: Lib/signal.py
    6:1:_globals = globals()
 
-   File: Lib/email/header.py
+   파일: Lib/email/header.py
    31:1:USASCII = Charset('us-ascii')
 
    217:1:default = EmailPolicy()
-   ^ useful objects
+   ^ 유용한 객체
 
-   File: Lib/copyreg.py
+   파일: Lib/copyreg.py
    10:1:dispatch_table = {}
-   ^ global mutable registry
+   ^ 전역 변경 가능 레지스트리
 
-   File: Lib/pydoc.py
+   파일: Lib/pydoc.py
    1626:1:text = TextDoc()
    1627:1:plaintext = _PlainTextDoc()
    1628:1:html = HTMLDoc()
    2101:1:help = Helper()
 
-   File: Lib/smtpd.py
+   파일: Lib/smtpd.py
    106:1:DEBUGSTREAM = Devnull()
-   ^ where messages are sent by default; you can replace with NOT:
+   ^ 기본적으로 메시지가 전송되는 위치이며, 다음으로 바꿀 수 있습니다. NOT:
    class Devnull:
        def write(self, msg): pass
        def flush(self): pass
