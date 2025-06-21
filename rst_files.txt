@@ -1,0 +1,16 @@
+docs/source/python/prebound-methods/index.rst
+docs/source/python/module-globals/index.rst
+docs/source/python/sentinel-object/index.rst
+docs/source/gang-of-four/flyweight/index.rst
+docs/source/gang-of-four/singleton/index.rst
+docs/source/gang-of-four/factory-method/index.rst
+docs/source/gang-of-four/composition-over-inheritance/index.rst
+docs/source/gang-of-four/composite/index.rst
+docs/source/gang-of-four/iterator/index.rst
+docs/source/gang-of-four/decorator-pattern/index.rst
+docs/source/gang-of-four/abstract-factory/index.rst
+docs/source/gang-of-four/index.rst
+docs/source/gang-of-four/prototype/index.rst
+docs/source/gang-of-four/builder/index.rst
+docs/source/fowler-refactoring/index.rst
+docs/source/index.rst

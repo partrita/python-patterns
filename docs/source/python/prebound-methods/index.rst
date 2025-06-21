@@ -1,7 +1,6 @@
-
-=============================
- The Prebound Method Pattern
-=============================
+===========================
+The Prebound Method Pattern
+===========================
 
 *A pattern native to the Python language.*
 
