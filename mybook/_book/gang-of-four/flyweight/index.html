@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>13&nbsp; 플라이웨이트 패턴 – Python Design Patterns</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../gang-of-four/iterator/index.html" rel="next">
+<link href="../../gang-of-four/decorator-pattern/index.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-3778d3e438078121318a23701f9f68bb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../gang-of-four/composite/index.html">Structural Patterns</a></li><li class="breadcrumb-item"><a href="../../gang-of-four/flyweight/index.html"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">플라이웨이트 패턴</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Python Design Patterns</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">파이썬 디자인 패턴</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Principles</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/composition-over-inheritance/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">상속보다 컴포지션 원칙</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python-specific Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/module-globals/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">전역 객체 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/prebound-methods/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">사전 바인딩된 메서드 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Creational Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/abstract-factory/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">추상 팩토리 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/builder/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">빌더 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/factory-method/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">팩토리 메서드 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/prototype/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">프로토타입 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/singleton/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">싱글턴 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Structural Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/composite/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">컴포지트 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/decorator-pattern/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">데코레이터 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/flyweight/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">플라이웨이트 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Behavioral Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/iterator/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">반복자 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">References</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gang of Four 책</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../fowler-refactoring/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">마틴 파울러의 <em>리팩토링</em></span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#팩토리-또는-생성자" id="toc-팩토리-또는-생성자" class="nav-link active" data-scroll-target="#팩토리-또는-생성자"><span class="header-section-number">13.1</span> 팩토리 또는 생성자</a></li>
+  <li><a href="#구현" id="toc-구현" class="nav-link" data-scroll-target="#구현"><span class="header-section-number">13.2</span> 구현</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../gang-of-four/composite/index.html">Structural Patterns</a></li><li class="breadcrumb-item"><a href="../../gang-of-four/flyweight/index.html"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">플라이웨이트 패턴</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">플라이웨이트 패턴</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><em>:doc:`/gang-of-four/index`의 “구조 패턴”</em></p>
+<div class="admonition">
+<p>결론</p>
+<p>플라이웨이트 객체는 파이썬에 매우 적합하여 언어 자체가 식별자, 일부 정수, 부울 참 및 거짓과 같은 널리 사용되는 값에 대해 이 패턴을 사용합니다.</p>
+</div>
+<p>플라이웨이트 패턴의 완벽한 예는 파이썬 <a href="https://docs.python.org/3/library/sys.html#sys.intern"><code>intern()</code></a> 함수입니다. 파이썬 2에서는 내장 함수였지만 파이썬 3에서는 <a href="https://docs.python.org/3/library/sys.html"><code>sys</code></a> 모듈로 이동했습니다. 문자열을 전달하면 정확히 동일한 문자열을 반환합니다. 장점은 공간을 절약한다는 것입니다. <code>'xyzzy'</code>와 같은 특정 값에 대해 얼마나 많은 다른 문자열 객체를 전달하든 매번 동일한 <code>'xyzzy'</code> 객체를 반환합니다.</p>
+<p>파이썬 내부에서 메모리를 절약하는 데 사용됩니다. 파이썬이 프로그램을 구문 분석할 때 <code>range</code>와 같은 지정된 식별자를 여러 번 만날 가능성이 높습니다. 각각을 별도의 문자열 객체로 저장하는 대신 <code>intern()</code>을 사용하여 코드의 모든 <code>range</code> 언급이 모두를 나타내는 단일 문자열 객체를 메모리에서 공유할 수 있도록 합니다.</p>
+<p>두 가지 다른 방식으로 문자열 <code>'python'</code>을 계산하여 (지정된 파이썬 구현이 실제로 두 개의 다른 문자열을 제공할 가능성이 높도록) 해당 동작을 확인하고 intern 함수에 전달할 수 있습니다.</p>
+<p>&gt;&gt;&gt; from sys import intern # 파이썬 2에서는 필요하지 않음 &gt;&gt;&gt; a = intern(‘py’ + ‘thon’) &gt;&gt;&gt; b = intern(‘PYTHON’.lower()) &gt;&gt;&gt; a ‘python’ &gt;&gt;&gt; b ‘python’ &gt;&gt;&gt; a is b True</p>
+<p>문자열은 플라이웨이트 객체의 세 가지 주요 속성을 모두 가지고 있기 때문에 플라이웨이트 패턴의 자연스러운 후보입니다.</p>
+<ul>
+<li>파이썬 문자열은 불변이므로 공유하기에 안전합니다. 그렇지 않으면 문자열의 문자 중 하나를 변경하기로 결정한 루틴이 다른 모든 사람과 공유되는 단일 복사본에 영향을 미칩니다.</li>
+<li>파이썬 문자열은 사용 방법에 대한 컨텍스트를 전달하지 않습니다. 사용 중인 목록, 사전 또는 기타 객체에 대한 참조를 유지해야 하는 경우 각 문자열은 한 번에 하나의 컨텍스트에서만 사용할 수 있습니다.</li>
+<li>문자열은 객체 ID가 아닌 값으로 중요합니다. <code>is</code> 키워드 대신 <code>==</code>로 비교합니다. 잘 작성된 파이썬 프로그램은 한 곳에서 디렉터리 이름으로 사용되고 다른 곳에서 사용자 이름으로 사용되는 문자열 <code>"brandon"</code>이 동일한 객체인지 아니면 두 개의 다른 객체인지조차 알아차리지 못합니다.</li>
+</ul>
+<p>갱 오브 포는 “대부분의 객체 상태를 외부화할 수 있다”고 요구할 때 이러한 동일한 요구 사항을 약간 다르게 설명합니다. 그들은 “외부” 및 “내부” 상태라고 부르는 것의 혼합인 객체로 시작한다고 상상합니다.</p>
+<blockquote class="blockquote">
+<p>a1 = Glyph(width=6, ascent=9, descent=3, x=32, y=8) a2 = Glyph(width=6, ascent=9, descent=3, x=8, y=60)</p>
+</blockquote>
+<p>서체와 크기가 주어지면 지정된 문자의 각 발생(예: 문자 <em>M</em>)은 동일한 너비, 기준선 위의 동일한 상승 및 그 아래의 동일한 하강을 갖습니다. 갱 오브 포는 이러한 속성을 문자 <em>M</em>이 되는 것의 “내부”라고 부릅니다. 그러나 페이지의 각 <em>M</em>은 다른 <code>x</code> 및 <code>y</code> 좌표를 갖습니다. 해당 상태는 “외부”이며 문자의 발생마다 다릅니다.</p>
+<p>내부 및 외부 상태가 혼합된 객체가 주어지면 갱 오브 포는 두 종류의 상태를 분리하기 위해 리팩터링하여 플라이웨이트에 도달합니다.</p>
+<blockquote class="blockquote">
+<p>a = Glyph(width=6, ascent=9, descent=3) a1 = DrawnGlyph(glyph=a, x=32, y=8) a2 = DrawnGlyph(glyph=a, x=8, y=60)</p>
+</blockquote>
+<p>플라이웨이트 패턴으로 인한 공간 절약이 상당할 뿐만 아니라, <a href="https://www.researchgate.net/profile/Mark_Linton2/publication/220877079_Glyphs_flyweight_objects_for_user_interfaces/links/58adbb6345851503be91e1dc/Glyphs-flyweight-objects-for-user-interfaces.pdf?origin=publication_detail">플라이웨이트를 소개하는 1990년 원본 논문</a>에서는 패턴을 사용하여 작성된 문서 편집기의 코드가 상당히 단순하다는 것을 발견했습니다.</p>
+<section id="팩토리-또는-생성자" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="팩토리-또는-생성자"><span class="header-section-number">13.1</span> 팩토리 또는 생성자</h2>
+<p>갱 오브 포는 플라이웨이트 모음을 관리하기 위해 <code>intern()</code>과 같은 팩토리 함수를 사용하는 것만 상상했지만, 파이썬은 종종 대신 클래스의 생성자로 논리를 이동합니다.</p>
+<p>파이썬에서 가장 간단한 예는 <code>bool</code> 타입입니다. 정확히 두 개의 인스턴스가 있습니다. 내장 이름 <code>True</code> 및 <code>False</code>를 통해 액세스할 수 있지만, 진실성 또는 거짓성을 테스트할 객체가 전달될 때 클래스에서도 반환됩니다.</p>
+<p>&gt;&gt;&gt; bool(0) False &gt;&gt;&gt; bool(’’) False &gt;&gt;&gt; bool(12) True</p>
+<p>또 다른 예는 정수입니다. 구현 세부 정보로서 파이썬의 기본 C 언어 버전은 -5부터 256까지의 정수를 플라이웨이트로 처리합니다. 이러한 정수는 인터프리터가 시작될 때 미리 생성되며, 해당 값을 가진 정수가 필요할 때 반환됩니다. 다른 정수 값을 계산하면 각 계산에서 고유한 객체가 생성됩니다.</p>
+<p>&gt;&gt;&gt; 1 + 4 is 2 + 3 True &gt;&gt;&gt; 100 + 400 is 200 + 300 False</p>
+<p>빈 문자열 및 빈 튜플과 같이 매우 일반적인 불변 객체에 대해 표준 라이브러리에 숨겨진 몇 가지 다른 플라이웨이트가 있습니다.</p>
+<p>&gt;&gt;&gt; str() is ’’ True &gt;&gt;&gt; tuple([]) is () True</p>
+<p>인터프리터가 미리 빌드한 모든 객체가 플라이웨이트로 인정되는 것은 아니라는 점에 유의하십시오. 예를 들어 <code>None</code> 객체는 인정되지 않습니다. 클래스가 진정한 플라이웨이트가 되려면 둘 이상의 인스턴스가 필요하지만, <code>None</code>은 <code>NoneType</code>의 유일한 인스턴스입니다.</p>
+</section>
+<section id="구현" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="구현"><span class="header-section-number">13.2</span> 구현</h2>
+<p>가장 간단한 플라이웨이트는 미리 할당됩니다. 학점 할당 시스템은 학점 자체에 대해 플라이웨이트를 사용할 수 있습니다.</p>
+<div class="testcode">
+<p><span id="grades">grades</span> = [letter + suffix<br>
+for letter in ‘ABCD’ for suffix in (‘+’, ’‘,’-‘)] + [’F’]</p>
+<p>def compute_grade(percent):<br>
+percent = max(59, min(99, percent)) return <span id="grades">grades</span>[(99 - percent) * 3 // 10]</p>
+<p>print(compute_grade(55)) print(compute_grade(89)) print(compute_grade(90))</p>
+</div>
+<div class="testoutput">
+<p>F B+ A-</p>
+</div>
+<p>플라이웨이트 모집단을 동적으로 빌드해야 하는 팩토리는 더 복잡합니다. 플라이웨이트를 등록하고 나중에 다시 찾을 수 있는 동적 데이터 구조가 필요합니다. 일반적으로 사전을 선택합니다.</p>
+<div class="testcode">
+<p><span id="strings">strings</span> = {}</p>
+<p>def my_intern(string):<br>
+s = <span id="strings.setdefault">strings.setdefault</span>(string, string) return s</p>
+<p>a1 = my_intern(‘A’) b1 = my_intern(‘B’) a2 = my_intern(‘A’)</p>
+<p>print(a1 is b1) print(a1 is a2)</p>
+</div>
+<div class="testoutput">
+<p>False True</p>
+</div>
+<p>동적으로 할당된 플라이웨이트의 한 가지 위험은 가능한 값의 수가 매우 많고 호출자가 프로그램 런타임 동안 많은 고유한 값을 요청할 수 있는 경우 결국 메모리가 고갈될 가능성입니다. 이러한 경우 <code>weakref</code> 모듈의 <code>WeakValueDictionary</code>를 사용하는 것을 고려할 수 있습니다.</p>
+<p>약한 참조는 위에서 주어진 간단한 예에서는 작동하지 않습니다. 왜냐하면 <code>my_intern</code>은 각 인턴된 문자열을 값뿐만 아니라 해당 키로도 사용하기 때문입니다. 그러나 인덱스가 단순한 값이고 키가 더 복잡한 객체 인스턴스인 더 일반적인 경우에는 잘 작동해야 합니다.</p>
+<p>갱 오브 포는 플라이웨이트 패턴을 팩토리 함수를 사용하는 것으로 정의하지만, 파이썬은 또 다른 가능성을 제공합니다. 클래스는 <code>bool()</code> 및 <code>int()</code>와 마찬가지로 생성자에서 바로 패턴을 구현할 수 있습니다. 위의 예제를 클래스로 다시 작성하고 — 예를 들어 미리 빌드하는 대신 주문형으로 객체를 할당하면 — 다음과 같은 결과가 생성됩니다.</p>
+<div class="testcode">
+<p>class Grade(object):<br>
+<span id="instances">instances</span> = {}</p>
+<p>def __new__(cls, percent):<br>
+percent = max(50, min(99, percent)) letter = ‘FDCBA’[(percent - 50) // 10] self = cls._instances.get(letter) if self is None: self = cls._instances[letter] = object.__new__(Grade) self.letter = letter return self</p>
+<p>def __repr__(self):<br>
+return ‘Grade {!r}’.format(self.letter)</p>
+<p>print(Grade(55), Grade(85), Grade(95), Grade(100)) print(len(Grade._instances)) # 인스턴스 수 print(Grade(95) is Grade(100)) # ’A’를 두 번 더 요청 print(len(Grade._instances)) # 숫자가 동일하게 유지되었습니까?</p>
+</div>
+<div class="testoutput">
+<p>Grade ‘F’ Grade ‘B’ Grade ‘A’ Grade ‘A’ 3 True 3</p>
+</div>
+<p><em>A</em>에 대한 <code>Grade</code> 객체가 생성되면 이에 대한 모든 추가 요청은 동일한 객체를 받습니다. 인스턴스 사전은 계속 증가하지 않습니다.</p>
+<p><code>__new__()</code>가 기존 객체를 반환할 수 있는 이러한 클래스에서는 <code>__init__()</code>을 정의하지 않는다는 점에 유의하십시오. 이는 파이썬이 항상 <code>__new__()</code>에서 반환된 객체에서 <code>__init__()</code>을 호출하기 때문입니다 (객체가 클래스 자체의 인스턴스인 한). 이는 새 플라이웨이트 객체를 처음 반환할 때는 유용하지만, 이미 초기화된 객체를 반환하는 후속 경우에는 중복됩니다. 따라서 대신 <code>__new__()</code> 중간에 초기화 작업을 수행합니다.</p>
+<blockquote class="blockquote">
+<p>self.letter = letter</p>
+</blockquote>
+<p><code>__new__()</code> 내부에 플라이웨이트 패턴 팩토리를 숨기는 가능성을 설명했지만, 동작이 철자와 일치하지 않는 코드를 생성하므로 권장하지 않습니다. 파이썬 프로그래머가 <code>Grade(95)</code>를 보면 <code>__new__()</code>가 재정의되었다는 비밀을 알고 있고 코드를 읽을 때 항상 해당 사실을 기억하지 않는 한, 모든 결과와 함께 “새 객체 인스턴스”라고 생각할 것입니다.</p>
+<p>전통적인 플라이웨이트 패턴 팩토리 함수는 “이 코드는 새 객체를 빌드하고 있습니다”와 같은 가정을 유발할 가능성이 적으며, 어쨌든 구현하고 디버깅하기가 더 간단합니다.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../gang-of-four/decorator-pattern/index.html" class="pagination-link" aria-label="데코레이터 패턴">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">데코레이터 패턴</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../gang-of-four/iterator/index.html" class="pagination-link" aria-label="반복자 패턴">
+        <span class="nav-page-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">반복자 패턴</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

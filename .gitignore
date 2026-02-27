@@ -249,4 +249,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/python,macos,linux,windows
+# End of https://www.toptal.com/developers/gitignore/api/python,macos,linux,windows# pixi environments
+.pixi/*
+!.pixi/config.toml

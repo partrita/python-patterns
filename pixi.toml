@@ -1,0 +1,17 @@
+[workspace]
+authors = ["fkt <deepthought@postech.ac.kr>"]
+channels = ["conda-forge"]
+name = "python-patterns"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+convert = "python convert.py"
+build = "pixi run convert && quarto render mybook"
+
+[dependencies]
+quarto = ">=1.8.27,<2"
+matplotlib = "==3.10.1"
+pandoc = ">=3.1.9"
+python = "==3.12.4"
+jupytext = ">=1.16.3"

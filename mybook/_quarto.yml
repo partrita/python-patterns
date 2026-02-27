@@ -1,0 +1,45 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Python Design Patterns"
+  author: "Brandon Rhodes"
+  chapters:
+    - index.qmd
+    - part: "Principles"
+      chapters:
+        - gang-of-four/composition-over-inheritance/index.qmd
+    - part: "Python-specific Patterns"
+      chapters:
+        - python/module-globals/index.qmd
+        - python/prebound-methods/index.qmd
+        - python/sentinel-object/index.qmd
+    - part: "Creational Patterns"
+      chapters:
+        - gang-of-four/abstract-factory/index.qmd
+        - gang-of-four/builder/index.qmd
+        - gang-of-four/factory-method/index.qmd
+        - gang-of-four/prototype/index.qmd
+        - gang-of-four/singleton/index.qmd
+    - part: "Structural Patterns"
+      chapters:
+        - gang-of-four/composite/index.qmd
+        - gang-of-four/decorator-pattern/index.qmd
+        - gang-of-four/flyweight/index.qmd
+    - part: "Behavioral Patterns"
+      chapters:
+        - gang-of-four/iterator/index.qmd
+    - part: "References"
+      chapters:
+        - gang-of-four/index.qmd
+        - fowler-refactoring/index.qmd
+
+bibliography: references.bib
+citeproc: false
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand

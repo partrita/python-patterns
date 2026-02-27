@@ -1,0 +1,42 @@
+name: Deploy Quarto Book to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@v0.5.0
+        with:
+          cache: true
+
+      - name: Install dependencies
+        run: pixi install
+
+      - name: Convert rst to qmd
+        run: pixi run convert
+
+      - name: Render Quarto book
+        run: pixi run quarto render mybook
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: mybook/_book
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

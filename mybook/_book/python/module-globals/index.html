@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>3&nbsp; 전역 객체 패턴 – Python Design Patterns</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../python/prebound-methods/index.html" rel="next">
+<link href="../../gang-of-four/composition-over-inheritance/index.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-3778d3e438078121318a23701f9f68bb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../python/module-globals/index.html">Python-specific Patterns</a></li><li class="breadcrumb-item"><a href="../../python/module-globals/index.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">전역 객체 패턴</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Python Design Patterns</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">파이썬 디자인 패턴</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Principles</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/composition-over-inheritance/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">상속보다 컴포지션 원칙</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python-specific Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/module-globals/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">전역 객체 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/prebound-methods/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">사전 바인딩된 메서드 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Creational Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/abstract-factory/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">추상 팩토리 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/builder/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">빌더 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/factory-method/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">팩토리 메서드 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/prototype/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">프로토타입 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/singleton/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">싱글턴 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Structural Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/composite/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">컴포지트 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/decorator-pattern/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">데코레이터 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/flyweight/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">플라이웨이트 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Behavioral Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/iterator/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">반복자 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">References</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gang of Four 책</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../fowler-refactoring/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">마틴 파울러의 <em>리팩토링</em></span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#상수-패턴" id="toc-상수-패턴" class="nav-link active" data-scroll-target="#상수-패턴"><span class="header-section-number">3.1</span> 상수 패턴</a></li>
+  <li><a href="#가져오기-시-계산" id="toc-가져오기-시-계산" class="nav-link" data-scroll-target="#가져오기-시-계산"><span class="header-section-number">3.2</span> 가져오기 시 계산</a></li>
+  <li><a href="#던더-상수" id="toc-던더-상수" class="nav-link" data-scroll-target="#던더-상수"><span class="header-section-number">3.3</span> 던더 상수</a></li>
+  <li><a href="#전역-객체-패턴" id="toc-전역-객체-패턴" class="nav-link" data-scroll-target="#전역-객체-패턴"><span class="header-section-number">3.4</span> 전역 객체 패턴</a></li>
+  <li><a href="#변경-가능한-전역-객체" id="toc-변경-가능한-전역-객체" class="nav-link" data-scroll-target="#변경-가능한-전역-객체"><span class="header-section-number">3.5</span> 변경 가능한 전역 객체</a></li>
+  <li><a href="#가져오기-시-io" id="toc-가져오기-시-io" class="nav-link" data-scroll-target="#가져오기-시-io"><span class="header-section-number">3.6</span> 가져오기 시 I/O</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../python/module-globals/index.html">Python-specific Patterns</a></li><li class="breadcrumb-item"><a href="../../python/module-globals/index.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">전역 객체 패턴</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">전역 객체 패턴</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="admonition">
+<p>결론</p>
+<p>다른 여러 스크립팅 언어와 마찬가지로, 파이썬은 각 모듈의 외부 수준을 일반 코드로 구문 분석합니다. 들여쓰기되지 않은 할당문, 표현식, 심지어 루프와 조건문까지도 모듈을 가져올 때 실행됩니다. 이는 모듈의 클래스와 함수를 호출자가 유용하게 사용할 수 있는 상수 및 데이터 구조로 보완할 수 있는 훌륭한 기회를 제공하지만, 위험한 유혹도 제공합니다. 변경 가능한 전역 객체는 멀리 떨어진 코드를 결합하게 될 수 있으며, I/O 작업은 가져오기 시 비용과 부작용을 발생시킵니다.</p>
+</div>
+<p>모든 파이썬 모듈은 별도의 네임스페이스입니다. <code>json</code>과 같은 모듈은 <code>pickle</code> 모듈에 정의된 완전히 다른 <code>loads()</code> 함수와 충돌하거나, 대체하거나, 덮어쓰지 않고 <code>loads()</code> 함수를 제공할 수 있습니다.</p>
+<p>별도의 네임스페이스는 프로그래밍 언어를 다루기 쉽게 만드는 데 중요합니다. 파이썬 모듈이 별도의 네임스페이스가 아니라면, 눈앞의 모듈에 주의를 집중하면서 파이썬 코드를 읽거나 쓸 수 없을 것입니다 — 코드 한 줄이 표준 라이브러리나 설치한 타사 모듈의 다른 곳에 정의된 이름을 사용하거나 우연히 충돌할 수 있습니다. 타사 모듈을 업그레이드하면 새 버전이 사용자의 것과 충돌하는 새 전역 변수를 정의하는 경우 전체 프로그램이 손상될 수 있습니다. 네임스페이스가 없는 언어로 코딩해야 하는 프로그래머는 곧 전역 이름이 충돌하는 것을 막기 위한 필사적인 경쟁 속에서 접두사, 접미사 및 추가 구두점으로 전역 이름을 장식하게 됩니다.</p>
+<p>모든 함수와 클래스는 물론 객체이지만 — 파이썬에서는 모든 것이 객체입니다 — 모듈 전역 패턴은 보다 구체적으로 모듈의 전역 수준에서 이름이 지정된 일반 객체 인스턴스를 나타냅니다.</p>
+<p>두 가지 패턴은 모듈 전역 변수를 사용하지만 자체 문서를 보증할 만큼 중요합니다.</p>
+<ul>
+<li>:doc:`사전 바인딩된 메서드 &lt;/python/prebound-methods/index&gt;`는 모듈이 객체를 빌드한 다음 객체의 바인딩된 메서드 중 하나 이상을 모듈의 전역 수준 이름에 할당할 때 생성됩니다. 이 이름은 나중에 객체 자체를 찾을 필요 없이 메서드를 호출하는 데 사용할 수 있습니다.</li>
+<li>:doc:`감시 객체 &lt;/python/sentinel-object/index&gt;`는 모듈의 전역 네임스페이스에 있을 필요는 없지만 — 일부 감시 객체는 클래스 속성으로 정의되고 다른 일부는 비공개이며 클로저 내부에 있습니다 — 표준 라이브러리와 그 밖의 많은 감시 객체는 모듈 전역 변수로 정의되고 액세스됩니다.</li>
+</ul>
+<p>이 문서에서는 다른 일반적인 경우를 다룹니다.</p>
+<section id="상수-패턴" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="상수-패턴"><span class="header-section-number">3.1</span> 상수 패턴</h2>
+<p>모듈은 종종 유용한 숫자, 문자열 및 기타 값을 전역 범위의 이름에 할당합니다. 표준 라이브러리에는 이러한 할당이 많이 포함되어 있으며, 여기서 몇 가지 예를 발췌할 수 있습니다.</p>
+<pre><code>January = 1                   # calendar.py
+WARNING = 30                  # logging.py
+MAX_INTERPOLATION_DEPTH = 10  # configparser.py
+SSL_HANDSHAKE_TIMEOUT = 60.0  # asyncio.constants.py
+TICK = "'"                    # email.utils.py
+CRLF = "\r\n"                 # smtplib.py</code></pre>
+<p>이것들은 객체 자체가 변경 불가능하다는 의미에서만 “상수”라는 점을 기억하십시오. 이름은 여전히 다시 할당될 수 있습니다.</p>
+<div class="testcode">
+<p>import calendar calendar.January = 13 print(calendar.January)</p>
+</div>
+<div class="testoutput">
+<p>13</p>
+</div>
+<p>또는 삭제될 수도 있습니다.</p>
+<div class="testcode">
+<p>del calendar.January print(calendar.January)</p>
+</div>
+<div class="testoutput">
+<p>Traceback (most recent call last):<br>
+…</p>
+<p>AttributeError: module ‘calendar’ has no attribute ‘January’</p>
+</div>
+<p>정수, 부동 소수점 및 문자열 외에도 상수에는 튜플 및 고정 세트와 같은 변경 불가능한 컨테이너도 포함됩니다.</p>
+<pre><code>all_errors = (Error, OSError, EOFError)  # ftplib.py
+bytes_types = (bytes, bytearray)         # pickle.py
+DIGITS = frozenset("0123456789")         # sre_parse.py</code></pre>
+<p>보다 특수한 변경 불가능한 데이터 유형도 상수로 사용됩니다.</p>
+<pre><code>_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)  # datetime</code></pre>
+<p>드물게 코드가 명확하게 수정할 의도가 없는 모듈 전역 변수가 어쨌든 변경 가능한 데이터 구조를 사용합니다. 일반 변경 가능한 세트는 <code>frozenset</code>이 발명되기 이전 코드에서 일반적입니다. 딕셔너리는 표준 라이브러리가 고정된 딕셔너리를 제공하지 않기 때문에 오늘날에도 여전히 사용됩니다.</p>
+<pre><code># socket.py
+_blocking_errnos = { EAGAIN, EWOULDBLOCK }
+
+# locale.py
+windows_locale = {
+  0x0436: "af_ZA", # Afrikaans
+  0x041c: "sq_AL", # Albanian
+  0x0484: "gsw_FR",# Alsatian - France
+  ...
+  0x0435: "zu_ZA", # Zulu
+}</code></pre>
+<p>상수는 종종 리팩토링으로 도입됩니다. 프로그래머는 동일한 값 <code>60.0</code>이 코드에 반복적으로 나타나는 것을 발견하고 대신 값에 대해 상수 <code>SSL_HANDSHAKE_TIMEOUT</code>을 도입합니다. 이름을 사용할 때마다 이제 전역 범위로 약간의 검색 비용이 발생하지만, 몇 가지 이점으로 균형을 이룹니다. 상수 이름은 이제 값의 의미를 문서화하여 코드의 가독성을 향상시킵니다. 그리고 상수 할당문은 이제 <code>60.0</code>이 사용된 각 위치를 코드를 통해 찾을 필요 없이 나중에 값을 편집할 수 있는 단일 위치를 제공합니다.</p>
+<p>이러한 이점은 한 번만 사용되는 값에 대해서도 상수가 때때로 도입될 만큼 중요하며, 코드 깊숙이 숨겨져 있던 리터럴을 전역 변수로 끌어올려 가시성을 확보합니다.</p>
+<p>일부 프로그래머는 상수 할당을 사용하는 코드 가까이에 배치합니다. 다른 프로그래머는 모든 상수를 파일 맨 위에 둡니다. 상수가 항상 사람이 읽을 수 있도록 코드에 너무 가깝게 배치되지 않는 한, 아직 편집기에서 정의로 이동 기능을 구성하지 않은 독자를 위해 모듈 맨 위에 상수를 두는 것이 더 친숙할 수 있습니다.</p>
+<p>또 다른 종류의 상수는 모듈 자체의 코드를 향하는 것이 아니라 모듈의 광고된 API의 일부로 외부를 향합니다. <code>logging</code> 모듈의 <code>WARNING</code>과 같은 상수는 호출자에게 상수의 이점을 제공합니다. 코드가 더 읽기 쉬워지고 나중에 모든 호출자가 코드를 편집할 필요 없이 상수 값을 조정할 수 있습니다.</p>
+<p>모듈 자체에서 사용하기 위한 것이지만 호출자를 위한 것이 아닌 상수는 항상 밑줄로 시작하여 비공개로 표시될 것으로 예상할 수 있습니다. 그러나 파이썬 프로그래머는 상수를 비공개로 표시하는 데 일관성이 없습니다. 아마도 호출자가 사용하기로 결정했기 때문에 상수를 영원히 유지해야 하는 비용이 도우미 함수나 클래스의 API가 영원히 잠기는 비용보다 작기 때문일 수 있습니다.</p>
+</section>
+<section id="가져오기-시-계산" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="가져오기-시-계산"><span class="header-section-number">3.2</span> 가져오기 시 계산</h2>
+<p>때로는 코드가 호출될 때마다 값을 다시 계산하는 것을 피하기 위해 효율성을 위해 상수가 도입됩니다. 예를 들어, 리터럴 숫자를 포함하는 수학 연산은 실제로 모든 최신 파이썬 구현에서 최적화되지만, 개발자는 종종 결과를 모듈 전역 변수에 할당하여 가져오기 시 수학이 수행되어야 한다는 것을 명시적으로 만드는 것을 더 편안하게 생각합니다.</p>
+<pre><code># zipfile.py
+ZIP_FILECOUNT_LIMIT = (1 &lt;&lt; 16) - 1</code></pre>
+<p>수학 표현식이 복잡하면 이름을 할당하면 코드의 가독성도 향상됩니다.</p>
+<p>또 다른 예로, 파이썬에서 리터럴로 작성할 수 없는 특수 부동 소수점 값이 있습니다. 이러한 값은 부동 소수점 유형에 문자열을 전달하여 생성할 수만 있습니다. 이러한 값이 필요할 때마다 <code>'nan'</code> 또는 <code>'inf'</code>로 <code>float()</code>를 호출하는 것을 피하기 위해 모듈은 종종 이러한 값을 모듈 전역 변수로 한 번만 빌드합니다.</p>
+<pre><code># encoder.py
+INFINITY = float('inf')</code></pre>
+<p>상수는 조건이 프로그램 실행 중에 변경되지 않는 한, 값이 필요할 때마다 다시 평가하는 것을 피하기 위해 조건부 결과를 캡처할 수도 있습니다.</p>
+<pre><code># shutil.py
+COPY_BUFSIZE = 1024 * 1024 if _WINDOWS else 16 * 1024</code></pre>
+<p>표준 라이브러리에서 계산된 상수의 가장 좋아하는 예는 <code>types</code> 모듈입니다. 나는 항상 언어 구현 자체에서 정의된 <code>FunctionType</code> 및 <code>LambdaType</code>과 같은 내장 유형 객체에 특별한 액세스 권한을 얻기 위해 C로 구현되었다고 가정했습니다.</p>
+<p>알고 보니? 내가 틀렸습니다. <code>types</code> 모듈은 일반 파이썬으로 작성되었습니다!</p>
+<p>언어 내부에 대한 특별한 액세스 권한 없이 함수 유형을 배우기 위해 다른 사람이 하는 것과 동일한 작업을 수행합니다. 함수를 만든 다음 해당 유형을 묻습니다.</p>
+<pre><code># types.py
+def _f(): pass
+FunctionType = type(_f)</code></pre>
+<blockquote class="blockquote">
+<p>Lib/re.py Pattern = type(sre_compile.compile(’‘, 0)) Match = type(sre_compile.compile(’‘, 0).match(’’))</p>
+</blockquote>
+<p>한편으로 이것은 <code>types</code> 모듈을 거의 불필요하게 만드는 것처럼 보입니다 — 항상 동일한 트릭을 사용하여 <code>FunctionType</code>을 직접 검색할 수 있습니다. 그러나 다른 한편으로 <code>types</code>에서 가져오면 상수 패턴의 두 가지 주요 이점이 모두 빛을 발합니다. <code>FunctionType</code>이 모든 곳에서 동일한 이름을 갖기 때문에 코드가 더 읽기 쉬워지고, 대규모 시스템의 얼마나 많은 모듈이 사용하든 상수를 한 번만 계산하면 되므로 더 효율적입니다.</p>
+</section>
+<section id="던더-상수" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="던더-상수"><span class="header-section-number">3.3</span> 던더 상수</h2>
+<p>모듈의 전역 수준에서 정의된 상수의 특별한 경우는 이름이 이중 밑줄로 시작하고 끝나는 “던더” 상수입니다.</p>
+<p>여러 모듈 전역 던더 상수는 언어 자체에서 설정됩니다. 공식 목록은 파이썬 참조의 <a href="https://docs.python.org/3/reference/datamodel.html#the-standard-type-hierarchy">표준 유형 계층</a> 섹션에서 “모듈” 하위 제목을 찾으십시오. 가장 자주 접하는 두 가지는 <code>__name__</code>과 <code>__file__</code>입니다. <code>__name__</code>은 파이썬이 명령줄에서 호출된 모듈에 가짜 이름 <code>'__main__'</code>을 할당하는 끔찍한 디자인 결정 때문에 프로그램에서 확인해야 하며, <code>__file__</code>은 모듈의 파이썬 파일 자체에 대한 전체 파일 시스템 경로입니다. 이는 요즘 공식 권장 사항이 <a href="https://docs.python.org/3/library/pkgutil.html#pkgutil.get_data"><code>pkgutil.get_data()</code></a>를 사용하는 것이지만 패키지에 포함된 데이터 파일을 찾는 데 거의 보편적으로 사용됩니다.</p>
+<pre><code>here = os.path.dirname(__file__)</code></pre>
+<p>언어 런타임에서 설정한 던더 상수 외에도 모듈이 설정하도록 선택하면 파이썬이 인식하는 것이 하나 있습니다. <code>__all__</code>에 식별자 시퀀스가 할당되면 <code>from … import *</code>를 수행하는 다른 모듈로 해당 이름만 가져옵니다. <code>import *</code>가 안티 패턴으로 명성을 얻으면서 <code>__all__</code>이 덜 인기를 얻을 것으로 예상했을 수 있지만, <a href="http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html">Sphinx autodoc 모듈</a>과 같은 자동 문서화 엔진에 포함된 기호 목록을 제한하는 행복한 두 번째 경력을 얻었습니다.</p>
+<p>대부분의 모듈은 <code>__all__</code>을 수정할 계획이 없지만 설명할 수 없이 파이썬 목록으로 지정합니다. 튜플을 사용하는 것이 더 우아합니다.</p>
+<p>이러한 공식 던더 상수 외에도 일부 모듈은 더 많은 것을 추가합니다. <code>__author__</code> 및 <code>__version__</code>과 같은 이름에 대한 할당은 표준 라이브러리와 그 이상에 흩어져 있습니다. 도구는 이러한 비표준 이름을 무시하는 경향이 있지만 사람이 읽는 사람은 때때로 유익하다고 생각할 수 있습니다.</p>
+<p>표준 라이브러리 내에서도 <code>__author__</code>가 어떤 유형이어야 하는지에 대한 합의가 없는 것 같습니다.</p>
+<pre><code># bz2.py
+__author__ = "Nadeem Vawda &lt;nadeem.vawda@gmail.com&gt;"
+
+# inspect.py
+__author__ = ('Ka-Ping Yee &lt;ping@lfw.org&gt;',
+              'Yury Selivanov &lt;yselivanov@sprymix.com&gt;')</code></pre>
+<p>던더 없이 <code>author</code>와 <code>version</code>을 대신 사용하지 않는 이유는 무엇입니까? 초기 독자는 아마도 “파이썬 언어 런타임에 특별함”을 실제로 의미하는 던더를 값이 모듈 코드가 아닌 모듈 메타데이터라는 모호한 표시로 오해했을 것입니다. 몇몇 표준 라이브러리 모듈은 던더 없이 버전을 제공하지만 대문자 표기에 대해서도 동의하지 않습니다.</p>
+<pre><code>VERSION = "1.3.0"  # etree/ElementTree.py
+version = "0.20"   # sax/expatreader.py
+version = "0.9.0"  # tarfile.py</code></pre>
+<p>이러한 비공식적이고 임시적인 메타데이터 규칙을 둘러싼 불일치를 피하기 위해 <code>pip</code>로 설치될 것으로 예상되는 패키지는 파이썬 패키지 설치 시스템에서 직접 다른 설치된 패키지의 이름과 버전을 알 수 있습니다. 자세한 내용은 <a href="https://setuptools.readthedocs.io/en/latest/pkg_resources.html"><code>pkg_resources</code> 모듈에 대한 setuptools 설명서</a>에서 확인할 수 있습니다.</p>
+</section>
+<section id="전역-객체-패턴" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="전역-객체-패턴"><span class="header-section-number">3.4</span> 전역 객체 패턴</h2>
+<p>완전한 전역 객체 패턴에서는 상수 패턴에서와 마찬가지로 모듈이 가져오기 시 객체를 인스턴스화하고 모듈의 전역 범위에 이름을 할당합니다. 그러나 객체는 단순히 데이터 역할을 하는 것이 아닙니다. 단순히 정수, 문자열 또는 데이터 구조가 아닙니다. 대신 객체는 제공하는 메서드를 위해, 즉 수행할 수 있는 작업을 위해 제공됩니다.</p>
+<p>가장 간단한 전역 객체는 변경 불가능합니다. 일반적인 예는 컴파일된 정규 표현식입니다. 다음은 표준 라이브러리의 몇 가지 예입니다.</p>
+<pre><code>escapesre = re.compile(r'[\\"]')       # email/utils.py
+magic_check = re.compile('([*?[])')    # glob.py
+commentclose = re.compile(r'--\s*&gt;')   # html/parser.py
+HAS_UTF8 = re.compile(b'[\x80-\xff]')  # json/encoder.py</code></pre>
+<p>모듈 전역 변수로 정규 표현식을 컴파일하는 것은 보다 일반적인 전역 객체 패턴의 좋은 예입니다. 프로그램 런타임 후반에서 가져오기 시로 비용을 우아하고 안전하게 이전합니다. 절충안은 다음과 같습니다.</p>
+<ul>
+<li>모듈 가져오기 비용은 정규 표현식 컴파일 비용만큼 증가합니다 (전역 이름에 할당하는 약간의 비용 추가).</li>
+<li>가져오기 시 비용은 이제 모듈을 가져오는 모든 프로그램에서 부담합니다. 프로그램이 위에서 보여준 <code>HAS_UTF8</code> 정규 표현식을 사용하는 코드를 호출하지 않더라도 <code>json</code> 모듈을 가져올 때마다 컴파일 비용이 발생합니다. (반전: 파이썬 3에서는 패턴이 모듈에서 더 이상 사용되지도 않습니다! 그러나 이름이 선행 밑줄로 비공개로 표시되지 않았으므로 제거하는 것이 안전하지 않다고 생각합니다. 그리고 모든 <code>import json</code>은 영원히 비용을 지불해야 합니까?)</li>
+<li>그러나 실제로 정규 표현식을 사용해야 하는 함수와 메서드는 컴파일에 대한 반복적인 비용이 더 이상 발생하지 않습니다. 컴파일된 정규 표현식은 즉시 문자열 검색을 시작할 준비가 되었습니다! 구문 분석과 같은 비용이 많이 드는 작업의 내부 루프에서와 같이 정규 표현식을 자주 사용하는 경우 상당한 비용을 절감할 수 있습니다.</li>
+<li>전역 이름은 정규 표현식이 로컬에서 사용될 때 더 큰 표현식에서 익명으로 사용되는 경우보다 호출 코드를 더 읽기 쉽게 만듭니다. (가독성만이 유일한 관심사라면 정규 표현식 문자열을 전역 변수로 정의하되 모듈 수준에서 컴파일 비용을 건너뛸 수 있다는 점을 기억하십시오.)</li>
+</ul>
+<p>이 절충안 목록은 정규 표현식을 클래스 속성으로 옮기는 대신 전역 범위로 완전히 옮기는 경우에도 거의 동일합니다. 마침내 파이썬과 클래스에 대해 글을 쓰게 되면 여기에서 클래스 속성에 대한 추가 생각으로 연결할 것입니다.</p>
+</section>
+<section id="변경-가능한-전역-객체" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="변경-가능한-전역-객체"><span class="header-section-number">3.5</span> 변경 가능한 전역 객체</h2>
+<p>그러나 변경 가능한 전역 객체는 어떻습니까?</p>
+<p>운영 체제 프로세스에 대해서도 본질적으로 전역적인 시스템 리소스를 래핑할 때 가장 쉽게 정당화됩니다. 표준 라이브러리 자체의 한 가지 예는 <code>environ</code> <a href="https://docs.python.org/3/library/os.html#os.environ">객체</a>입니다. 이는 파이썬 프로그램에 “환경”(시간대, 터미널 유형 등을 제공하는 텍스트 키 및 값)을 제공하며, 이는 부모 프로세스에서 파이썬 프로그램으로 전달되었습니다.</p>
+<p>이제 프로그램이 실행되는 동안 환경에 새 값을 실제로 작성해야 하는지 여부는 논쟁의 여지가 있습니다. 환경 변수를 조정해야 하는 하위 프로세스를 시작하는 경우 <code>subprocess</code> 루틴은 <code>env</code> 매개변수를 제공합니다. 그러나 코드가 이 전역 리소스를 조작해야 하는 경우 해당 액세스는 해당 전역 파이썬 객체를 통해 조정되는 것이 합리적입니다.</p>
+<pre><code># os.py
+environ = _createenviron()</code></pre>
+<p>이 전역 객체를 통해 파이썬 프로그램의 다양한 루틴과 스레드는 이 프로세스 전체 리소스에 대한 액세스를 조정합니다. 모든 변경 사항:</p>
+<div class="testcode">
+<p>import os os.environ[‘TERM’] = ‘xterm’</p>
+</div>
+<p>— 해당 환경 키를 읽는 프로그램의 다른 부분에 즉시 표시됩니다.</p>
+<pre><code>&gt;&gt;&gt; os.environ['TERM']
+'xterm'</code></pre>
+<p>코드베이스의 멀리 떨어진 부분, 심지어 다른 라이브러리의 관련 없는 부분까지 고유한 전역 객체를 통해 결합하는 문제점은 잘 알려져 있습니다.</p>
+<ul>
+<li>이전에는 독립적이었던 테스트가 갑자기 전역 객체를 통해 결합되어 더 이상 병렬로 안전하게 실행할 수 없습니다. 한 테스트가 다른 테스트가 <code>subprocess</code>로 바이너리를 시작하기 직전에 <code>environ['PATH']</code>에 임시 할당을 하면 바이너리는 <code>$PATH</code>의 테스트 값을 상속받아 오류가 발생할 수 있습니다.</li>
+<li>때로는 잠금을 통해 전역 객체에 대한 액세스를 직렬화할 수 있습니다. 그러나 코드가 사용하는 모든 라이브러리를 철저히 감사하고 새 버전으로 업그레이드할 때 계속 감사하지 않는 한, 어떤 테스트가 궁극적으로 <code>environ</code>과 같은 특정 전역 객체를 건드리는 코드를 호출하는지 알기 어려울 수 있습니다.</li>
+<li>병렬이 아닌 직렬로 실행되는 테스트조차도 이제 한 테스트가 다음 테스트가 실행되기 전에 <code>environ</code>을 원래 상태로 복원하지 못하면 결합됩니다. 이는 해체 루틴이나 자동으로 상태를 복원하는 모의 객체로 완화될 수 있다는 것은 사실입니다. 그러나 모든 단일 테스트가 완벽하게 신중하지 않는 한 테스트 제품군은 여전히 임의의 테스트 순서나 이전 테스트가 성공했는지 또는 일찍 종료되었는지에 따라 예외가 발생할 수 있습니다.</li>
+<li>이러한 위험은 테스트뿐만 아니라 프로덕션 실행에도 해당됩니다. 애플리케이션이 여러 스레드를 시작하지 않더라도 리팩토링으로 인해 다른 루틴이 상태를 변환하는 중간에 <code>environ</code>에서 한 가지 작업을 수행하는 코드를 호출하는 놀라운 경우가 있을 수 있습니다.</li>
+</ul>
+<p>표준 라이브러리에는 변경 가능한 전역 패턴의 예가 더 많이 있습니다 — 공개 전역 변수와 비공개 전역 변수 모두 모듈에 흩어져 있습니다. 일부는 시스템 수준의 고유한 리소스에 해당합니다.</p>
+<pre><code># Lib/multiprocessing/process.py
+_current_process = _MainProcess()
+_process_counter = itertools.count(1)</code></pre>
+<p>다른 것들은 외부 리소스에 해당하지 않고 대신 로깅과 같은 프로세스 전체 활동에 대한 단일 조정 지점 역할을 합니다.</p>
+<pre><code># Lib/logging/__init__.py
+root = RootLogger(WARNING)</code></pre>
+<p>타사 라이브러리는 전역 HTTP 스레드 풀 및 데이터베이스 연결에서 요청 처리기, 라이브러리 플러그인 및 타사 코덱 레지스트리에 이르기까지 수십 가지 더 많은 예를 제공할 수 있습니다. 그러나 모든 경우에 변경 가능한 전역 변수는 모든 모듈이 접근할 수 있는 곳에 리소스를 두는 편리함을 대가로 위에 나열된 모든 위험을 감수합니다.</p>
+<p>가능한 한 인수를 받아들이고 그로부터 계산된 값을 반환하는 코드를 작성하라는 것이 제 조언입니다. 그렇지 않으면 데이터베이스 연결이나 열린 소켓을 외부 세계와 상호 작용해야 하는 코드에 전달해 보십시오. 필요한 리소스에서 고립된 코드가 전역 변수에 액세스하는 것은 타협안입니다.</p>
+<p>물론 파이썬의 장점은 일반적으로 안티 패턴과 타협안조차도 코드에서 상당히 우아하게 읽힌다는 것입니다. 모듈의 전역 수준에서 할당문은 다른 할당문만큼 쉽게 작성하고 읽을 수 있으며, 호출자는 함수 및 클래스에 사용하는 것과 정확히 동일한 가져오기 문을 통해 변경 가능한 전역 변수에 액세스할 수 있습니다.</p>
+<blockquote class="blockquote">
+<p>객체를 만들기 위해 최상위 수준에서 I/O를 수행하지 마십시오. 정말로 별도의 초기화 또는 설정 루틴이 필요한 경우 지연 인스턴스화 또는 지연 호출 또는 덜 마법처럼 보이도록 먼저 무언가를 호출하도록 합니다.</p>
+</blockquote>
+</section>
+<section id="가져오기-시-io" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="가져오기-시-io"><span class="header-section-number">3.6</span> 가져오기 시 I/O</h2>
+<p>최악의 전역 객체 중 다수는 가져오기 시 파일 또는 네트워크 I/O를 수행하는 객체입니다. 이러한 객체는 해당 I/O 비용을 모듈이 필요한 모든 라이브러리, 스크립트 및 테스트에 부과할 뿐만 아니라 파일이나 네트워크를 사용할 수 없는 경우 실패에 노출시킵니다.</p>
+<p>라이브러리 작성자는 “<code>/etc/hosts</code> 파일은 항상 존재할 것이다”와 같은 가정을 하는 안타까운 경향이 있습니다. 사실 그들은 언젠가 코드가 직면하게 될 모든 이국적인 환경을 미리 알 수 없습니다 — 아마도 해당 파일이 실제로 없는 작은 임베디드 시스템일 수도 있고, 네트워크 구성이 전혀 없는 컨테이너를 시작하는 지속적인 통합 환경일 수도 있습니다.</p>
+<p>이러한 가능성에 직면하더라도 모듈 작성자는 여전히 가져오기 시 I/O를 방어하려고 할 수 있습니다. “그러나 가져오기 시간 이후로 I/O를 지연시키는 것은 불가피한 일을 미루는 것일 뿐입니다 — 시스템에 <code>/etc/hosts</code>가 없으면 사용자는 어쨌든 나중에 정확히 동일한 예외를 받게 될 것입니다.” 이 변명을 하려는 시도는 세 가지 오해를 드러냅니다.</p>
+<ol type="1">
+<li>가져오기 시 오류는 런타임 시 오류보다 훨씬 심각합니다. 패키지를 가져오는 순간 프로그램의 주 루틴이 아직 실행되지 않았을 가능성이 높다는 점을 기억하십시오 — 호출자는 일반적으로 파일 맨 위에 있는 <code>import</code> 문 스택의 중간에 여전히 있습니다. 아마도 아직 로깅을 설정하지 않았고 실패를 포착하고 보고하는 애플리케이션의 주 <code>try…except</code> 블록에 아직 들어가지 않았을 것입니다. 따라서 가져오기 중 오류는 제대로 보고되는 대신 표준 출력으로 직접 인쇄될 가능성이 높습니다.</li>
+<li>애플리케이션은 종종 일부 작업의 실패를 견디도록 작성되어 비상시에도 다른 기능을 계속 수행할 수 있습니다. 라이브러리가 필요한 기능이 이제 예외를 발생시키더라도 애플리케이션은 계속 제공할 수 있는 다른 많은 기능이 있을 수 있습니다 — 또는 가져오기 시 예외로 종료하지 않았다면 가능했을 것입니다.</li>
+<li>마지막으로 라이브러리 작성자는 라이브러리를 가져오는 파이썬 프로그램이 라이브러리를 사용하지 않을 수도 있다는 점을 명심해야 합니다! 코드가 가져왔다고 해서 사용될 것이라고 가정하지 마십시오. 모듈이 다른 모듈의 종속성으로 우연히 가져와지지만 호출되지 않는 경우가 많습니다. 가져오기 시 I/O를 수행하면 네트워크 포트, 연결 풀 또는 열린 파일에 대해 신경 쓰거나 필요하지도 않은 수백 개의 프로그램과 테스트에 비용과 위험을 부과할 수 있습니다.</li>
+</ol>
+<p>이러한 모든 이유로 전역 객체는 파일을 열고 소켓을 만들기 전에 처음 호출될 때까지 기다리는 것이 가장 좋습니다 — 왜냐하면 라이브러리가 주 프로그램이 이제 실행 중이고 이 특정 프로그램 실행에서 서비스가 실제로 필요하다는 것을 아는 것은 바로 그 첫 번째 호출 순간이기 때문입니다.</p>
+<p>패키지 자체에 포함된 작은 데이터 파일을 로드해야 할 때 때때로 이 규칙을 어긴다는 것을 인정합니다.</p>
+<blockquote class="blockquote">
+<p>파일: Lib/signal.py 6:1:_globals = globals()</p>
+<p>파일: Lib/email/header.py 31:1:USASCII = Charset(‘us-ascii’)</p>
+<p>217:1:default = EmailPolicy() ^ 유용한 객체</p>
+<p>파일: Lib/copyreg.py 10:1:dispatch_table = {} ^ 전역 변경 가능 레지스트리</p>
+<p>파일: Lib/pydoc.py 1626:1:text = TextDoc() 1627:1:plaintext = <span id="plaintextdoc">PlainTextDoc</span>() 1628:1:html = HTMLDoc() 2101:1:help = Helper()</p>
+<p>파일: Lib/smtpd.py 106:1:DEBUGSTREAM = Devnull() ^ 기본적으로 메시지가 전송되는 위치이며, 다음으로 바꿀 수 있습니다. NOT: class Devnull: def write(self, msg): pass def flush(self): pass</p>
+<p>/home/brandon/cpython/Lib/turtledemo/turtle.cfg 8:fillcolor = “”</p>
+</blockquote>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../gang-of-four/composition-over-inheritance/index.html" class="pagination-link" aria-label="상속보다 컴포지션 원칙">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">상속보다 컴포지션 원칙</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../python/prebound-methods/index.html" class="pagination-link" aria-label="사전 바인딩된 메서드 패턴">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">사전 바인딩된 메서드 패턴</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

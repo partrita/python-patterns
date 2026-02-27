@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>11&nbsp; 컴포지트 패턴 – Python Design Patterns</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../gang-of-four/decorator-pattern/index.html" rel="next">
+<link href="../../gang-of-four/singleton/index.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-3778d3e438078121318a23701f9f68bb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../gang-of-four/composite/index.html">Structural Patterns</a></li><li class="breadcrumb-item"><a href="../../gang-of-four/composite/index.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">컴포지트 패턴</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Python Design Patterns</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">파이썬 디자인 패턴</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Principles</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/composition-over-inheritance/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">상속보다 컴포지션 원칙</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Python-specific Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/module-globals/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">전역 객체 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/prebound-methods/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">사전 바인딩된 메서드 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Creational Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/abstract-factory/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">추상 팩토리 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/builder/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">빌더 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/factory-method/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">팩토리 메서드 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/prototype/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">프로토타입 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/singleton/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">싱글턴 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Structural Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/composite/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">컴포지트 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/decorator-pattern/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">데코레이터 패턴</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/flyweight/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">플라이웨이트 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Behavioral Patterns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/iterator/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">반복자 패턴</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">References</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../gang-of-four/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gang of Four 책</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../fowler-refactoring/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">마틴 파울러의 <em>리팩토링</em></span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#예-unix-파일-시스템" id="toc-예-unix-파일-시스템" class="nav-link active" data-scroll-target="#예-unix-파일-시스템"><span class="header-section-number">11.1</span> 예: UNIX 파일 시스템</a></li>
+  <li><a href="#계층-구조에-대하여" id="toc-계층-구조에-대하여" class="nav-link" data-scroll-target="#계층-구조에-대하여"><span class="header-section-number">11.2</span> 계층 구조에 대하여</a></li>
+  <li><a href="#예-tkinter를-사용한-gui-프로그래밍" id="toc-예-tkinter를-사용한-gui-프로그래밍" class="nav-link" data-scroll-target="#예-tkinter를-사용한-gui-프로그래밍"><span class="header-section-number">11.3</span> 예: Tkinter를 사용한 GUI 프로그래밍</a></li>
+  <li><a href="#구현-상속할-것인가-말-것인가" id="toc-구현-상속할-것인가-말-것인가" class="nav-link" data-scroll-target="#구현-상속할-것인가-말-것인가"><span class="header-section-number">11.4</span> 구현: 상속할 것인가, 말 것인가?</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../gang-of-four/composite/index.html">Structural Patterns</a></li><li class="breadcrumb-item"><a href="../../gang-of-four/composite/index.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">컴포지트 패턴</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">컴포지트 패턴</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><em>:doc:`/gang-of-four/index`의 “구조 패턴”</em></p>
+<div class="admonition">
+<p>결론</p>
+<p>컴포지트 패턴은 파이썬의 객체 계층뿐만 아니라 저수준 시스템 호출 및 고수준 네트워크 애플리케이션에 의해 노출되는 계층에도 대칭성을 가져올 수 있습니다. 파이썬에서는 컴포지트 패턴을 엄격하게 제한된 객체 지향 언어보다 덜 번거롭게 구현할 수 있는 경우가 많습니다. 컨테이너 객체와 그 안의 객체를 공통 부모 클래스에서 상속하도록 강요받지 않습니다. 대신 구현이 아닌 공통 인터페이스만 공유하는 클래스를 빌드하거나 단순히 공통 동작을 제공하도록 덕 타이핑할 수 있습니다.</p>
+</div>
+<p>컴포지트 패턴은 “콘텐츠” 객체라고 부르는 것을 수집하고 구성하는 “컨테이너” 객체를 설계할 때마다 컨테이너 객체와 콘텐츠 객체에 공유 메서드 세트를 제공하여 호출자가 개별 콘텐츠 객체가 전달되었는지 아니면 전체 컨테이너가 전달되었는지 신경 쓸 필요 없이 가능한 한 많은 작업을 지원하면 많은 작업을 단순화할 수 있다고 제안합니다.</p>
+<p>이것은 매우 일반적인 아이디어이므로 파이썬과 객체 기반 프로그래밍에서 한 걸음 물러나 운영 체제 수준에서 컴포지트 패턴이 어떻게 작동하는지 살펴보는 것으로 시작할 수 있습니다.</p>
+<section id="예-unix-파일-시스템" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="예-unix-파일-시스템"><span class="header-section-number">11.1</span> 예: UNIX 파일 시스템</h2>
+<p>매뉴얼 페이지에 따르면 감탄할 정도로 간결한 두 글자 UNIX 명령어 <code>ls</code>는 “디렉터리 목록”을 의미하며 디렉터리 경로가 주어지면 내부의 파일과 하위 디렉터리를 나열합니다. :</p>
+<pre><code>$ ls /usr
+3bnet/       bin/         lbin/        lost+found/  options/     spool/
+adm/         gnu/         lib/         mail/        preserve/    src/
+admin/       include/     local/       news/        pub/         tmp/</code></pre>
+<p>그러나 “디렉터리 목록”이라는 이름은 오해의 소지가 있을 정도로 좁습니다. 왜냐하면 <code>ls</code>는 단일 파일 경로를 인수로 받는 것도 기꺼이 하기 때문입니다! :</p>
+<pre><code>$ ls /usr/bin/banner
+/usr/bin/banner</code></pre>
+<p>물론 사용자는 옵션을 지정하지 않고 이와 같이 단일 파일에서 <code>ls</code>를 거의 호출하지 않습니다. 알 수 있는 유일한 것은 파일이 존재한다는 것입니다 (존재하지 않으면 <code>ls</code>는 “해당 파일 또는 디렉터리가 없습니다”라고 불평합니다). 단일 파일 이름을 받아들이는 기능은 “긴 목록” 옵션과 결합될 때 더 의미가 있습니다. :</p>
+<pre><code>$ ls -l /usr/bin/banner
+-r-xr-xr-x   1 bin      bin        12620 Mar  3  1988 /usr/bin/banner</code></pre>
+<p>이러한 대칭성 — <code>ls</code>가 개별 파일과 이를 포함하는 디렉터리 모두에서 불만 없이 작동한다는 것 — 은 대부분의 사용자에게 너무 자연스러워서 그 뒤에 있는 강력한 디자인 결정을 눈치채지 못할 수도 있습니다. 운영 체제 작성자가 디렉터리 목록을 표시하는 명령 하나와 특정 파일의 속성을 표시하는 완전히 다른 명령을 제공하는 것은 매우 쉬웠을 것입니다. 그러나 대칭성이 부족하면 비용이 발생했을 것입니다. 파일 시스템을 탐색하는 동안 주의 대상이 디렉터리인지 파일인지에 따라 한 명령에서 다른 명령으로 계속 전환해야 했을 것입니다.</p>
+<p>설상가상으로 두 개의 별도 명령은 파일과 디렉터리 모두에 일치할 수 있는 와일드카드 작업을 지원할 방법이 없었을 것입니다. 그러나 다행히도 <code>ls</code>는 개별 파일과 디렉터리가 모두 포함된 이기종 인수 목록에 문제가 없습니다. :</p>
+<pre><code>$ ls -C /etc/l*
+/etc/labelit    /etc/ldsysdump  /etc/led        /etc/link
+
+/etc/log:
+filesave.log</code></pre>
+<p>여기서 <code>ls</code>는 와일드카드 <code>/etc/l*</code>와 일치하는 이름 중 4개가 파일이지만 <code>/etc/log</code>는 내부에 더 많은 파일이 있는 디렉터리라는 것을 투명하게 감지했습니다. (음, 내부에 파일 하나가 있습니다.) UNIX가 파일 목록과 디렉터리 목록을 표시하는 별도의 명령을 제공했다면 이 와일드카드는 어느 명령에도 안전하게 인수가 될 수 없었을 것입니다.</p>
+<p>이것이 명령줄 인터페이스 수준에서의 컴포지트 패턴입니다. 파일과 디렉터리 모두에 의미가 있는 <code>ls</code>, <code>du</code>, <code>chmod</code>와 같은 작업은 양쪽 모두에서 투명하게 실행되도록 구현됩니다. 이는 인지적 부담을 낮출 뿐만 아니라 셸 스크립트 작성을 더 쉽게 만듭니다. 경로가 파일인지 디렉터리인지 먼저 확인하지 않고 스크립트가 단순히 맹목적으로 실행할 수 있는 많은 작업이 있습니다.</p>
+<p>컴포지트 패턴 사용 기술은 대칭성을 어디서 깨뜨릴지 결정하는 것입니다. 예를 들어 UNIX 파일 시스템은 새 파일을 만드는 <code>touch</code>와 새 디렉터리를 만드는 <code>mkdir</code>라는 완전히 다른 명령을 제공합니다. 이는 파일 생성 모드에서 디렉터리 생성 모드로 전환하는 옵션이 있는 단일 명령일 수도 있었습니다. 그러나 설계자들은 두 작업이 개념적으로 충분히 달라서 별도의 명령을 받을 자격이 있다고 생각했습니다. 얼마나 많은 대칭성을 만들 것인지에 대한 결정은 설계자가 구현하는 각 작업에 영향을 미칩니다.</p>
+<p>실제로 차이가 있는 곳에 대칭성을 강요하면 어색한 특수 사례가 발생할 수 있습니다. 예를 들어 UNIX의 세 가지 권한 비트 중 두 개는 디렉터리와 파일에 동일하게 적용됩니다. <code>r</code>은 읽기 권한을 부여하고 <code>w</code>는 쓰기 권한을 부여합니다. 그러나 대칭성은 세 번째 비트인 <code>x</code>에서 깨집니다. 이 비트는 파일을 “실행”할 권한을 부여하지만 경로에서 사용하여 디렉터리를 “검색”할 권한을 부여합니다. 파일용과 디렉터리용으로 두 가지 다른 <code>chmod</code> 명령이 있어야 했을까요? 아니면 단일 <code>chmod</code> 바이너리가 적어도 해당 세 번째 비트에 다른 문자를 사용해야 했을까요? 파일에 적용될 때는 <code>x</code>이지만 디렉터리에 적용될 때는 “검색”을 위해 <code>s</code>일 수도 있습니다. 저는 UNIX 설계자들이 여기서 올바른 결정을 내렸다고 생각합니다. 왜냐하면 디렉터리에 대해 <code>x</code>가 약간 다른 의미를 갖는다는 것을 기억하는 것이 디렉터리에 대한 별도의 문자나 별도의 명령을 기억하는 것보다 쉽기 때문입니다. 그러나 결정은 어느 쪽으로든 갈 수 있었고, 이러한 결정을 내리는 것이 컴포지트 패턴을 적용하는 설계자에게 기교가 필요한 부분입니다.</p>
+<p>명령줄에서 파일과 디렉터리 사이에 존재하는 대칭성은 <code>ls</code>와 <code>chmod</code> 아래 시스템 호출 수준에 존재하는 대칭성과 정확히 동일하지 않다는 점에 유의해야 합니다. 각 수준에서 컴포지트 패턴은 약간 다르게 적용되었습니다. 시스템 호출의 경우 일부 대칭성이 존재합니다. <code>stat()</code>, <code>chmod()</code>, <code>chown()</code>은 파일과 디렉터리 모두에서 행복하게 작동합니다.</p>
+<p>그러나 <code>ls</code>는 <code>stat()</code>이 경로가 디렉터리 이름을 지정한다는 것을 나타내면 <code>ls</code>가 내부 파일을 나열하기 위해 디렉터리별 시스템 호출로 전환해야 한다는 사실을 숨기고 있습니다. 일반 파일의 내용을 읽는 UNIX 시스템 호출과 디렉터리의 파일 목록을 읽는 호출 사이에는 대칭성이 없으며, 중요한 이유가 있습니다. 두 작업은 서로 다른 유형의 데이터를 반환합니다. 파일에는 구조화되지 않은 바이트 스트림이 포함됩니다. 디렉터리에는 일련의 고유한 파일 이름이 포함됩니다. 반환 유형 문제는 파이썬에서 설계할 때 매우 중요한 보호 장치 역할을 합니다. 컨테이너와 콘텐츠 사이에 대칭성을 만들려는 욕구가 반환 값을 안전하게 처리하기 위해 <code>if</code> 문이나 <code>isinstance()</code>가 필요한 호출을 설계하도록 유도한다면 대칭성에 대한 욕구가 잘못된 길로 이끈 것입니다.</p>
+</section>
+<section id="계층-구조에-대하여" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="계층-구조에-대하여"><span class="header-section-number">11.2</span> 계층 구조에 대하여</h2>
+<p>이제 파이썬과 같은 프로그래밍 언어에서 컴포지트 패턴이 어떻게 보이는지에 대한 주의를 돌리면서, 1990년대의 객체 지향 및 디자인 패턴 문헌의 너무나 많은 부분 위에 걸려 있는 질문을 숙고해야 합니다.</p>
+<p>모든 계층 구조는 어디로 갔을까요?</p>
+<p>광범위한 계층 구조의 구성 및 조작은 새로운 프로그래머에게는 빈번한 연습이었고 경험이 많은 프로그래머에게는 지루한 노동이었습니다. 계층 구조가 어떻게 구성될지, 어떤 작업을 지원할지, 소멸자를 안전하게 호출하는 방법에 대해 결정하는 데 몇 시간이 걸렸습니다. 계층 구조는 어디에나 있었습니다.</p>
+<p>그리고 나서 그것들은 물러나기 시작했습니다. 모래 위로 멀리 밀려왔던 파도가 마침내 다시 쓸려나가는 것처럼 말입니다.</p>
+<ul>
+<li>1990년대 후반의 인기 있는 언어들은 깊이 중첩된 패키지 네임스페이스에 열광했습니다. Go의 현대적인 예를 들자면, <code>google.golang.org/appengine</code> 패키지는 다른 회사의 패키지 이름과 충돌하지 않는다는 강력한 보장을 제공한다는 것을 인정해야 합니다. Zope 3 프로젝트는 전성기에 <code>zope.app.form</code> 및 <code>zope.app.i18n</code>과 같은 다단계 패키지 이름으로 파이썬 패키지 인덱스를 행복하게 장식했습니다. 그러나 오늘날 대부분의 파이썬 패키지는 다른 모든 파이썬 패키지의 이름과 나란히 놓이는 단순한 복합이 아닌 이름을 선택합니다. 그리고 거의 문제를 일으키지 않습니다.</li>
+<li>옛날 프로그래밍 커리큘럼에는 이진 검색 트리, B+ 트리 및 트리 균형 조정 알고리즘이 가득했습니다. 그러나 실제 코드에서는 트리가 매우 드뭅니다. 예를 들어 BoltDB 또는 Redis와 같은 영구 저장소 엔진을 작성하기 위해 트리에서 작업하는 모든 프로그래머에 대해 수천 명의 프로그래머가 이 연습을 건너뛸 수 있습니다. 파이썬 프로그래머는 이진 검색 트리를 사용하는 경향이 없습니다. 우리는 훨씬 빠른 해시 테이블(파이썬 “딕셔너리”)을 사용하며, 우연히도 그 구조는 완전히 평평합니다 — 계층 구조가 아닙니다.</li>
+<li>데이터베이스 구조에 계층 구조가 내재되어 있던 시대가 있었습니다. 직원 기록에는 급여 내역이 바로 포함될 수 있었습니다. 그러나 계층 구조는 데이터 저장소의 가장자리 주변에 계속 존재하지만, 최근에는 NoSQL 및 문서 데이터베이스의 형태로 나타났습니다. 우리의 주력 데이터 저장소는 평평한 경향이 있습니다. 관계형 데이터베이스, CSV 파일, Pandas 데이터프레임입니다.</li>
+</ul>
+<p>계층 구조가 대신 지배했을 수도 있는 곳에서 우리 분야는 반복해서 테이블, 목록 및 배열로 되돌아가는 것 같습니다. 이 원칙은 유명한 <em>파이썬의 선</em>에도 명시되어 있습니다.</p>
+<blockquote class="blockquote">
+<p>“중첩된 것보다 평평한 것이 낫다.”</p>
+</blockquote>
+<p>큰 예외, 오늘날 계층 구조가 최고를 지배하는 영역은 문서입니다. 문서는 거의 보편적으로 섹션과 단락의 계층 구조로 처리되고 표현되며, 그 아래에는 굵게, 기울임꼴 및 하이퍼링크 범위가 있습니다. 그러나 문서라는 것의 전체 요점은 객체 및 메서드 호출을 사용하여 코드에서 항상 빌드하도록 강요받지 않는다는 것입니다. 대신 가능하면 계층 구조를 명시적이고 자연스럽게 만드는 네이티브 표현에서 구문 분석합니다. 오늘날 웹에서 컴포지트 패턴에 대한 위대한 기념물은 문서 구성이 아닙니다 — 문서는 일반적으로 HTML로 제공됩니다 — JavaScript 코드 사용을 위해 노출된 문서 객체 모델을 통한 문서 조작입니다.</p>
+<p>문서 객체 모델이 계층 구조를 제공한 방법에 대한 논의는 다른 시간으로 미루겠습니다. 그래서 프로그래머들은 대신 배열을 선호했기 때문에 jQuery를 발명했습니다.</p>
+<p>이제 코드에서 컴포지트 패턴이 어떻게 보이는지 살펴보겠습니다.</p>
+</section>
+<section id="예-tkinter를-사용한-gui-프로그래밍" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="예-tkinter를-사용한-gui-프로그래밍"><span class="header-section-number">11.3</span> 예: Tkinter를 사용한 GUI 프로그래밍</h2>
+<p>파이썬에 내장된 Tkinter를 사용하여 그래픽 사용자 인터페이스(GUI)를 구축한 프레임과 버튼의 계층 구조를 화면에 인쇄하고 싶다고 상상해 봅시다.</p>
+<p>Tkinter 설계자들이 <code>Frame</code> 컨테이너만 자식 목록을 표시하는 <code>winfo_children()</code> 메서드가 필요하다고 결정하는 것은 충분히 쉬웠을 것입니다. 결국 <code>Label</code> 및 <code>Button</code>과 같은 간단한 위젯은 자식을 포함하도록 되어 있지 않으며 메서드를 완전히 생략할 수도 있었습니다. 그러나 이러한 비대칭성은 프레임과 해당 자식을 모두 방문하려는 모든 루틴에 <code>if</code> 문을 강요했을 것입니다.</p>
+<blockquote class="blockquote">
+<p># Frame 객체만 winfo_children()을 제공했다면</p>
+<p>if isinstance(widget, Frame):<br>
+children = widget.winfo_children() …</p>
+<p>else:<br>
+# winfo_children() 호출을 신중하게 피함 …</p>
+</blockquote>
+<p>이 패턴은 피할 수 없을 때 적어도 <code>isinstance()</code> 호출을 피하고 대신 세 개의 인수가 있는 <code>getattr()</code>를 사용하여 객체에 필요한 메서드가 있는지 안전하게 검사함으로써 개선할 수 있습니다. 이렇게 하면 오늘날이든 미래이든 <code>Frame</code> 외에 다른 Tkinter 위젯이 내부에 자식 위젯을 포함할 수 있는지 여부에 대한 골치 아픈 문제로부터 코드를 분리합니다.</p>
+<blockquote class="blockquote">
+<p># 개선: 클래스가 아닌 메서드 확인 … winfo_children = getattr(Frame, ‘winfo_children’, None) if winfo_children is not None: children = winfo_children() …</p>
+</blockquote>
+<p>어느 경우든 컨테이너 위젯과 일반 위젯 간의 차이점은 일반적인 처리를 수행하려는 모든 코드 조각을 괴롭혔을 것입니다.</p>
+<p>그러나 Tk 작성자는 다행히도 컴포지트 패턴을 구현하기로 선택했습니다. <code>winfo_children()</code>을 <code>Frame</code> 위젯만 제공하는 특수 메서드로 만드는 대신, <em>모든 단일 위젯 객체</em>에서 사용할 수 있는 일반 메서드로 만들었습니다! 존재 여부를 확인할 필요가 없습니다. 컨테이너의 경우 자식 위젯 목록을 반환합니다. 다른 위젯의 경우? 단순히 빈 목록을 반환합니다.</p>
+<p>따라서 코드는 앞으로 나아가 항상 메서드의 존재를 가정할 수 있습니다. 다음은 작동하는 예제를 볼 수 있도록 간단한 Tkinter GUI를 빌드하고 위젯 계층 구조를 터미널에 인쇄할 수 있는 전체 프로그램입니다.</p>
+<div class="literalinclude">
+<p>tk_example.py</p>
+</div>
+<p>결과 출력은 다음과 같습니다.</p>
+<blockquote class="blockquote">
+<ul>
+<li>&lt;tkinter.Frame object .!frame&gt;
+<ul>
+<li>&lt;tkinter.Button object .!frame.!button&gt;</li>
+<li>&lt;tkinter.Button object .!frame.!button2&gt;</li>
+</ul></li>
+</ul>
+</blockquote>
+<p>위젯 간의 컴포지트 패턴 대칭성 덕분에 <code>print_tree()</code>에 어떤 종류의 위젯이 전달되든 처리하는 데 <code>if</code> 문이 필요하지 않습니다.</p>
+<p>컴포지트 패턴 애호가들 사이에서는 모든 위젯이 실제로 컨테이너처럼 작동해야 하는지에 대한 논란이 있다는 점에 유의하십시오. 자식 위젯을 추가할 수 없게 하려면 위젯이 <code>winfo_children()</code>을 구현하는 것이 사기성이 있지 않느냐고 묻습니다. 해당 쓰기 작업(“자식 추가”) 없이 읽기 작업(“자식 목록”)을 지원하는 절반 컨테이너처럼 작동하는 것이 무슨 의미가 있습니까? 더 제한적인 옵션은 모든 위젯에 <code>winfo_children()</code>을 넣는 것을 피하고 대신 <code>winfo_rootx()</code>와 같이 진정으로 일반적인 작업만 보편적으로 만드는 것입니다 (모든 위젯에는 <em>x</em> 좌표가 있으므로 일반적입니다). 저는 개인적으로 가능한 한 많은 대칭성이 있을 때 인터페이스를 더 즐기는 경향이 있습니다.</p>
+<p>파이썬 표준 라이브러리 전체에서 아마도 가장 고전적인 객체 지향 모듈인 Tkinter 라이브러리를 연구하면 몇몇 위젯으로 제한될 수 있었던 메서드가 단순성과 이를 사용하는 모든 코드의 편의를 위해 대신 모든 위젯에 대한 공통 작업으로 만들어진 몇 가지 추가 사례를 찾을 수 있습니다. 이것이 컴포지트 패턴입니다.</p>
+</section>
+<section id="구현-상속할-것인가-말-것인가" class="level2" data-number="11.4">
+<h2 data-number="11.4" class="anchored" data-anchor-id="구현-상속할-것인가-말-것인가"><span class="header-section-number">11.4</span> 구현: 상속할 것인가, 말 것인가?</h2>
+<p>컴포지트 패턴이 컨테이너와 해당 내용 사이에 만드는 대칭성의 이점은 대칭성이 객체를 상호 교환 가능하게 만드는 경우에만 발생합니다. 그러나 여기서 일부 정적으로 유형이 지정된 언어는 장애물을 부과합니다.</p>
+<p>한 가지 문제는 가장 제한적인 정적 언어에 의해 제기됩니다. 이러한 언어에서는 두 개의 서로 다른 클래스의 객체는 공통적으로 갖는 메서드를 구현하는 단일 부모 클래스의 하위 클래스이거나 두 클래스 중 하나가 다른 클래스에서 직접 상속받는 경우에만 상호 교환 가능합니다.</p>
+<p>조금 더 강력한 정적 언어에서는 제한이 더 부드럽습니다. 컨테이너와 해당 내용이 구현을 공유해야 한다는 엄격한 필요는 없습니다. 둘 다 공통적으로 구현하는 메서드를 정확히 선언하는 “인터페이스”를 준수하는 한 객체를 대칭적으로 호출할 수 있습니다.</p>
+<p>파이썬에서는 이러한 제한이 모두 사라집니다! 선호하는 안전성 대 간결성 스펙트럼의 어느 곳에나 코드를 자유롭게 배치할 수 있습니다. 고전적인 경로를 따라 공통 슈퍼클래스를 가질 수 있습니다.</p>
+<blockquote class="blockquote">
+<p>class Widget(object):<br>
+def children(self):<br>
+return []</p>
+<p>class Frame(Widget):<br>
+def __init__(self, child_widgets):<br>
+self.child_widgets = child_widgets</p>
+<p>def children(self):<br>
+return self.child_widgets</p>
+<p>class Label(Widget):<br>
+def __init__(self, text):<br>
+self.text = text</p>
+</blockquote>
+<p>또는 객체가 단순히 동일한 인터페이스를 덕 타이핑하고 테스트에 의존하여 컨테이너와 내용 간의 대칭성을 유지할 수 있습니다. (매우 간단한 스크립트의 경우 “테스트”는 단순히 코드가 실행된다는 사실일 수 있습니다.) :</p>
+<pre><code>class Frame(object):
+    def __init__(self, child_widgets):
+        self.child_widgets = child_widgets
+
+    def children(self):
+        return self.child_widgets
+
+class Label(object):
+    def __init__(self, text):
+        self.text = text
+
+    def children(self):
+        return []</code></pre>
+<p>또는 이 두 극단 사이의 디자인 스펙트럼에서 다른 지점을 선택할 수 있습니다. 파이썬은 다음과 같은 다양한 접근 방식을 지원합니다.</p>
+<ul>
+<li>위 첫 번째 예에 표시된 고전적인 공통 슈퍼클래스 아키텍처입니다.</li>
+<li>표준 라이브러리의 <code>abc</code> 모듈 내부 도구를 사용하여 슈퍼클래스를 추상 기본 클래스로 만듭니다.</li>
+<li>두 클래스가 이전 <code>zope.interface</code> 패키지에서 지원하는 것과 같은 인터페이스를 공유하도록 합니다.</li>
+<li>MyPy와 같은 유형 검사 라이브러리를 시작하고 주석을 사용하여 코드에서 처리하는 모든 객체(컨테이너와 내용 모두)가 코드가 요구하는 런타임 동작을 구현한다는 강력한 보장을 요청할 수 있습니다.</li>
+<li>덕 타이핑을 하고 허가나 용서를 구하지 않을 수 있습니다!</li>
+</ul>
+<p>파이썬은 이러한 모든 접근 방식을 제공하기 때문에 컴포지트 패턴을 고전적으로 정의하지 않기로 선택했습니다. 여기서 대칭성을 생성하거나 적용하기 위한 특정 메커니즘(슈퍼클래스)으로 정의됩니다. 대신 동심 객체 계층에 관련된 객체 간의 어떤 수단으로든 대칭성을 생성하는 것으로 간단히 정의합니다.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../gang-of-four/singleton/index.html" class="pagination-link" aria-label="싱글턴 패턴">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">싱글턴 패턴</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../gang-of-four/decorator-pattern/index.html" class="pagination-link" aria-label="데코레이터 패턴">
+        <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">데코레이터 패턴</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
