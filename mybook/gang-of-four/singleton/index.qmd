@@ -10,7 +10,7 @@
 거의 구현하지 않습니다. 이 싱글턴 클래스는 일반적인 인스턴스화를 금지하고
 대신 싱글턴 인스턴스를 반환하는 클래스 메서드를 제공합니다.
 파이썬은 더 우아하며, 클래스가 일반적인 인스턴스화 구문을 계속 지원하도록 하면서
-싱글턴 인스턴스를 반환하는 사용자 정의  ``<span class="title-ref">\_\_new\_\_()</span><span class="title-ref"> 메서드를 정의할 수 있도록 합니다. 하지만 디자인이 싱글턴 객체에 대한 전역 액세스를 제공하도록 강제하는 경우, 훨씬 더 파이썬다운 접근 방식은 대신 :doc:</span>/python/module-globals/index\`를 사용하는 것입니다.
+싱글턴 인스턴스를 반환하는 사용자 정의  ``<span class="title-ref">__new__()</span><span class="title-ref"> 메서드를 정의할 수 있도록 합니다. 하지만 디자인이 싱글턴 객체에 대한 전역 액세스를 제공하도록 강제하는 경우, 훨씬 더 파이썬다운 접근 방식은 대신 :doc:</span>/python/module-globals/index\`를 사용하는 것입니다.
 
 </div>
 
@@ -23,7 +23,7 @@
 3.  "싱글턴"은 `` /python/module-globals/index`를 통해
     전역 이름이 할당된 클래스 인스턴스입니다.
     예를 들어, 공식 파이썬 프로그래밍 FAQ는
-     ``“모듈 간에 전역 변수를 공유하려면 어떻게 해야 합니까?” \<https://docs.python.org/3/faq/programming.html#how-do-i-share-global-variables-across-modules\>\`\_라는 질문에 대해 파이썬에서는 "모듈을 사용하는 것이 싱글턴 디자인을 구현하는 기초이기도 합니다."라고 답합니다. 왜냐하면 모듈의 전역 네임스페이스는 상수(FAQ의 예는 여러 모듈간에 공유되는 `x = 0`)뿐만 아니라 변경 가능한 클래스 인스턴스도 저장할 수 있기 때문입니다.
+     ``“모듈 간에 전역 변수를 공유하려면 어떻게 해야 합니까?” \<https://docs.python.org/3/faq/programming.html#how-do-i-share-global-variables-across-modules\>\`_라는 질문에 대해 파이썬에서는 "모듈을 사용하는 것이 싱글턴 디자인을 구현하는 기초이기도 합니다."라고 답합니다. 왜냐하면 모듈의 전역 네임스페이스는 상수(FAQ의 예는 여러 모듈간에 공유되는 `x = 0`)뿐만 아니라 변경 가능한 클래스 인스턴스도 저장할 수 있기 때문입니다.
 4.  `` /gang-of-four/flyweight/index`의 예인
     개별 플라이웨이트 객체는 종종 파이썬 프로그래머에 의해
     "싱글턴" 객체라고 불립니다.
@@ -63,73 +63,68 @@ Gang of Four가 대상으로 삼았던 C++ 언어는 객체 생성에 다음과 
 
 파이썬 코드는 그들의 접근 방식을 어떻게 보여줄 수 있을까요? 파이썬에는 `new`, `protected` 및 `private`의 복잡성이 없습니다. 대안은 `__init__()`에서 예외를 발생시켜 일반적인 객체 인스턴스화를 불가능하게 만드는 것입니다. 그런 다음 클래스 메서드는 던더 메서드 트릭을 사용하여 예외를 트리거하지 않고 객체를 생성할 수 있습니다.
 
-<div class="testcode">
+```python
+# Gang of Four의 원래 싱글턴 패턴이
+# 파이썬에서 어떻게 보일 수 있는지 보여줍니다.
 
-\# Gang of Four의 원래 싱글턴 패턴이 \# 파이썬에서 어떻게 보일 수 있는지 보여줍니다.
+class Logger(object):
+    _instance = None
 
-class Logger(object):  
-<span id="instance">instance</span> = None
+    def __init__(self):
+        raise RuntimeError('대신 instance()를 호출하십시오.')
 
-def \_\_init\_\_(self):  
-raise RuntimeError('대신 instance()를 호출하십시오.')
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            print('새 인스턴스 생성 중')
+            cls._instance = cls.__new__(cls)
+            # 여기에 초기화를 넣으십시오.
+        return cls._instance
+```
 
-@classmethod def instance(cls): if cls.\_instance is None: print('새 인스턴스 생성 중') cls.\_instance = cls.\_\_new\_\_(cls) \# 여기에 초기화를 넣으십시오. return cls.\_instance
+```python
+def fake_repr(self):
+    return '<Logger object at 0x7f0ff5e7c080>'
 
-</div>
-
-<div class="testcode" hide="">
-
-def fake_repr(self):  
-return '\<Logger object at 0x7f0ff5e7c080\>'
-
-Logger.\_\_repr\_\_ = fake_repr
-
-</div>
+Logger.__repr__ = fake_repr
+```
 
 이렇게 하면 클라이언트가 클래스를 호출하여 새 인스턴스를 만드는 것을 성공적으로 방지합니다.
 
-<div class="testcode">
-
+```python
 log = Logger()
+```
 
-</div>
-
-<div class="testoutput">
-
-Traceback (most recent call last):  
-...
-
+```text
+Traceback (most recent call last):
+  ...
 RuntimeError: 대신 instance()를 호출하십시오.
-
-</div>
+```
 
 대신 호출자는 `instance()` 클래스 메서드를 사용하도록 지시받으며, 이 메서드는 객체를 생성하고 반환합니다.
 
-<div class="testcode">
+```python
+log1 = Logger.instance()
+print(log1)
+```
 
-log1 = Logger.instance() print(log1)
-
-</div>
-
-<div class="testoutput">
-
-새 인스턴스 생성 중 \<Logger object at 0x7f0ff5e7c080\>
-
-</div>
+```text
+새 인스턴스 생성 중
+<Logger object at 0x7f0ff5e7c080>
+```
 
 후속 `instance()` 호출은 초기화 단계를 반복하지 않고 싱글턴을 반환합니다("새 인스턴스 생성 중"이 다시 인쇄되지 않는다는 사실에서 알 수 있듯이). 이는 Gang of Four가 의도한 대로 정확하게 작동합니다.
 
-<div class="testcode">
+```python
+log2 = Logger.instance()
+print(log2)
+print('동일한 객체입니까?', log1 is log2)
+```
 
-log2 = Logger.instance() print(log2) print('동일한 객체입니까?', log1 is log2)
-
-</div>
-
-<div class="testoutput">
-
-\<Logger object at 0x7f0ff5e7c080\> 동일한 객체입니까? True
-
-</div>
+```text
+<Logger object at 0x7f0ff5e7c080>
+동일한 객체입니까? True
+```
 
 파이썬에서 원래 Gang of Four 클래스 메서드를 구현하기 위해 상상할 수 있는 더 복잡한 체계가 있지만, 위의 예가 가능한 한 최소한의 마법으로 원래 체계를 가장 잘 보여준다고 생각합니다. Gang of Four의 패턴은 어쨌든 파이썬에 적합하지 않으므로, 더 이상 반복하려는 유혹을 참고 대신 파이썬에서 패턴이 가장 잘 지원되는 방법으로 넘어가겠습니다.
 
@@ -140,61 +135,55 @@ log2 = Logger.instance() print(log2) print('동일한 객체입니까?', log1 is
     log = Logger()
 
 작성자가 클래스 호출을 제어할 수 있도록 하기 위해 파이썬 2.4는 싱글턴 패턴 및 `` /gang-of-four/flyweight/index`와 같은
-대체 생성 패턴을 지원하기 위해  ``<span class="title-ref">\_\_new\_\_()</span>\` 던더 메서드를 추가했습니다.
+대체 생성 패턴을 지원하기 위해  ``<span class="title-ref">__new__()</span>\` 던더 메서드를 추가했습니다.
 
 웹에는 `__new__()`를 특징으로 하는 싱글턴 패턴 레시피가 가득하며, 각각은 메서드의 가장 큰 단점, 즉 반환되는 객체가 새롭든 아니든 항상 반환 값에서 `__init__()`이 호출된다는 사실을 해결하기 위한 다소 복잡한 메커니즘을 제안합니다. 내 예제를 간단하게 만들기 위해 `__init__()` 메서드를 정의하지 않고 따라서 해결할 필요가 없도록 하겠습니다.
 
-<div class="testcode">
+```python
+# 싱글턴 패턴의 간단한 구현
 
-\# 싱글턴 패턴의 간단한 구현
+class Logger(object):
+    _instance = None
 
-class Logger(object):  
-<span id="instance">instance</span> = None
+    def __new__(cls):
+        if cls._instance is None:
+            print('객체 생성 중')
+            cls._instance = super(Logger, cls).__new__(cls)
+            # 여기에 초기화를 넣으십시오.
+        return cls._instance
+```
 
-def \_\_new\_\_(cls):  
-if cls.\_instance is None:  
-print('객체 생성 중') cls.\_instance = super(Logger, cls).\_\_new\_\_(cls) \# 여기에 초기화를 넣으십시오.
+```python
+def fake_repr(self):
+    return '<Logger object at 0x7fa8e9cf7f60>'
 
-return cls.\_instance
-
-</div>
-
-<div class="testcode" hide="">
-
-def fake_repr(self):  
-return '\<Logger object at 0x7fa8e9cf7f60\>'
-
-Logger.\_\_repr\_\_ = fake_repr
-
-</div>
+Logger.__repr__ = fake_repr
+```
 
 객체는 클래스에 대한 첫 번째 호출에서 생성됩니다.
 
-<div class="testcode">
+```python
+log1 = Logger()
+print(log1)
+```
 
-log1 = Logger() print(log1)
-
-</div>
-
-<div class="testoutput">
-
-객체 생성 중 \<Logger object at 0x7fa8e9cf7f60\>
-
-</div>
+```text
+객체 생성 중
+<Logger object at 0x7fa8e9cf7f60>
+```
 
 그러나 두 번째 호출은 동일한 인스턴스를 반환합니다. "객체 생성 중" 메시지는 인쇄되지 않으며 다른 객체도 반환되지 않습니다.
 
-<div class="testcode">
+```python
+log2 = Logger()
+print(log2)
+print('동일한 객체입니까?', log1 is log2)
+```
 
-log2 = Logger() print(log2) print('동일한 객체입니까?', log1 is log2)
-
-</div>
-
-<div class="testoutput">
-
-\<Logger object at 0x7fa8e9cf7f60\> 동일한 객체입니까? True
-
-</div>
+```text
+<Logger object at 0x7fa8e9cf7f60>
+동일한 객체입니까? True
+```
 
 위의 예는 일반적인 경우에 `cls._instance` 속성 조회를 두 번 수행하는 비용을 감수하면서 단순성을 선택합니다. 그러한 낭비에 몸서리치는 프로그래머를 위해 결과를 물론 이름에 할당하고 반환 문에서 재사용할 수 있습니다. 그리고 더 빠른 바이트 코드를 생성할 수 있는 다양한 다른 개선 사항을 상상할 수 있습니다. 그러나 아무리 정교하게 조정하더라도 위의 패턴은 일반적인 클래스 인스턴스화처럼 보이는 것 뒤에 싱글턴 객체를 숨기는 모든 파이썬 클래스의 기초입니다.
 
@@ -206,7 +195,7 @@ Gang of Four의 원래 싱글턴 패턴은 `new`, `private` 및 `protected`와 �
 
 첫 번째 반론은 싱글턴 패턴의 구현이 많은 파이썬 프로그래머에게 읽기 어렵다는 것입니다. 대안인 `` 전역 객체 패턴 </python/module-globals/index>`은
 읽기 쉽습니다. 단순히 익숙한 할당문이며 모듈의 최상위 수준에 배치됩니다.
-그러나  ``<span class="title-ref">\_\_new\_\_()</span>\` 메서드를 처음 읽는 파이썬 프로그래머는 무슨 일이 일어나고 있는지 이해하기 위해 문서를 찾아봐야 할 것입니다.
+그러나  ``<span class="title-ref">__new__()</span>\` 메서드를 처음 읽는 파이썬 프로그래머는 무슨 일이 일어나고 있는지 이해하기 위해 문서를 찾아봐야 할 것입니다.
 
 두 번째 반론은 싱글턴 패턴이 `Logger()`와 같은 클래스 호출을 독자에게 오해하게 만든다는 것입니다. 디자이너가 클래스 이름에 "싱글턴" 또는 다른 힌트를 넣지 않았고 독자가 힌트를 이해할 만큼 디자인 패턴을 잘 알지 못한다면, 코드는 새 인스턴스가 생성되어 반환되는 것처럼 읽힐 것입니다.
 
@@ -218,7 +207,7 @@ Gang of Four의 원래 싱글턴 패턴은 `new`, `private` 및 `protected`와 �
 각각 완전히 별개의 객체를 테스트할 수 있도록 합니다.
 그러나 싱글턴 패턴은 추가 인스턴스를 불가능하게 만듭니다.
 (호출자가 몽키 패치에 기꺼이 참여하거나,
- ``<span class="title-ref">\_\_new\_\_()</span><span class="title-ref">의 논리를 전복시키기 위해 </span><span class="title-ref">\_instance</span>\`를 일시적으로 수정하거나, 메서드를 대체하는 서브클래스를 만들지 않는 한 말입니다. 그러나 해결해야 할 패턴은 일반적으로 피해야 할 패턴입니다.)
+ ``<span class="title-ref">__new__()</span><span class="title-ref">의 논리를 전복시키기 위해 </span><span class="title-ref">_instance</span>\`를 일시적으로 수정하거나, 메서드를 대체하는 서브클래스를 만들지 않는 한 말입니다. 그러나 해결해야 할 패턴은 일반적으로 피해야 할 패턴입니다.)
 
 그렇다면 왜 파이썬에서 싱글턴 패턴을 사용해야 할까요?
 

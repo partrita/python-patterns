@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -155,7 +190,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">감시 객체 패턴 (Sentinel Object Pattern)</span></span></a>
   </div>
 </li>
       </ul>
@@ -328,41 +363,52 @@ ul.task-list li input[type="checkbox"] {
 <h2 data-number="2.1" class="anchored" data-anchor-id="문제-서브클래스-폭발"><span class="header-section-number">2.1</span> 문제: 서브클래스 폭발</h2>
 <p>디자인 전략으로서 상속의 결정적인 약점은 클래스가 종종 여러 다른 디자인 축을 따라 동시에 특수화되어야 한다는 것입니다. 이는 갱 오브 포가 브리지 장에서 “클래스의 확산”이라고 부르는 것과 데코레이터 장에서 “모든 조합을 지원하기 위한 서브클래스의 폭발”이라고 부르는 것으로 이어집니다.</p>
 <p>파이썬의 <a href="https://docs.python.org/3/library/logging.html">logging 모듈</a>은 표준 라이브러리 자체에서 상속보다 컴포지션 원칙을 따르는 모듈의 좋은 예이므로 로깅을 예로 사용하겠습니다. 개발자가 새 대상으로 로그 메시지를 보내야 함에 따라 점차 서브클래스를 얻은 기본 로깅 클래스를 상상해 보십시오.</p>
-<div class="testcode">
-<p>import sys import syslog</p>
-<p># 초기 클래스.</p>
-<p>class Logger(object):<br>
-def __init__(self, file):<br>
-self.file = file</p>
-<p>def log(self, message):<br>
-self.file.write(message + ‘n’) self.file.flush()</p>
-<p># 메시지를 다른 곳으로 보내는 두 개의 추가 클래스.</p>
-<p>class SocketLogger(Logger):<br>
-def __init__(self, sock):<br>
-self.sock = sock</p>
-<p>def log(self, message):<br>
-self.sock.sendall((message + ‘n’).encode(‘ascii’))</p>
-<p>class SyslogLogger(Logger):<br>
-def __init__(self, priority):<br>
-self.priority = priority</p>
-<p>def log(self, message):<br>
-syslog.syslog(self.priority, message)</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> syslog</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 초기 클래스.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger(<span class="bu">object</span>):</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, <span class="bu">file</span>):</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.write(message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.flush()</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 메시지를 다른 곳으로 보내는 두 개의 추가 클래스.</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SocketLogger(Logger):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, sock):</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock.sendall((message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>).encode(<span class="st">'ascii'</span>))</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SyslogLogger(Logger):</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, priority):</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.priority <span class="op">=</span> priority</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        syslog.syslog(<span class="va">self</span>.priority, message)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이 첫 번째 디자인 축에 다른 축이 합류하면 문제가 발생합니다. 이제 로그 메시지를 필터링해야 한다고 상상해 보십시오 — 일부 사용자는 “Error”라는 단어가 포함된 메시지만 보고 싶어하고, 개발자는 <code>Logger</code>의 새 서브클래스로 응답합니다.</p>
-<div class="testcode">
-<p># 새로운 디자인 방향: 메시지 필터링.</p>
-<p>class FilteredLogger(Logger):<br>
-def __init__(self, pattern, file):<br>
-self.pattern = pattern super().__init__(file)</p>
-<p>def log(self, message):<br>
-if self.pattern in message:<br>
-super().log(message)</p>
-<p># 작동합니다.</p>
-<p>f = FilteredLogger(‘Error’, sys.stdout) f.log(‘Ignored: this is not important’) f.log(‘Error: but you want to see this’)</p>
-</div>
-<div class="testoutput">
-<p>Error: but you want to see this</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 새로운 디자인 방향: 메시지 필터링.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredLogger(Logger):</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern, <span class="bu">file</span>):</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> pattern</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(<span class="bu">file</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">in</span> message:</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            <span class="bu">super</span>().log(message)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 작동합니다.</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> FilteredLogger(<span class="st">'Error'</span>, sys.stdout)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>f.log(<span class="st">'Ignored: this is not important'</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>f.log(<span class="st">'Error: but you want to see this'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Error: but you want to see this</code></pre>
 <p>이제 함정이 놓였고, 애플리케이션이 메시지를 필터링해야 하지만 파일 대신 소켓에 써야 하는 순간에 터질 것입니다. 기존 클래스 중 어느 것도 해당 사례를 다루지 않습니다. 개발자가 서브클래싱을 계속 진행하여 두 클래스의 기능을 결합한 <code>FilteredSocketLogger</code>를 만들면 서브클래스 폭발이 진행 중입니다.</p>
 <p>프로그래머는 운이 좋아서 더 이상 조합이 필요하지 않을 수도 있습니다. 그러나 일반적인 경우 애플리케이션은 3×2=6개의 클래스로 끝납니다.</p>
 <blockquote class="blockquote">
@@ -381,33 +427,39 @@ super().log(message)</p>
 <li>그러나 대상별 서브클래스를 만드는 대신 각 대상을 파일의 동작에 맞게 조정하고 어댑터를 <code>Logger</code>의 출력 파일로 전달합니다.</li>
 </ol>
 <p>다음은 다른 두 출력 각각에 대한 어댑터입니다.</p>
-<div class="testcode">
-<p>import socket</p>
-<p>class FileLikeSocket:<br>
-def __init__(self, sock):<br>
-self.sock = sock</p>
-<p>def write(self, message_and_newline):<br>
-self.sock.sendall(message_and_newline.encode(‘ascii’))</p>
-<p>def flush(self):<br>
-pass</p>
-<p>class FileLikeSyslog:<br>
-def __init__(self, priority):<br>
-self.priority = priority</p>
-<p>def write(self, message_and_newline):<br>
-message = message_and_newline.rstrip(‘n’) syslog.syslog(self.priority, message)</p>
-<p>def flush(self):<br>
-pass</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> socket</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileLikeSocket:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, sock):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> write(<span class="va">self</span>, message_and_newline):</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock.sendall(message_and_newline.encode(<span class="st">'ascii'</span>))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> flush(<span class="va">self</span>):</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileLikeSyslog:</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, priority):</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.priority <span class="op">=</span> priority</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> write(<span class="va">self</span>, message_and_newline):</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        message <span class="op">=</span> message_and_newline.rstrip(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        syslog.syslog(<span class="va">self</span>.priority, message)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> flush(<span class="va">self</span>):</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>파이썬은 덕 타이핑을 권장하므로 어댑터의 유일한 책임은 올바른 메서드를 제공하는 것입니다 — 예를 들어 우리 어댑터는 래핑하는 클래스나 모방하는 <code>file</code> 타입에서 상속받을 필요가 없습니다. 또한 실제 파일이 제공하는 12개 이상의 메서드 전체를 다시 구현할 의무도 없습니다. 오리가 꽥꽥거리는 소리만 필요하다면 걸을 수 있다는 것이 중요하지 않듯이, 우리 어댑터는 <code>Logger</code>가 실제로 사용하는 두 가지 파일 메서드만 구현하면 됩니다.</p>
 <p>따라서 서브클래스 폭발을 피할 수 있습니다! 로거 객체와 어댑터 객체는 추가 클래스를 만들 필요 없이 런타임에 자유롭게 혼합하고 일치시킬 수 있습니다.</p>
-<div class="testcode">
-<p>sock1, sock2 = socket.socketpair()</p>
-<p>fs = FileLikeSocket(sock1) logger = FilteredLogger(‘Error’, fs) logger.log(‘Warning: message number one’) logger.log(‘Error: message number two’)</p>
-<p>print(‘The socket received: %r’ % sock2.recv(512))</p>
-</div>
-<div class="testoutput">
-<p>The socket received: b’Error: message number twon’</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sock1, sock2 <span class="op">=</span> socket.socketpair()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>fs <span class="op">=</span> FileLikeSocket(sock1)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> FilteredLogger(<span class="st">'Error'</span>, fs)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Warning: message number one'</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: message number two'</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'The socket received: </span><span class="sc">%r</span><span class="st">'</span> <span class="op">%</span> sock2.recv(<span class="dv">512</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>The socket received: b'Error: message number two\n'</code></pre>
 <p>위에서 <code>FileLikeSocket</code> 클래스를 작성한 것은 예시를 위해서일 뿐이라는 점에 유의하십시오 — 실제로는 해당 어댑터가 파이썬 표준 라이브러리에 내장되어 있습니다. 소켓의 <a href="https://docs.python.org/3/library/socket.html#socket.socket.makefile"><code>makefile()</code></a> 메서드를 호출하기만 하면 소켓을 파일처럼 보이게 만드는 완전한 어댑터를 받을 수 있습니다.</p>
 </section>
 <section id="해결책-2-브리지-패턴" class="level2" data-number="2.3">
@@ -415,44 +467,54 @@ pass</p>
 <p>브리지 패턴은 클래스의 동작을 호출자가 보는 외부 “추상화” 객체와 내부에 래핑된 “구현” 객체로 분할합니다. 필터링은 “추상화” 클래스에 속하고 출력은 “구현” 클래스에 속한다는 (아마도 약간 임의적인) 결정을 내리면 로깅 예제에 브리지 패턴을 적용할 수 있습니다.</p>
 <p>어댑터 사례와 마찬가지로 별도의 클래스 계층이 이제 쓰기를 관리합니다. 그러나 출력 클래스를 파이썬 <code>file</code> 객체의 인터페이스와 일치하도록 왜곡해야 하는 대신 — 로거에서 줄 바꿈을 추가하고 어댑터에서 다시 제거해야 하는 어색한 기동이 필요했습니다 — 이제 래핑된 클래스의 인터페이스를 직접 정의할 수 있습니다.</p>
 <p>따라서 내부 “구현” 객체가 줄 바꿈이 추가될 필요 없이 원시 메시지를 받도록 설계하고, 인터페이스를 단일 메서드 <code>emit()</code>으로 줄여서 일반적으로 아무 작업도 하지 않는 <code>flush()</code> 메서드를 지원할 필요가 없도록 합시다.</p>
-<div class="testcode">
-<p># 호출자가 보게 될 “추상화”.</p>
-<p>class Logger(object):<br>
-def __init__(self, handler):<br>
-self.handler = handler</p>
-<p>def log(self, message):<br>
-self.handler.emit(message)</p>
-<p>class FilteredLogger(Logger):<br>
-def __init__(self, pattern, handler):<br>
-self.pattern = pattern super().__init__(handler)</p>
-<p>def log(self, message):<br>
-if self.pattern in message:<br>
-super().log(message)</p>
-<p># 이면의 “구현”.</p>
-<p>class FileHandler:<br>
-def __init__(self, file):<br>
-self.file = file</p>
-<p>def emit(self, message):<br>
-self.file.write(message + ‘n’) self.file.flush()</p>
-<p>class SocketHandler:<br>
-def __init__(self, sock):<br>
-self.sock = sock</p>
-<p>def emit(self, message):<br>
-self.sock.sendall((message + ‘n’).encode(‘ascii’))</p>
-<p>class SyslogHandler:<br>
-def __init__(self, priority):<br>
-self.priority = priority</p>
-<p>def emit(self, message):<br>
-syslog.syslog(self.priority, message)</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 호출자가 보게 될 "추상화".</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger(<span class="bu">object</span>):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, handler):</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.handler <span class="op">=</span> handler</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.handler.emit(message)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredLogger(Logger):</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern, handler):</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> pattern</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(handler)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">in</span> message:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>            <span class="bu">super</span>().log(message)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 이면의 "구현".</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileHandler:</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, <span class="bu">file</span>):</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> emit(<span class="va">self</span>, message):</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.write(message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.flush()</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SocketHandler:</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, sock):</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> emit(<span class="va">self</span>, message):</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock.sendall((message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>).encode(<span class="st">'ascii'</span>))</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SyslogHandler:</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, priority):</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.priority <span class="op">=</span> priority</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> emit(<span class="va">self</span>, message):</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>        syslog.syslog(<span class="va">self</span>.priority, message)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>추상화 객체와 구현 객체는 이제 런타임에 자유롭게 결합할 수 있습니다.</p>
-<div class="testcode">
-<p>handler = FileHandler(sys.stdout) logger = FilteredLogger(‘Error’, handler)</p>
-<p>logger.log(‘Ignored: this will not be logged’) logger.log(‘Error: this is important’)</p>
-</div>
-<div class="testoutput">
-<p>Error: this is important</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>handler <span class="op">=</span> FileHandler(sys.stdout)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> FilteredLogger(<span class="st">'Error'</span>, handler)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Ignored: this will not be logged'</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: this is important'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Error: this is important</code></pre>
 <p>이것은 어댑터보다 더 많은 대칭성을 제공합니다. 파일 출력이 <code>Logger</code>에 기본적으로 제공되지만 파일이 아닌 출력에는 추가 클래스가 필요한 대신, 이제 항상 추상화와 구현을 구성하여 작동하는 로거가 빌드됩니다.</p>
 <p>다시 한번, 두 종류의 클래스가 런타임에 함께 구성되므로 어느 클래스도 확장할 필요 없이 서브클래스 폭발을 피할 수 있습니다.</p>
 </section>
@@ -461,49 +523,57 @@ syslog.syslog(self.priority, message)</p>
 <p>동일한 로그에 두 가지 다른 필터를 적용하려면 어떻게 해야 할까요? 위의 해결책 중 어느 것도 여러 필터를 지원하지 않습니다 — 예를 들어, 하나는 우선순위로 필터링하고 다른 하나는 키워드와 일치시킵니다.</p>
 <p>이전 섹션에서 정의된 필터를 다시 살펴보십시오. 두 개의 필터를 쌓을 수 없는 이유는 제공하는 인터페이스와 래핑하는 인터페이스 사이에 비대칭성이 있기 때문입니다. <code>log()</code> 메서드를 제공하지만 핸들러의 <code>emit()</code> 메서드를 호출합니다. 한 필터를 다른 필터로 래핑하면 외부 필터가 내부 필터의 <code>emit()</code>을 호출하려고 할 때 <code>AttributeError</code>가 발생합니다.</p>
 <p>대신 필터와 핸들러가 동일한 인터페이스를 제공하도록 전환하여 모두 <code>log()</code> 메서드를 제공하도록 하면 데코레이터 패턴에 도달하게 됩니다.</p>
-<div class="testcode">
-<p># 모든 로거는 실제 출력을 수행합니다.</p>
-<p>class FileLogger:<br>
-def __init__(self, file):<br>
-self.file = file</p>
-<p>def log(self, message):<br>
-self.file.write(message + ‘n’) self.file.flush()</p>
-<p>class SocketLogger:<br>
-def __init__(self, sock):<br>
-self.sock = sock</p>
-<p>def log(self, message):<br>
-self.sock.sendall((message + ‘n’).encode(‘ascii’))</p>
-<p>class SyslogLogger:<br>
-def __init__(self, priority):<br>
-self.priority = priority</p>
-<p>def log(self, message):<br>
-syslog.syslog(self.priority, message)</p>
-<p># 필터는 제공하는 것과 동일한 메서드를 호출합니다.</p>
-<p>class LogFilter:<br>
-def __init__(self, pattern, logger):<br>
-self.pattern = pattern self.logger = logger</p>
-<p>def log(self, message):<br>
-if self.pattern in message:<br>
-self.logger.log(message)</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 모든 로거는 실제 출력을 수행합니다.</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileLogger:</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, <span class="bu">file</span>):</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.write(message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.flush()</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SocketLogger:</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, sock):</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock.sendall((message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>).encode(<span class="st">'ascii'</span>))</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SyslogLogger:</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, priority):</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.priority <span class="op">=</span> priority</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        syslog.syslog(<span class="va">self</span>.priority, message)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co"># 필터는 제공하는 것과 동일한 메서드를 호출합니다.</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> LogFilter:</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern, logger):</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> pattern</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.logger <span class="op">=</span> logger</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">in</span> message:</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.logger.log(message)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>처음으로 필터링 코드가 특정 로거 클래스 외부로 이동했습니다. 대신 이제 원하는 모든 로거 주위에 래핑할 수 있는 독립 실행형 기능이 되었습니다.</p>
 <p>처음 두 가지 해결책과 마찬가지로 특별한 결합 클래스를 빌드하지 않고도 런타임에 필터링을 출력과 결합할 수 있습니다.</p>
-<div class="testcode">
-<p>log1 = FileLogger(sys.stdout) log2 = LogFilter(‘Error’, log1)</p>
-<p>log1.log(‘Noisy: this logger always produces output’)</p>
-<p>log2.log(‘Ignored: this will be filtered out’) log2.log(‘Error: this is important and gets printed’)</p>
-</div>
-<div class="testoutput">
-<p>Noisy: this logger always produces output Error: this is important and gets printed</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>log1 <span class="op">=</span> FileLogger(sys.stdout)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>log2 <span class="op">=</span> LogFilter(<span class="st">'Error'</span>, log1)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>log1.log(<span class="st">'Noisy: this logger always produces output'</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>log2.log(<span class="st">'Ignored: this will be filtered out'</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>log2.log(<span class="st">'Error: this is important and gets printed'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Noisy: this logger always produces output
+Error: this is important and gets printed</code></pre>
 <p>그리고 데코레이터 클래스는 대칭적이므로 — 래핑하는 것과 정확히 동일한 인터페이스를 제공합니다 — 이제 동일한 로그 위에 여러 다른 필터를 쌓을 수 있습니다!</p>
-<div class="testcode">
-<p>log3 = LogFilter(‘severe’, log2)</p>
-<p>log3.log(‘Error: this is bad, but not that bad’) log3.log(‘Error: this is pretty severe’)</p>
-</div>
-<div class="testoutput">
-<p>Error: this is pretty severe</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>log3 <span class="op">=</span> LogFilter(<span class="st">'severe'</span>, log2)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>log3.log(<span class="st">'Error: this is bad, but not that bad'</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>log3.log(<span class="st">'Error: this is pretty severe'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Error: this is pretty severe</code></pre>
 <p>그러나 이 디자인의 대칭성이 깨지는 한 곳에 유의하십시오. 필터는 쌓을 수 있지만 출력 루틴은 결합하거나 쌓을 수 없습니다. 로그 메시지는 여전히 하나의 출력에만 쓸 수 있습니다.</p>
 </section>
 <section id="해결책-4-갱-오브-포-패턴을-넘어서" class="level2" data-number="2.5">
@@ -516,76 +586,94 @@ self.logger.log(message)</p>
 </ol>
 <p>또는 적어도 그것이 아이디어의 핵심입니다. 표준 라이브러리의 로깅은 실제로 더 복잡합니다. 예를 들어, 각 핸들러는 로거에 나열된 필터 외에 자체 필터 목록을 가질 수 있습니다. 그리고 각 핸들러는 또한 <code>INFO</code> 또는 <code>WARN</code>과 같은 최소 메시지 “수준”을 지정하며, 혼란스럽게도 이는 핸들러 자체나 핸들러의 필터 중 어느 것도 적용하지 않고 대신 로거가 핸들러를 반복하는 곳 깊숙이 묻혀 있는 <code>if</code> 문에 의해 적용됩니다. 따라서 전체 디자인은 약간 엉망입니다.</p>
 <p>그러나 표준 라이브러리 로거의 기본 통찰력 — 로거의 메시지는 여러 필터 <em>및</em> 여러 출력을 받을 자격이 있을 수 있다는 것 — 을 사용하여 필터 클래스와 핸들러 클래스를 완전히 분리할 수 있습니다.</p>
-<div class="testcode">
-<p># 이제 로거는 하나뿐입니다.</p>
-<p>class Logger:<br>
-def __init__(self, filters, handlers):<br>
-self.filters = filters self.handlers = handlers</p>
-<p>def log(self, message):<br>
-if all(f.match(message) for f in self.filters):<br>
-for h in self.handlers:<br>
-h.emit(message)</p>
-<p># 필터는 이제 문자열에 대해서만 알고 있습니다!</p>
-<p>class TextFilter:<br>
-def __init__(self, pattern):<br>
-self.pattern = pattern</p>
-<p>def match(self, text):<br>
-return self.pattern in text</p>
-<p># 핸들러는 이전 해결책의 “로거”처럼 보입니다.</p>
-<p>class FileHandler:<br>
-def __init__(self, file):<br>
-self.file = file</p>
-<p>def emit(self, message):<br>
-self.file.write(message + ‘n’) self.file.flush()</p>
-<p>class SocketHandler:<br>
-def __init__(self, sock):<br>
-self.sock = sock</p>
-<p>def emit(self, message):<br>
-self.sock.sendall((message + ‘n’).encode(‘ascii’))</p>
-<p>class SyslogHandler:<br>
-def __init__(self, priority):<br>
-self.priority = priority</p>
-<p>def emit(self, message):<br>
-syslog.syslog(self.priority, message)</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 이제 로거는 하나뿐입니다.</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger:</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, filters, handlers):</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.filters <span class="op">=</span> filters</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.handlers <span class="op">=</span> handlers</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">all</span>(f.match(message) <span class="cf">for</span> f <span class="kw">in</span> <span class="va">self</span>.filters):</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> h <span class="kw">in</span> <span class="va">self</span>.handlers:</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>                h.emit(message)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 필터는 이제 문자열에 대해서만 알고 있습니다!</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TextFilter:</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern):</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> pattern</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> match(<span class="va">self</span>, text):</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.pattern <span class="kw">in</span> text</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 핸들러는 이전 해결책의 "로거"처럼 보입니다.</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileHandler:</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, <span class="bu">file</span>):</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> emit(<span class="va">self</span>, message):</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.write(message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.flush()</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SocketHandler:</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, sock):</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> emit(<span class="va">self</span>, message):</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock.sendall((message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>).encode(<span class="st">'ascii'</span>))</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SyslogHandler:</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, priority):</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.priority <span class="op">=</span> priority</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> emit(<span class="va">self</span>, message):</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>        syslog.syslog(<span class="va">self</span>.priority, message)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이 최종 디자인 전환에서만 필터가 마땅히 받아야 할 단순함으로 빛을 발한다는 점에 유의하십시오. 처음으로 문자열만 받고 판정만 반환합니다. 이전의 모든 디자인은 로깅 클래스 자체 내부에 필터링을 숨기거나 단순히 판정을 내리는 것 이상의 추가 의무를 필터에 지웠습니다.</p>
 <p>사실, “log”라는 단어는 필터 클래스의 이름에서 완전히 사라졌으며, 매우 중요한 이유가 있습니다. 더 이상 로깅에 특정한 것이 없기 때문입니다! <code>TextFilter</code>는 이제 문자열과 관련된 모든 컨텍스트에서 완전히 재사용할 수 있습니다. 마지막으로 로깅이라는 특정 개념에서 분리되어 테스트하고 유지 관리하기가 더 쉬워질 것입니다.</p>
 <p>다시 한번, 문제에 대한 모든 상속보다 컴포지션 해결책과 마찬가지로 클래스는 상속 없이 런타임에 구성됩니다.</p>
-<div class="testcode">
-<p>f = TextFilter(‘Error’) h = FileHandler(sys.stdout) logger = Logger([f], [h])</p>
-<p>logger.log(‘Ignored: this will not be logged’) logger.log(‘Error: this is important’)</p>
-</div>
-<div class="testoutput">
-<p>Error: this is important</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> TextFilter(<span class="st">'Error'</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> FileHandler(sys.stdout)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> Logger([f], [h])</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Ignored: this will not be logged'</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: this is important'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Error: this is important</code></pre>
 <p>여기에는 중요한 교훈이 있습니다. 상속보다 컴포지션과 같은 디자인 원칙은 결국 어댑터나 데코레이터와 같은 개별 패턴보다 더 중요합니다. 항상 원칙을 따르십시오. 그러나 항상 공식 목록에서 패턴을 선택하도록 제한받는다고 느끼지 마십시오. 우리가 지금 도달한 디자인은 이전 디자인보다 유연하고 유지 관리가 더 쉽습니다. 비록 이전 디자인은 공식적인 갱 오브 포 패턴을 기반으로 했지만 이 최종 디자인은 그렇지 않습니다. 때로는 문제에 완벽하게 맞는 기존 디자인 패턴을 찾을 수 있지만 — 그렇지 않다면 디자인을 넘어서면 디자인이 더 강력해질 수 있습니다.</p>
 </section>
 <section id="회피-if-문" class="level2" data-number="2.6">
 <h2 data-number="2.6" class="anchored" data-anchor-id="회피-if-문"><span class="header-section-number">2.6</span> 회피: “if” 문</h2>
 <p>위의 코드가 많은 독자를 놀라게 했을 것이라고 생각합니다. 일반적인 파이썬 프로그래머에게는 클래스를 많이 사용하는 것이 완전히 부자연스러워 보일 수 있습니다 — 1980년대의 오래된 아이디어를 현대 파이썬과 관련 있어 보이게 하려는 어색한 연습처럼 말입니다.</p>
 <p>새로운 디자인 요구 사항이 나타나면 일반적인 파이썬 프로그래머는 정말로 새 클래스를 작성할까요? 아니요! “복잡한 것보다 간단한 것이 낫다.” <code>if</code> 문으로도 충분한데 왜 클래스를 추가해야 할까요? 단일 로거 클래스는 점차 조건문을 추가하여 이전 예제와 동일한 모든 경우를 처리할 수 있습니다.</p>
-<div class="testcode">
-<p># “if” 문으로서의 각 새로운 기능.</p>
-<p>class Logger:<br>
-def __init__(self, pattern=None, file=None, sock=None, priority=None):<br>
-self.pattern = pattern self.file = file self.sock = sock self.priority = priority</p>
-<p>def log(self, message):<br>
-if self.pattern is not None:<br>
-if self.pattern not in message:<br>
-return</p>
-<p>if self.file is not None:<br>
-self.file.write(message + ‘n’) self.file.flush()</p>
-<p>if self.sock is not None:<br>
-self.sock.sendall((message + ‘n’).encode(‘ascii’))</p>
-<p>if self.priority is not None:<br>
-syslog.syslog(self.priority, message)</p>
-<p># 잘 작동합니다.</p>
-<p>logger = Logger(pattern=‘Error’, file=sys.stdout)</p>
-<p>logger.log(‘Warning: not that important’) logger.log(‘Error: this is important’)</p>
-</div>
-<div class="testoutput">
-<p>Error: this is important</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "if" 문으로서의 각 새로운 기능.</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger:</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern<span class="op">=</span><span class="va">None</span>, <span class="bu">file</span><span class="op">=</span><span class="va">None</span>, sock<span class="op">=</span><span class="va">None</span>, priority<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> pattern</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.priority <span class="op">=</span> priority</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">not</span> <span class="kw">in</span> message:</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">return</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.<span class="bu">file</span> <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.<span class="bu">file</span>.write(message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.<span class="bu">file</span>.flush()</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.sock <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.sock.sendall((message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>).encode(<span class="st">'ascii'</span>))</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.priority <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>            syslog.syslog(<span class="va">self</span>.priority, message)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="co"># 잘 작동합니다.</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> Logger(pattern<span class="op">=</span><span class="st">'Error'</span>, <span class="bu">file</span><span class="op">=</span>sys.stdout)</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Warning: not that important'</span>)</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: this is important'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Error: this is important</code></pre>
 <p>실제 애플리케이션에서 접했던 더 일반적인 파이썬 디자인 관행으로 이 예를 인식할 수 있습니다.</p>
 <p><code>if</code> 문 접근 방식이 전혀 이점이 없는 것은 아닙니다. 이 클래스의 전체 가능한 동작 범위는 코드를 위에서 아래로 한 번 읽는 것만으로 파악할 수 있습니다. 매개변수 목록은 장황해 보일 수 있지만, 파이썬의 선택적 키워드 인수 덕분에 클래스에 대한 대부분의 호출은 네 가지 인수를 모두 제공할 필요가 없습니다.</p>
 <p>(이 클래스는 파일 하나와 소켓 하나만 처리할 수 있다는 것은 사실이지만, 가독성을 위해 단순화한 것입니다. <code>file</code> 및 <code>socket</code> 매개변수를 <code>files</code> 및 <code>sockets</code>라는 목록으로 쉽게 전환할 수 있습니다.)</p>
@@ -604,35 +692,47 @@ syslog.syslog(self.priority, message)</p>
 <p>일부 파이썬 프로젝트는 파이썬 언어의 논란이 많은 기능인 다중 상속을 통해 원칙을 회피하려는 유혹 때문에 상속보다 컴포지션을 실천하는 데 미치지 못합니다.</p>
 <p><code>FilteredLogger</code>와 <code>SocketLogger</code>가 기본 <code>Logger</code> 클래스의 두 가지 다른 서브클래스였던 처음 시작한 예제 코드로 돌아가 봅시다. 단일 상속만 지원하는 언어에서는 <code>FilteredSocketLogger</code>가 <code>SocketLogger</code> 또는 <code>FilteredLogger</code>에서 상속하도록 선택해야 하며, 그런 다음 다른 클래스의 코드를 복제해야 합니다.</p>
 <p>그러나 파이썬은 다중 상속을 지원하므로 새 <code>FilteredSocketLogger</code>는 <code>SocketLogger</code>와 <code>FilteredLogger</code>를 모두 기본 클래스로 나열하고 둘 다에서 상속할 수 있습니다.</p>
-<div class="testcode">
-<p># 원래 예제의 기본 클래스와 서브클래스.</p>
-<p>class Logger(object):<br>
-def __init__(self, file):<br>
-self.file = file</p>
-<p>def log(self, message):<br>
-self.file.write(message + ‘n’) self.file.flush()</p>
-<p>class SocketLogger(Logger):<br>
-def __init__(self, sock):<br>
-self.sock = sock</p>
-<p>def log(self, message):<br>
-self.sock.sendall((message + ‘n’).encode(‘ascii’))</p>
-<p>class FilteredLogger(Logger):<br>
-def __init__(self, pattern, file):<br>
-self.pattern = pattern super().__init__(file)</p>
-<p>def log(self, message):<br>
-if self.pattern in message:<br>
-super().log(message)</p>
-<p># 다중 상속을 통해 파생된 클래스.</p>
-<p>class FilteredSocketLogger(FilteredLogger, SocketLogger):<br>
-def __init__(self, pattern, sock):<br>
-FilteredLogger.__init__(self, pattern, None) SocketLogger.__init__(self, sock)</p>
-<p># 잘 작동합니다.</p>
-<p>logger = FilteredSocketLogger(‘Error’, sock1) logger.log(‘Warning: not that important’) logger.log(‘Error: this is important’)</p>
-<p>print(‘The socket received: %r’ % sock2.recv(512))</p>
-</div>
-<div class="testoutput">
-<p>The socket received: b’Error: this is importantn’</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 원래 예제의 기본 클래스와 서브클래스.</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger(<span class="bu">object</span>):</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, <span class="bu">file</span>):</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span> <span class="op">=</span> <span class="bu">file</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.write(message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">file</span>.flush()</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SocketLogger(Logger):</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, sock):</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock <span class="op">=</span> sock</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.sock.sendall((message <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>).encode(<span class="st">'ascii'</span>))</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredLogger(Logger):</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern, <span class="bu">file</span>):</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.pattern <span class="op">=</span> pattern</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(<span class="bu">file</span>)</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">in</span> message:</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            <span class="bu">super</span>().log(message)</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a><span class="co"># 다중 상속을 통해 파생된 클래스.</span></span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredSocketLogger(FilteredLogger, SocketLogger):</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, pattern, sock):</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>        FilteredLogger.<span class="fu">__init__</span>(<span class="va">self</span>, pattern, <span class="va">None</span>)</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>        SocketLogger.<span class="fu">__init__</span>(<span class="va">self</span>, sock)</span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a><span class="co"># 잘 작동합니다.</span></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> FilteredSocketLogger(<span class="st">'Error'</span>, sock1)</span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Warning: not that important'</span>)</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: this is important'</span>)</span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'The socket received: </span><span class="sc">%r</span><span class="st">'</span> <span class="op">%</span> sock2.recv(<span class="dv">512</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>The socket received: b'Error: this is important\n'</code></pre>
 <p>이것은 데코레이터 패턴 해결책과 몇 가지 놀라운 유사점을 가지고 있습니다. 두 경우 모두:</p>
 <ul>
 <li>각 종류의 출력에 대한 로거 클래스가 있습니다. (파일을 직접 쓰고 파일이 아닌 것은 어댑터를 통해 쓰는 어댑터의 비대칭성과는 대조적입니다.)</li>
@@ -667,42 +767,54 @@ FilteredLogger.__init__(self, pattern, None) SocketLogger.__init__(self, sock)</
 <h2 data-number="2.8" class="anchored" data-anchor-id="회피-믹스인"><span class="header-section-number">2.8</span> 회피: 믹스인</h2>
 <p>이전 섹션의 <code>FilteredSocketLogger</code>는 두 기본 클래스 모두에 대한 인수를 받아야 했기 때문에 자체 사용자 지정 <code>__init__()</code> 메서드가 필요했습니다. 그러나 이 책임은 피할 수 있다는 것이 밝혀졌습니다. 물론 서브클래스에 추가 데이터가 필요하지 않은 경우에는 문제가 발생하지 않습니다. 그러나 추가 데이터가 필요한 클래스라도 다른 수단으로 데이터를 전달받을 수 있습니다.</p>
 <p>클래스 자체에서 <code>pattern</code>에 대한 기본값을 제공하고 호출자가 초기화와 별도로 속성을 직접 사용자 지정하도록 초대하면 <code>FilteredLogger</code>를 다중 상속에 더 친화적으로 만들 수 있습니다.</p>
-<div class="testcode">
-<p># 초기화 중에 “pattern”을 받지 마십시오.</p>
-<p>class FilteredLogger(Logger):<br>
-pattern = ’’</p>
-<p>def log(self, message):<br>
-if self.pattern in message:<br>
-super().log(message)</p>
-<p># 다중 상속이 이제 더 간단해졌습니다.</p>
-<p>class FilteredSocketLogger(FilteredLogger, SocketLogger):<br>
-pass # 이 서브클래스에는 추가 코드가 필요하지 않습니다!</p>
-<p># 호출자는 “pattern”을 직접 설정할 수 있습니다.</p>
-<p>logger = FilteredSocketLogger(sock1) logger.pattern = ‘Error’</p>
-<p># 잘 작동합니다.</p>
-<p>logger.log(‘Warning: not that important’) logger.log(‘Error: this is important’)</p>
-<p>print(‘The socket received: %r’ % sock2.recv(512))</p>
-</div>
-<div class="testoutput">
-<p>The socket received: b’Error: this is importantn’</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 초기화 중에 "pattern"을 받지 마십시오.</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredLogger(Logger):</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    pattern <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">in</span> message:</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>            <span class="bu">super</span>().log(message)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 다중 상속이 이제 더 간단해졌습니다.</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredSocketLogger(FilteredLogger, SocketLogger):</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span>  <span class="co"># 이 서브클래스에는 추가 코드가 필요하지 않습니다!</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 호출자는 "pattern"을 직접 설정할 수 있습니다.</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> FilteredSocketLogger(sock1)</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>logger.pattern <span class="op">=</span> <span class="st">'Error'</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 잘 작동합니다.</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Warning: not that important'</span>)</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: this is important'</span>)</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'The socket received: </span><span class="sc">%r</span><span class="st">'</span> <span class="op">%</span> sock2.recv(<span class="dv">512</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>The socket received: b'Error: this is important\n'</code></pre>
 <p><code>FilteredLogger</code>를 기본 클래스의 초기화 기동과 직교적인 초기화 기동으로 전환했으므로, 직교성이라는 아이디어를 논리적 결론까지 밀어붙이지 않겠습니까? <code>FilteredLogger</code>를 다중 상속이 결합할 클래스 계층 구조 외부에 완전히 존재하는 “믹스인”으로 변환할 수 있습니다.</p>
-<div class="testcode">
-<p># 믹스인으로 만들어 필터를 단순화합니다.</p>
-<p>class FilterMixin: # 기본 클래스 없음!<br>
-pattern = ’’</p>
-<p>def log(self, message):<br>
-if self.pattern in message:<br>
-super().log(message)</p>
-<p># 다중 상속은 위와 동일하게 보입니다.</p>
-<p>class FilteredLogger(FilterMixin, FileLogger):<br>
-pass # 다시 한번, 서브클래스에는 추가 코드가 필요하지 않습니다.</p>
-<p># 잘 작동합니다.</p>
-<p>logger = FilteredLogger(sys.stdout) logger.pattern = ‘Error’ logger.log(‘Warning: not that important’) logger.log(‘Error: this is important’)</p>
-</div>
-<div class="testoutput">
-<p>Error: this is important</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 믹스인으로 만들어 필터를 단순화합니다.</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilterMixin:  <span class="co"># 기본 클래스 없음!</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    pattern <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> log(<span class="va">self</span>, message):</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.pattern <span class="kw">in</span> message:</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>            <span class="bu">super</span>().log(message)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 다중 상속은 위와 동일하게 보입니다.</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredLogger(FilterMixin, FileLogger):</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span>  <span class="co"># 다시 한번, 서브클래스에는 추가 코드가 필요하지 않습니다.</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 잘 작동합니다.</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> FilteredLogger(sys.stdout)</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>logger.pattern <span class="op">=</span> <span class="st">'Error'</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Warning: not that important'</span>)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>logger.log(<span class="st">'Error: this is important'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Error: this is important</code></pre>
 <p>믹스인은 지난 섹션에서 보았던 필터링된 서브클래스보다 개념적으로 더 간단합니다. 메서드 확인 순서를 복잡하게 만들 수 있는 기본 클래스가 없으므로 <code>super()</code>는 항상 <code>class</code> 문에 나열된 다음 기본 클래스를 호출합니다.</p>
 <p>믹스인은 또한 동등한 서브클래스보다 테스트 스토리가 더 간단합니다. <code>FilteredLogger</code>는 독립 실행형으로 실행하고 다른 클래스와 결합하는 테스트가 모두 필요하지만, <code>FilterMixin</code>은 로거와 결합하는 테스트만 필요합니다. 믹스인은 자체적으로 불완전하므로 독립 실행형으로 실행하는 테스트는 작성할 수도 없습니다.</p>
 <p>그러나 다중 상속의 다른 모든 책임은 여전히 적용됩니다. 따라서 믹스인 패턴은 다중 상속의 가독성과 개념적 단순성을 향상시키지만, 문제에 대한 완전한 해결책은 아닙니다.</p>
@@ -711,33 +823,49 @@ pass # 다시 한번, 서브클래스에는 추가 코드가 필요하지 않습
 <h2 data-number="2.9" class="anchored" data-anchor-id="회피-동적으로-클래스-빌드"><span class="header-section-number">2.9</span> 회피: 동적으로 클래스 빌드</h2>
 <p>이전 두 섹션에서 보았듯이 전통적인 다중 상속이나 믹스인 모두 “모든 조합을 지원하기 위한 서브클래스의 폭발”이라는 갱 오브 포의 문제를 해결하지 못합니다 — 단지 두 클래스를 결합해야 할 때 코드 중복을 피할 뿐입니다.</p>
 <p>다중 상속은 여전히 일반적인 경우 각각 다음과 같이 보이는 <em>m</em> × <em>n</em> 클래스 문의 “클래스 확산”을 필요로 합니다.</p>
-<div class="testcode">
-<p>class FilteredSocketLogger(FilteredLogger, SocketLogger):<br>
-…</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FilteredSocketLogger(FilteredLogger, SocketLogger):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>그러나 파이썬은 해결 방법을 제공한다는 것이 밝혀졌습니다.</p>
 <p>애플리케이션이 구성 파일을 읽어 사용해야 할 로그 필터와 로그 대상을 학습한다고 상상해 보십시오. 이 파일의 내용은 런타임까지 알 수 없습니다. 미리 가능한 모든 <em>m</em> × <em>n</em> 클래스를 빌드하고 올바른 클래스를 선택하는 대신, 기다렸다가 파이썬이 <code>class</code> 문뿐만 아니라 런타임에 동적으로 새 클래스를 만드는 내장 <code>type()</code> 함수도 지원한다는 사실을 활용할 수 있습니다.</p>
-<div class="testsetup">
-<p>class PatternFilteredLog:<br>
-def __init__(self, ellipsis):<br>
-pass</p>
-<p>class SeverityFilteredLog: pass class FileLog: pass class SocketLog: pass class SyslogLog: pass</p>
-<p>from io import StringIO def open(filename): return StringIO(‘pattern file’)</p>
-</div>
-<div class="testcode">
-<p># 2개의 필터링된 로거와 3개의 출력 로거를 상상해 보십시오.</p>
-<p>filters = {<br>
-‘pattern’: PatternFilteredLog, ‘severity’: SeverityFilteredLog,</p>
-<p>} outputs = { ‘file’: FileLog, ‘socket’: SocketLog, ‘syslog’: SyslogLog, }</p>
-<p># 결합하려는 두 클래스를 선택합니다.</p>
-<p>with open(‘config’) as f:<br>
-filter_name, output_name = f.read().split()</p>
-<p>filter_cls = filters[filter_name] output_cls = outputs[output_name]</p>
-<p># 새 파생 클래스를 빌드합니다 (!)</p>
-<p>name = filter_name.title() + output_name.title() + ‘Log’ cls = type(name, (filter_cls, output_cls), {})</p>
-<p># 평소와 같이 호출하여 인스턴스를 생성합니다.</p>
-<p>logger = cls(…)</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PatternFilteredLog:</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, ellipsis):</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SeverityFilteredLog: <span class="cf">pass</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FileLog: <span class="cf">pass</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SocketLog: <span class="cf">pass</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SyslogLog: <span class="cf">pass</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">open</span>(filename):</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> StringIO(<span class="st">'pattern file'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2개의 필터링된 로거와 3개의 출력 로거를 상상해 보십시오.</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>filters <span class="op">=</span> {</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'pattern'</span>: PatternFilteredLog,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">'severity'</span>: SeverityFilteredLog,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> {</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'file'</span>: FileLog,</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'socket'</span>: SocketLog,</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'syslog'</span>: SyslogLog,</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 결합하려는 두 클래스를 선택합니다.</span></span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'config'</span>) <span class="im">as</span> f:</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    filter_name, output_name <span class="op">=</span> f.read().split()</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>filter_cls <span class="op">=</span> filters[filter_name]</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>output_cls <span class="op">=</span> outputs[output_name]</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 새 파생 클래스를 빌드합니다 (!)</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>name <span class="op">=</span> filter_name.title() <span class="op">+</span> output_name.title() <span class="op">+</span> <span class="st">'Log'</span></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>cls <span class="op">=</span> <span class="bu">type</span>(name, (filter_cls, output_cls), {})</span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a><span class="co"># 평소와 같이 호출하여 인스턴스를 생성합니다.</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> cls(...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>type()</code>에 전달된 클래스 튜플은 <code>class</code> 문의 기본 클래스 시리즈와 동일한 의미를 갖습니다. 위의 <code>type()</code> 호출은 필터링된 로거와 출력 로거 모두에서 다중 상속을 통해 새 클래스를 만듭니다.</p>
 <p>묻기 전에: 예, <code>class</code> 문을 일반 텍스트로 빌드한 다음 <code>eval()</code>에 전달하는 것도 작동합니다.</p>
 <p>그러나 즉석에서 클래스를 빌드하는 것은 심각한 책임을 수반합니다.</p>

@@ -34,34 +34,28 @@
 
 이것들은 객체 자체가 변경 불가능하다는 의미에서만 "상수"라는 점을 기억하십시오. 이름은 여전히 다시 할당될 수 있습니다.
 
-<div class="testcode">
+```python
+import calendar
+calendar.January = 13
+print(calendar.January)
+```
 
-import calendar calendar.January = 13 print(calendar.January)
-
-</div>
-
-<div class="testoutput">
-
+```text
 13
-
-</div>
+```
 
 또는 삭제될 수도 있습니다.
 
-<div class="testcode">
+```python
+del calendar.January
+print(calendar.January)
+```
 
-del calendar.January print(calendar.January)
-
-</div>
-
-<div class="testoutput">
-
-Traceback (most recent call last):  
-...
-
+```text
+Traceback (most recent call last):
+  ...
 AttributeError: module 'calendar' has no attribute 'January'
-
-</div>
+```
 
 정수, 부동 소수점 및 문자열 외에도 상수에는 튜플 및 고정 세트와 같은 변경 불가능한 컨테이너도 포함됩니다.
 
@@ -194,11 +188,10 @@ AttributeError: module 'calendar' has no attribute 'January'
 
 이 전역 객체를 통해 파이썬 프로그램의 다양한 루틴과 스레드는 이 프로세스 전체 리소스에 대한 액세스를 조정합니다. 모든 변경 사항:
 
-<div class="testcode">
-
-import os os.environ\['TERM'\] = 'xterm'
-
-</div>
+```python
+import os
+os.environ['TERM'] = 'xterm'
+```
 
 — 해당 환경 키를 읽는 프로그램의 다른 부분에 즉시 표시됩니다.
 
@@ -247,7 +240,7 @@ import os os.environ\['TERM'\] = 'xterm'
 
 패키지 자체에 포함된 작은 데이터 파일을 로드해야 할 때 때때로 이 규칙을 어긴다는 것을 인정합니다.
 
-> 파일: Lib/signal.py 6:1:\_globals = globals()
+> 파일: Lib/signal.py 6:1:_globals = globals()
 >
 > 파일: Lib/email/header.py 31:1:USASCII = Charset('us-ascii')
 >

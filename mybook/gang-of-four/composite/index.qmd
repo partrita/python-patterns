@@ -136,14 +136,14 @@ tk_example.py
 > return \[\]
 >
 > class Frame(Widget):  
-> def \_\_init\_\_(self, child_widgets):  
+> def __init__(self, child_widgets):  
 > self.child_widgets = child_widgets
 >
 > def children(self):  
 > return self.child_widgets
 >
 > class Label(Widget):  
-> def \_\_init\_\_(self, text):  
+> def __init__(self, text):  
 > self.text = text
 
 또는 객체가 단순히 동일한 인터페이스를 덕 타이핑하고 테스트에 의존하여 컨테이너와 내용 간의 대칭성을 유지할 수 있습니다. (매우 간단한 스크립트의 경우 "테스트"는 단순히 코드가 실행된다는 사실일 수 있습니다.) :

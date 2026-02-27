@@ -6,8 +6,9 @@ from pathlib import Path
 
 def convert_rst_to_qmd():
     """
-    Converts .rst files from mybook/source to .qmd files in mybook,
-    and copies related assets. Includes fixes for common citation warnings.
+    Converts .rst files from mybook/source to .qmd files in mybook.
+    Pre-processes RST to handle Sphinx-specific directives and
+    post-processes QMD to ensure proper syntax highlighting.
     """
     source_dir = Path("mybook/source")
     target_dir = Path("mybook")
@@ -24,14 +25,24 @@ def convert_rst_to_qmd():
 
         print(f"Converting {rst_file} to {qmd_file}...")
         
-        # Run pandoc to convert the file
+        # 1. Read and Pre-process RST
+        rst_content = rst_file.read_text(encoding="utf-8")
+        # Replace Sphinx-specific directives with standard code-block
+        rst_content = re.sub(r'\.\. (testcode|testsetup)::', r'.. code-block:: python', rst_content)
+        rst_content = re.sub(r'\.\. testoutput::', r'.. code-block:: text', rst_content)
+        
+        # Temporary file for pre-processed content
+        temp_rst = rst_file.with_suffix(".rst.tmp")
+        temp_rst.write_text(rst_content, encoding="utf-8")
+
+        # 2. Run pandoc to convert the file
         try:
             subprocess.run(
                 [
                     "pandoc",
-                    str(rst_file),
+                    str(temp_rst),
                     "--from=rst",
-                    "--to=markdown+hard_line_breaks-smart", # Use markdown and disable smart quotes
+                    "--to=commonmark-smart", # Use commonmark for cleaner output, disable smart quotes
                     "--output",
                     str(qmd_file),
                     "--wrap=none",
@@ -43,20 +54,39 @@ def convert_rst_to_qmd():
         except subprocess.CalledProcessError as e:
             print(f"Error converting {rst_file}:")
             print(e.stderr)
+            temp_rst.unlink()
             raise
+        
+        temp_rst.unlink()
 
-        # Post-process QMD to fix citation warnings and formatting
+        # 3. Post-process QMD
         content = qmd_file.read_text(encoding="utf-8")
         
-        # 1. Wrap decorators in backticks if they are not already
-        content = re.sub(r'(?<![`@])@(abstractmethod|staticmethod|classmethod|property)\b(?!`)', r'`@\1`', content)
+        # Fix dunder methods that might be escaped: \_\_init\_\_ -> __init__
+        content = content.replace(r'\_', '_')
         
-        # 2. Fix mangled dunder methods (e.g., \_\_new\_\_() -> `__new__()`)
-        content = re.sub(r'\\_\\_(.*?)\\_\\_', r'`__\1__`', content)
+        # Ensure python code blocks have the correct language tag
+        # Pandoc might convert `.. code-block:: python` to ``` python
+        # We want to make sure it's consistent
+        content = re.sub(r'```\s*python', '```python', content)
+        content = re.sub(r'```\s*text', '```text', content)
         
-        # 3. Fix :doc: and :ref: roles that pandoc might not have handled perfectly
-        content = re.sub(r':doc:`(.*?)`', r'[ \1 ]', content)
-        content = re.sub(r':ref:`(.*?)`', r'[ \1 ]', content)
+        # Handle REPL style blocks (>>>) that might not have been caught
+        # If a block starts with >>> and isn't in a code block, we should probably wrap it
+        # But pandoc usually handles indented blocks as code. 
+        # Let's ensure they are tagged as python for highlighting
+        def fix_repl(match):
+            block = match.group(0)
+            if block.strip().startswith('>>>'):
+                return f"```python\n{block.strip()}\n```"
+            return block
+        
+        # This is a bit risky, let's just fix known patterns if they are not highlighted
+        
+        # Fix :doc: and :ref: roles to plain text or simple links
+        content = re.sub(r':doc:`(.*?)`', r'[\1]', content)
+        content = re.sub(r':ref:`(.*?)`', r'[\1]', content)
+        content = re.sub(r':doc:\[(.*?)\]', r'[\1]', content)
 
         qmd_file.write_text(content, encoding="utf-8")
 

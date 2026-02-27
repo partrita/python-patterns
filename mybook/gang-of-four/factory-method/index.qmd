@@ -45,7 +45,7 @@
 여기서 클래스 속성 팩토리 패턴이라고 부르는 것은 파이썬에서 클래스가 일급 객체라는 사실을 활용합니다. 단순히 클래스를 생성 작업을 수행할 클래스의 속성으로 첨부합니다. 표준 라이브러리에서 다음 코드를 찾을 수 있습니다.
 
 > class HTTPConnection:  
-> ... response_class = HTTPResponse ... def getresponse(self): ... response = self.response_class(self.sock, method=self.\_method) ...
+> ... response_class = HTTPResponse ... def getresponse(self): ... response = self.response_class(self.sock, method=self._method) ...
 
 이렇게 하면 `HTTPConnection`을 사용하는 코드가 응답을 빌드할 때 발생하는 일을 완벽하게 제어할 수 있습니다. 하위 클래스를 만들고 대신 하위 클래스를 사용하기만 하면 됩니다.
 
@@ -69,7 +69,7 @@
 `json` 모듈이 이 질문을 얼마나 우아하게 처리하는지 보십시오.
 
 > class JSONDecoder(object):  
-> ... def \_\_init\_\_(self, ... parse_float=None, ...): ... self.parse_float = parse_float or float ...
+> ... def __init__(self, ... parse_float=None, ...): ... self.parse_float = parse_float or float ...
 
 입력에서 숫자를 만날 때마다 문자열을 입력으로 사용하여 `self.parse_float()`를 호출하기만 하면 됩니다.
 
@@ -132,7 +132,7 @@
 팩토리 메서드 패턴은 종종 저능력이지만 객체 지향적인 언어의 코드가 파이썬으로 직접 번역된 곳 어디에서나 관찰할 수 있습니다. 표준 라이브러리의 `logging` 모듈이 즉시 떠오릅니다. 다음은 발췌문입니다.
 
 > class Handler(Filterer):  
-> ... def \_\_init\_\_(self, level=NOTSET): ... self.createLock() ... def createLock(self): """ Acquire a thread lock for serializing access to the underlying I/O. """ self.lock = threading.RLock() ...
+> ... def __init__(self, level=NOTSET): ... self.createLock() ... def createLock(self): """ Acquire a thread lock for serializing access to the underlying I/O. """ self.lock = threading.RLock() ...
 
 특수 종류의 잠금을 사용하는 `Handler`를 만들고 싶다면 어떻게 해야 할까요? 여기서 의도는 `Hander`를 서브클래싱하고 `createLock()`을 재정의하여 대신 자신이 가장 좋아하는 종류의 잠금을 반환하는 것입니다. 투박한 접근 방식이며, 여러 줄의 코드가 필요하며, 다양한 상황에서 `Handler` 객체를 사용자 정의하려는 여러 가지 방법이 있는 경우 잘 구성되지 않습니다 — 결국到处都是类。
 

@@ -32,11 +32,10 @@
 
 파이썬의 고전적인 예는 [matplotlib](https://matplotlib.org/) 라이브러리의 `pyplot` 인터페이스입니다. 호출자가 단 한 줄의 코드로 간단한 플롯을 빌드하고, 단 한 줄만 더 추가하여 다이어그램을 디스크에 저장할 수 있도록 합니다.
 
-<div class="testsetup">
-
-import os os.chdir('gang-of-four/builder')
-
-</div>
+```python
+import os
+os.chdir('gang-of-four/builder')
+```
 
 <div class="testcleanup">
 
@@ -44,13 +43,14 @@ os.chdir('../..')
 
 </div>
 
-<div class="testcode">
+```python
+import numpy as np
+x = np.arange(-6.2, 6.2, 0.1)
 
-import numpy as np x = np.arange(-6.2, 6.2, 0.1)
-
-import matplotlib.pyplot as plt plt.plot(x, np.sin(x)) plt.savefig('sine.png')
-
-</div>
+import matplotlib.pyplot as plt
+plt.plot(x, np.sin(x))
+plt.savefig('sine.png')
+```
 
 ![image](sine.png)
 
@@ -58,7 +58,7 @@ pyplot 인터페이스가 호출자에게 숨긴 것은 matplotlib이 이 간단
 
 \>\>\> plt.gcf() \<Figure size 640x480 with 1 Axes\>
 
-\>\>\> plt.gcf().subplots() \<matplotlib.axes.\_subplots.AxesSubplot object at 0x7ff910917a20\>
+\>\>\> plt.gcf().subplots() \<matplotlib.axes._subplots.AxesSubplot object at 0x7ff910917a20\>
 
 \>\>\> plt.gcf().subplots().bbox TransformedBbox( Bbox(x0=0.125, y0=0.10999999999999999, x1=0.9, y1=0.88), BboxTransformTo( TransformedBbox( Bbox(x0=0.0, y0=0.0, x1=6.4, y1=4.8), Affine2D( \[\[100. 0. 0.\] \[ 0. 100. 0.\] \[ 0. 0. 1.\]\]))))
 
@@ -110,14 +110,17 @@ matplotlib `pyplot` 인터페이스가 빌더라고 주장하는 것은 갱 오�
 
 답은 파이썬 프로그램 실행의 한 단계에서 다음 단계로 일반적으로 전달되는 공통 통화로서의 데이터와 데이터 구조의 우위라고 생각합니다. 이유를 이해하기 위해, 갱 오브 포의 자체 샘플 코드로 돌아가 봅시다. 예를 들어, 다음은 미로 생성에 대한 호출에 응답할 때 빌더가 배치되는 한 가지 상황입니다. (예제는 파이썬으로 번역하기 위해 약간 편집되었습니다.)
 
-<div class="testcode">
+```python
+class StandardMazeBuilder(object):
+    # ...
+    def build_door(self, n1, n2):
+        room1 = self._current_maze.get_room(n1)
+        room2 = self._current_maze.get_room(n2)
+        door = Door(r1, r2)
 
-class StandardMazeBuilder(object):  
-\# ... def build_door(self, n1, n2): room1 = self.\_current_maze.get_room(n1) room2 = self.\_current_maze.get_room(n2) door = Door(r1, r2)
-
-> room1.set_side(common_wall(r1, r2), d) room2.set_side(common_wall(r2, r1), d);
-
-</div>
+        room1.set_side(common_wall(r1, r2), d)
+        room2.set_side(common_wall(r2, r1), d);
+```
 
 코드가 강요되는 어색한 응답 패턴에 유의하십시오. 미로가 구성 중이라는 것을 알고 있지만, `self`에게 `current_maze` 속성을 요청하여 미로에 대한 참조를 복구해야 합니다. 그런 다음 새 정보로 방 객체를 업데이트하기 위해 몇 가지 조정을 해야 하므로 후속 상호 작용이 새 상태에서 시작됩니다. 이것은 콜백 시리즈로 왜곡된 I/O 코드처럼 의심스럽게 보입니다. 각 콜백은 상태 기계를 한 번 더 클릭하여 앞으로 나아가기 위해 현재 세계 상태를 다시 가져오고 다시 조립해야 합니다.
 
@@ -151,37 +154,47 @@ class StandardMazeBuilder(object):
 
 다음은 파이썬의 작은 예입니다 — 안타깝게도 작은 예가 아닌 예는 만연한 반복 때문에 읽기가 고통스럽습니다.
 
-<div class="testcode">
-
-\# 파이썬 \< 3.6에서는 약간 덜 편리합니다.
+```python
+# 파이썬 < 3.6에서는 약간 덜 편리합니다.
 
 from typing import NamedTuple
 
-class Port(NamedTuple):  
-number: int name: str = '' protocol: str = ''
+class Port(NamedTuple):
+    number: int
+    name: str = ''
+    protocol: str = ''
 
-\# 실제 파이썬 코드는 선택적 인수를 활용하여 \# 원하는 속성 조합을 지정합니다.
+# 실제 파이썬 코드는 선택적 인수를 활용하여
+# 원하는 속성 조합을 지정합니다.
 
-Port(2) Port(7, 'echo') Port(69, 'tftp', 'UDP')
+Port(2)
+Port(7, 'echo')
+Port(69, 'tftp', 'UDP')
 
-\# 키워드 인수를 사용하면 이전 인수를 건너뛸 수도 있습니다.
+# 키워드 인수를 사용하면 이전 인수를 건너뛸 수도 있습니다.
 
 Port(517, protocol='UDP')
 
-\# 하지만 파이썬에 선택적 인수가 없다면 어떨까요? \# 그러면 다음과 같은 왜곡을 할 수 있습니다.
+# 하지만 파이썬에 선택적 인수가 없다면 어떨까요?
+# 그러면 다음과 같은 왜곡을 할 수 있습니다.
 
-class PortBuilder(object):  
-def \_\_init\_\_(self, port):  
-self.port = port self.name = None self.protocol = None
+class PortBuilder(object):
+    def __init__(self, port):
+        self.port = port
+        self.name = None
+        self.protocol = None
 
-def build(self):  
-return Port(self.port, self.name, self.protocol)
+    def build(self):
+        return Port(self.port, self.name, self.protocol)
 
-\# 빌더를 사용하면 호출자가 모든 속성에 대한 값을 \# 지정할 필요 없이 Port를 생성할 수 있습니다. \# 여기서는 "name" 제공을 건너뜁니다.
+# 빌더를 사용하면 호출자가 모든 속성에 대한 값을
+# 지정할 필요 없이 Port를 생성할 수 있습니다.
+# 여기서는 "name" 제공을 건너뜁니다.
 
-b = PortBuilder(517) b.protocol = 'UDP' b.build()
-
-</div>
+b = PortBuilder(517)
+b.protocol = 'UDP'
+b.build()
+```
 
 상당한 양의 상용구 코드를 희생하여 — 작성자가 빌더의 각 속성에 대한 세터를 작성하려고 하면 더욱 악화됩니다 — 이 패턴을 사용하면 심각하게 손상된 프로그래밍 언어의 프로그래머가 파이썬 "호출" 연산자의 디자인에 내장된 동일한 편의 기능 중 일부를 즐길 수 있습니다.
 

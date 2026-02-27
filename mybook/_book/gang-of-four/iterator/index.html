@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -155,7 +190,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">감시 객체 패턴 (Sentinel Object Pattern)</span></span></a>
   </div>
 </li>
       </ul>
@@ -322,35 +357,52 @@ ul.task-list li input[type="checkbox"] {
 <section id="for-루프를-사용한-반복" class="level2" data-number="14.1">
 <h2 data-number="14.1" class="anchored" data-anchor-id="for-루프를-사용한-반복"><span class="header-section-number">14.1</span> “for” 루프를 사용한 반복</h2>
 <p>파이썬의 <code>for</code> 루프는 반복자 패턴을 너무 철저하게 추상화하여 대부분의 파이썬 프로그래머는 그것이 표면 아래에서 실행하는 객체 디자인 패턴을 인식조차 하지 못합니다. <code>for</code> 루프는 반복 할당을 수행하며, 반복하는 시퀀스의 각 항목에 대해 들여쓰기된 코드 블록을 한 번 실행합니다.</p>
-<div class="testcode">
-<p>some_primes = [2, 3, 5] for prime in some_primes: print(prime)</p>
-</div>
-<div class="testoutput">
-<p>2 3 5</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>some_primes <span class="op">=</span> [<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> prime <span class="kw">in</span> some_primes:</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(prime)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>2
+3
+5</code></pre>
 <p>위의 루프는 <code>prime = 2</code>, <code>prime = 3</code>, <code>prime = 5</code>의 세 가지 할당문을 수행했으며, 각 할당 후 들여쓰기된 코드 블록을 실행했습니다. 블록에는 루프를 일찍 종료하는 C 스타일 루프 제어문 <code>break</code>와 루프의 맨 위로 다시 건너뛰는 <code>continue</code>가 포함될 수 있습니다.</p>
 <p><code>for</code>는 반복 할당문이므로 파이썬의 일반적인 <code>=</code> 할당 연산자와 동일한 유연성을 갖습니다. 쉼표로 구분된 여러 이름을 나열하여 단일 이름에 할당하는 것에서 전체 튜플을 언패킹하는 것으로 업그레이드할 수 있습니다. 이렇게 하면 별도의 언패킹 단계를 건너뛸 수 있습니다.</p>
-<div class="testcode">
-<p>elements = [(‘H’, 1.008), (‘He’, 4.003), (‘Li’, 6.94)]</p>
-<p># “tup”과 같은 단일 이름으로 제한되지 않습니다… for tup in elements: symbol, weight = tup print(symbol, weight)</p>
-<p># …대신 “for” 문 안에서 바로 언패킹합니다. for symbol, weight in elements: print(symbol, weight)</p>
-</div>
-<div class="testoutput" data-hide="">
-<p>H 1.008 He 4.003 Li 6.94 H 1.008 He 4.003 Li 6.94</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>elements <span class="op">=</span> [(<span class="st">'H'</span>, <span class="fl">1.008</span>), (<span class="st">'He'</span>, <span class="fl">4.003</span>), (<span class="st">'Li'</span>, <span class="fl">6.94</span>)]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># "tup"과 같은 단일 이름으로 제한되지 않습니다...</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> tup <span class="kw">in</span> elements:</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    symbol, weight <span class="op">=</span> tup</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(symbol, weight)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ...대신 "for" 문 안에서 바로 언패킹합니다.</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> symbol, weight <span class="kw">in</span> elements:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(symbol, weight)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>H 1.008
+He 4.003
+Li 6.94
+H 1.008
+He 4.003
+Li 6.94</code></pre>
 <p>잘 알려진 바와 같이, 이것은 파이썬 딕셔너리의 <code>item()</code> 메서드와 결합되어 각 루프의 맨 위에서 키 조회를 하는 비용 없이 각 딕셔너리 키와 값을 쉽게 방문할 수 있습니다.</p>
-<div class="testcode">
-<p>d = {‘H’: 1.008, ‘He’: 4.003, ‘Li’: 6.94}</p>
-<p># 그럴 필요가 없습니다… for symbol in d.keys(): weight = d[symbol] print(symbol, weight)</p>
-<p># …대신 간단히 다음을 수행할 수 있습니다. for symbol, weight in d.items(): print(symbol, weight)</p>
-</div>
-<div class="testoutput" data-hide="">
-<p>H 1.008 He 4.003 Li 6.94 H 1.008 He 4.003 Li 6.94</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> {<span class="st">'H'</span>: <span class="fl">1.008</span>, <span class="st">'He'</span>: <span class="fl">4.003</span>, <span class="st">'Li'</span>: <span class="fl">6.94</span>}</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 그럴 필요가 없습니다...</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> symbol <span class="kw">in</span> d.keys():</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    weight <span class="op">=</span> d[symbol]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(symbol, weight)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ...대신 간단히 다음을 수행할 수 있습니다.</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> symbol, weight <span class="kw">in</span> d.items():</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(symbol, weight)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>H 1.008
+He 4.003
+Li 6.94
+H 1.008
+He 4.003
+Li 6.94</code></pre>
 <p><code>for</code> 루프는 매우 훌륭한 간결성과 표현력을 결합하여 파이썬은 이를 독립 실행형 문으로 지원할 뿐만 아니라 네 가지 다른 표현식에 통합했습니다 — 인라인 루프에서 직접 리스트, 세트, 딕셔너리 및 제너레이터를 빌드하는 파이썬의 유명한 “컴프리헨션”입니다.</p>
-<div class="testcode">
-<p>[symbol for symbol, weight in d.items() if weight &gt; 5] {symbol for symbol, weight in d.items() if weight &gt; 5} {symbol: weight for symbol, weight in d.items() if weight &gt; 5} list(symbol for symbol, weight in d.items() if weight &gt; 5)</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>[symbol <span class="cf">for</span> symbol, weight <span class="kw">in</span> d.items() <span class="cf">if</span> weight <span class="op">&gt;</span> <span class="dv">5</span>]</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>{symbol <span class="cf">for</span> symbol, weight <span class="kw">in</span> d.items() <span class="cf">if</span> weight <span class="op">&gt;</span> <span class="dv">5</span>}</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>{symbol: weight <span class="cf">for</span> symbol, weight <span class="kw">in</span> d.items() <span class="cf">if</span> weight <span class="op">&gt;</span> <span class="dv">5</span>}</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(symbol <span class="cf">for</span> symbol, weight <span class="kw">in</span> d.items() <span class="cf">if</span> weight <span class="op">&gt;</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>표현식 내에서 <code>for</code> 문 구문을 재사용하기로 한 파이썬의 결정 — 인라인 반복을 위한 별도의 특수 목적 구문을 고안하는 수고를 덜었습니다 — 언어를 더 간단하고 배우기 쉽고 기억하기 쉽게 만듭니다.</p>
 </section>
 <section id="패턴-반복-가능-객체와-반복자" class="level2" data-number="14.2">
@@ -367,20 +419,27 @@ ul.task-list li input[type="checkbox"] {
 <p>이전 섹션의 첫 번째 <code>for</code> 루프를 수동으로 다시 실행하려면 <code>iter()</code>를 한 번 호출한 다음 <code>next()</code>를 네 번 호출합니다.</p>
 <p>&gt;&gt;&gt; it = iter(some_primes) &gt;&gt;&gt; it &lt;list_iterator object at 0x7f072ffdb518&gt; &gt;&gt;&gt; print(next(it)) 2 &gt;&gt;&gt; print(next(it)) 3 &gt;&gt;&gt; print(next(it)) 5 &gt;&gt;&gt; print(next(it)) Traceback (most recent call last): … StopIteration</p>
 <p>이것들은 정확히 파이썬의 <code>for</code> 루프가 수행한 작업입니다. 물론 실제 <code>for</code> 루프는 여기서 했던 것처럼 정확한 수의 <code>next()</code> 호출을 하드 코딩하지 않습니다 — 대신 <code>for</code>는 다음과 같은 <code>while</code> 루프와 유사하게 구현됩니다.</p>
-<div class="testcode">
-<p>it = iter(some_primes) while True: try: prime = next(it) except StopIteration: break else: print(prime)</p>
-</div>
-<div class="testoutput">
-<p>2 3 5</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>it <span class="op">=</span> <span class="bu">iter</span>(some_primes)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        prime <span class="op">=</span> <span class="bu">next</span>(it)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">StopIteration</span>:</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(prime)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>2
+3
+5</code></pre>
 <p>반복자 패턴을 처음 배웠을 때의 첫 번째 질문은 다음과 같습니다. 왜 반복자가 컨테이너와 별개의 객체여야 할까요? 왜 각 컨테이너가 다음에 생성할 객체를 알려주는 카운터를 내부에 단순히 포함할 수 없을까요?</p>
 <p>답은 한 번에 하나의 <code>for</code> 루프만 컨테이너를 반복하는 한 단일 내부 카운터가 작동한다는 것입니다. 그러나 여러 <code>for</code> 루프가 동시에 동일한 컨테이너에서 작동하는 경우가 많습니다. 예를 들어, 두 동전 던지기의 모든 조합을 생성하기 위해 프로그래머는 중첩 루프를 작성할 수 있습니다.</p>
-<div class="testcode">
-<p>sides = [‘heads’, ‘tails’] for coin1 in sides: for coin2 in sides: print(coin1, coin2)</p>
-</div>
-<div class="testoutput">
-<p>heads heads heads tails tails heads tails tails</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sides <span class="op">=</span> [<span class="st">'heads'</span>, <span class="st">'tails'</span>]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> coin1 <span class="kw">in</span> sides:</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> coin2 <span class="kw">in</span> sides:</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(coin1, coin2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>heads heads
+heads tails
+tails heads
+tails tails</code></pre>
 <p>파이썬 리스트 객체 <code>sides</code>가 단일 내부 카운터만 사용하여 반복을 지원하려고 했다면, 내부 <code>for</code> 루프가 모든 항목을 사용하고 외부 <code>for</code> 루프에는 방문할 추가 항목이 남지 않았을 것입니다. 대신 <code>iter()</code>를 호출할 때마다 별도의 반복자가 제공됩니다.</p>
 <p>&gt;&gt;&gt; it1 = iter(sides) &gt;&gt;&gt; it2 = iter(sides) &gt;&gt;&gt; it1 &lt;list_iterator object at 0x7fa8b8b292b0&gt; &gt;&gt;&gt; it2 &lt;list_iterator object at 0x7fa8b8b29400&gt; &gt;&gt;&gt; it1 is it2 False</p>
 <p>중첩 루프뿐만 아니라 여러 제어 스레드 — 운영 체제 스레드이든 코루틴이든 — 객체가 동시에 여러 <code>for</code> 루프에 의해 작동될 수 있는 많은 상황을 제공하므로, 이러한 각 <code>for</code> 루프는 서로를 방해하지 않도록 자체 반복자가 필요합니다.</p>
@@ -395,24 +454,32 @@ ul.task-list li input[type="checkbox"] {
 <p>email.txt</p>
 </div>
 <p>이 파일은 각 섹션이 다른 규칙으로 구분되므로 세 단계로 구문 분석해야 합니다. 단어 <code>From</code>으로 시작하는 초기 “봉투 줄”은 항상 단일 독립 실행형 줄입니다. 헤더가 뒤따르며, 콜론으로 구분된 이름과 값의 연속으로 구성되며 단일 빈 줄로 끝납니다. 본문이 마지막에 오고 다음 봉투 <code>From</code> 줄 또는 파일 끝에서 끝납니다. 다음은 <code>for</code> 루프만 사용하여 메일박스 파일에서 첫 번째 메시지를 구문 분석하는 방법입니다.</p>
-<div class="testsetup">
-<p>import os os.chdir(‘gang-of-four/iterator’)</p>
-</div>
-<div class="testcode">
-<p>def parse_email(f):<br>
-for line in f:<br>
-envelope = line break</p>
-<p>headers = {} for line in f: if line == ‘n’: break name, value = line.split(‘:’, 1) headers[name.strip()] = value.lstrip().rstrip(‘n’) body = [] for line in f: if line.startswith(‘From’): break body.append(line) return envelope, headers, body</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>os.chdir(<span class="st">'gang-of-four/iterator'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> parse_email(f):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> f:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        envelope <span class="op">=</span> line</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    headers <span class="op">=</span> {}</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> f:</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> line <span class="op">==</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>:</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        name, value <span class="op">=</span> line.split(<span class="st">':'</span>, <span class="dv">1</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        headers[name.strip()] <span class="op">=</span> value.lstrip().rstrip(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    body <span class="op">=</span> []</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> f:</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> line.startswith(<span class="st">'From'</span>):</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>        body.append(line)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> envelope, headers, body</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이 편리한 패턴 — 파일의 각 섹션을 자체 <code>for</code> 루프로 처리하고 섹션 처리가 완료되면 <code>break</code>를 수행합니다 — 다른 루프를 시작할 때마다 파일 객체가 중단된 지점에서 바로 읽기를 계속하기 때문에 가능합니다.</p>
-<div class="testcode">
-<p>with open(‘email.txt’) as f:<br>
-envelope, headers, body = parse_email(f)</p>
-<p>print(headers[‘To’]) print(len(body), ‘lines’)</p>
-</div>
-<div class="testoutput">
-<p>Mary Smith &lt;mary@example.net&gt; 2 lines</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'email.txt'</span>) <span class="im">as</span> f:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    envelope, headers, body <span class="op">=</span> parse_email(f)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(headers[<span class="st">'To'</span>])</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(body), <span class="st">'lines'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Mary Smith &lt;mary@example.net&gt;
+2 lines</code></pre>
 <p>파일 객체는 일반적인 반복을 어떻게 방해하고 한 <code>for</code> 루프와 다음 루프 사이의 상태를 유지할까요?</p>
 <p><code>for</code> 루프 뒤로 물러나 <code>iter()</code>를 직접 호출하고 결과를 검사하여 답을 볼 수 있습니다.</p>
 <p>&gt;&gt;&gt; f = open(‘email.txt’) &gt;&gt;&gt; f &lt;_io.TextIOWrapper name=‘email.txt’ mode=‘r’ encoding=‘UTF-8’&gt; &gt;&gt;&gt; it1 = iter(f) &gt;&gt;&gt; it1 &lt;_io.TextIOWrapper name=‘email.txt’ mode=‘r’ encoding=‘UTF-8’&gt; &gt;&gt;&gt; it2 = iter(f) &gt;&gt;&gt; it2 &lt;_io.TextIOWrapper name=‘email.txt’ mode=‘r’ encoding=‘UTF-8’&gt; &gt;&gt;&gt; it1 is it2 is f True</p>
@@ -420,33 +487,37 @@ envelope, headers, body = parse_email(f)</p>
 <p>파일 객체의 경우, 반복 가능 객체와 반복자를 단일 객체로 통합하기로 한 결정은 기본 운영 체제의 동작에 의해 주도됩니다. 결국 모든 종류의 파일이 되감기 및 빨리 감기를 지원하는 것은 아닙니다 — 예를 들어 Unix 터미널과 파이프는 지원하지 않습니다 — 따라서 파이썬 파일 객체는 단순히 운영 체제가 현재 줄을 추적하도록 하고 자체적으로 되감기를 시도하지 않습니다.</p>
 <p>그러나 파일뿐만 아니라 다른 종류의 객체에 대해서도 여러 단계로 반복하는 기능을 원한다면 어떻게 해야 할까요?</p>
 <p>예를 들어, <code>parse_email()</code>에 일반적인 줄 목록을 전달하면 어떻게 될까요? 그러면 루틴이 중단됩니다 — 두 번째와 세 번째 <code>for</code> 루프가 이전 루프가 중단된 지점에서 계속하는 대신 목록의 처음부터 다시 시작하기 때문입니다. 다른 문제 중에서도 이렇게 하면 함수가 이메일 본문을 찾지 못하게 됩니다.</p>
-<div class="testcode">
-<p>with open(‘email.txt’) as f:<br>
-lines = list(f)</p>
-<p>envelope, headers, body = parse_email(lines) print(headers[‘To’]) print(len(body), ‘lines’)</p>
-</div>
-<div class="testoutput">
-<p>Mary Smith &lt;mary@example.net&gt; 0 lines</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'email.txt'</span>) <span class="im">as</span> f:</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> <span class="bu">list</span>(f)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>envelope, headers, body <span class="op">=</span> parse_email(lines)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(headers[<span class="st">'To'</span>])</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(body), <span class="st">'lines'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Mary Smith &lt;mary@example.net&gt;
+0 lines</code></pre>
 <p>파이썬 리스트와 같은 표준 컨테이너에 대한 점진적인 반복을 어떻게 지원할 수 있을까요?</p>
 <p>답은 전통적인 반복자 패턴에 대한 또 다른 확장입니다. 파이썬에서는 반복자가 <code>iter()</code>에 전달되면 자신을 반환합니다! 즉, 반복자 자체를 <code>for</code> 루프에 전달할 수 있으며, <code>next()</code>를 사용한 수동 단일 단계와 <code>for</code> 루프를 사용한 자동 반복 사이를 원할 때마다 전환하는 프로그램을 작성할 수 있습니다.</p>
-<div class="testcode">
-<p>it = iter(some_primes) print(next(it)) for prime in it: print(prime) break print(next(it))</p>
-</div>
-<div class="testoutput">
-<p>2 3 5</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>it <span class="op">=</span> <span class="bu">iter</span>(some_primes)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">next</span>(it))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> prime <span class="kw">in</span> it:</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(prime)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">break</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">next</span>(it))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>2
+3
+5</code></pre>
 <p>위의 코드는 <code>iter()</code>로 직접 요청한 단일 반복자만 처리하므로, 수동 <code>next()</code> 호출과 <code>for()</code> 루프 모두 기본 목록의 3개 항목을 통해 동일한 반복자를 진행시키고 있습니다. <code>for</code> 루프는 반복자 객체 <code>it</code>이 반복자를 요청받았을 때 자신을 반환하기 때문에 작동합니다.</p>
 <p>&gt;&gt;&gt; it &lt;list_iterator object at 0x7f4fdce6c5f8&gt; &gt;&gt;&gt; iter(it) &lt;list_iterator object at 0x7f4fdce6c5f8&gt; &gt;&gt;&gt; iter(it) is it True</p>
 <p>따라서 기본 목록을 전달하는 대신 이미 생성한 반복자를 전달하면 파이썬 목록과 함께 <code>parse_email()</code> 루틴을 성공적으로 사용할 수 있습니다. 이렇게 변경하면 루틴은 열린 파일에서 원래 그랬던 것처럼 목록에서도 성공적으로 실행됩니다.</p>
-<div class="testcode">
-<p>with open(‘email.txt’) as f:<br>
-lines = list(f)</p>
-<p>it = iter(lines) envelope, headers, body = parse_email(it) print(headers[‘To’]) print(len(body), ‘lines’)</p>
-</div>
-<div class="testoutput">
-<p>Mary Smith &lt;mary@example.net&gt; 2 lines</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'email.txt'</span>) <span class="im">as</span> f:</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    lines <span class="op">=</span> <span class="bu">list</span>(f)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>it <span class="op">=</span> <span class="bu">iter</span>(lines)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>envelope, headers, body <span class="op">=</span> parse_email(it)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(headers[<span class="st">'To'</span>])</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(body), <span class="st">'lines'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Mary Smith &lt;mary@example.net&gt;
+2 lines</code></pre>
 <p><code>parse_email()</code>과 같은 루틴을 실제로 구현하는 경우, 호출자에게 반복자를 전달하도록 기억하게 하는 것보다 컨테이너를 전달하고 <code>iter()</code>를 직접 호출하는 것이 좋습니다.</p>
 </section>
 <section id="반복-가능-객체-및-반복자-구현" class="level2" data-number="14.4">
@@ -459,45 +530,50 @@ lines = list(f)</p>
 </ul>
 <p>자체 간단한 반복자를 구현하여 이러한 모든 요구 사항이 함께 작동하는 것을 볼 수 있습니다!</p>
 <p><code>__next__()</code>에 의해 생성된 항목이 컨테이너 내부에 영구 값으로 저장되거나 <code>__next__()</code>가 호출될 때까지 존재해야 한다는 요구 사항은 없습니다. 이를 통해 컨테이너에 스토리지를 구현하지 않고도 매우 간단한 반복자 패턴 예제를 제공할 수 있습니다.</p>
-<div class="testcode">
-<p>class OddNumbers(object):<br>
-“An iterable object.”</p>
-<p>def __init__(self, maximum):<br>
-self.maximum = maximum</p>
-<p>def __iter__(self):<br>
-return OddIterator(self)</p>
-<p>class OddIterator(object):<br>
-“An iterator.”</p>
-<p>def __init__(self, container):<br>
-self.container = container self.n = -1</p>
-<p>def __next__(self):<br>
-self.n += 2 if self.n &gt; self.container.maximum: raise StopIteration return self.n</p>
-<p>def __iter__(self):<br>
-return self</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> OddNumbers(<span class="bu">object</span>):</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"An iterable object."</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, maximum):</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.maximum <span class="op">=</span> maximum</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>):</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> OddIterator(<span class="va">self</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> OddIterator(<span class="bu">object</span>):</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"An iterator."</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, container):</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.container <span class="op">=</span> container</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__next__</span>(<span class="va">self</span>):</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n <span class="op">+=</span> <span class="dv">2</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.n <span class="op">&gt;</span> <span class="va">self</span>.container.maximum:</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">StopIteration</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.n</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>):</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이러한 세 가지 간단한 메서드(컨테이너 객체용 하나, 반복자용 두 개)를 사용하면 <code>OddNumbers</code> 컨테이너는 이제 파이썬의 풍부한 반복 생태계에 대한 전체 멤버십을 받을 수 있습니다. <code>for</code> 루프와 원활하게 작동합니다.</p>
-<div class="testcode">
-<p>numbers = OddNumbers(7)</p>
-<p>for n in numbers:<br>
-print(n)</p>
-</div>
-<div class="testoutput">
-<p>1 3 5 7</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>numbers <span class="op">=</span> OddNumbers(<span class="dv">7</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n <span class="kw">in</span> numbers:</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(n)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>1
+3
+5
+7</code></pre>
 <p>그리고 <code>iter()</code> 및 <code>next()</code> 내장 함수와도 작동합니다.</p>
-<div class="testcode">
-<p>it = iter(OddNumbers(5)) print(next(it)) print(next(it))</p>
-</div>
-<div class="testoutput">
-<p>1 3</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>it <span class="op">=</span> <span class="bu">iter</span>(OddNumbers(<span class="dv">5</span>))</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">next</span>(it))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">next</span>(it))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>1
+3</code></pre>
 <p>그리고 컴프리헨션과도 춤을 출 수 있습니다!</p>
-<div class="testcode">
-<p>print(list(numbers)) print(set(n for n in numbers if n &gt; 4))</p>
-</div>
-<div class="testoutput">
-<p>[1, 3, 5, 7] {5, 7}</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">list</span>(numbers))</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">set</span>(n <span class="cf">for</span> n <span class="kw">in</span> numbers <span class="cf">if</span> n <span class="op">&gt;</span> <span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>[1, 3, 5, 7]
+{5, 7}</code></pre>
 <p>세 가지 간단한 메서드만 있으면 파이썬의 구문 수준 반복 지원에 액세스할 수 있습니다.</p>
 </section>
 <section id="파이썬의-추가-간접-수준" class="level2" data-number="14.5">

@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -155,7 +190,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">감시 객체 패턴 (Sentinel Object Pattern)</span></span></a>
   </div>
 </li>
       </ul>
@@ -346,42 +381,61 @@ ul.task-list li input[type="checkbox"] {
 <section id="구현" class="level2" data-number="13.2">
 <h2 data-number="13.2" class="anchored" data-anchor-id="구현"><span class="header-section-number">13.2</span> 구현</h2>
 <p>가장 간단한 플라이웨이트는 미리 할당됩니다. 학점 할당 시스템은 학점 자체에 대해 플라이웨이트를 사용할 수 있습니다.</p>
-<div class="testcode">
-<p><span id="grades">grades</span> = [letter + suffix<br>
-for letter in ‘ABCD’ for suffix in (‘+’, ’‘,’-‘)] + [’F’]</p>
-<p>def compute_grade(percent):<br>
-percent = max(59, min(99, percent)) return <span id="grades">grades</span>[(99 - percent) * 3 // 10]</p>
-<p>print(compute_grade(55)) print(compute_grade(89)) print(compute_grade(90))</p>
-</div>
-<div class="testoutput">
-<p>F B+ A-</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>_grades <span class="op">=</span> [letter <span class="op">+</span> suffix</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>           <span class="cf">for</span> letter <span class="kw">in</span> <span class="st">'ABCD'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>           <span class="cf">for</span> suffix <span class="kw">in</span> (<span class="st">'+'</span>, <span class="st">''</span>, <span class="st">'-'</span>)] <span class="op">+</span> [<span class="st">'F'</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_grade(percent):</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    percent <span class="op">=</span> <span class="bu">max</span>(<span class="dv">59</span>, <span class="bu">min</span>(<span class="dv">99</span>, percent))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> _grades[(<span class="dv">99</span> <span class="op">-</span> percent) <span class="op">*</span> <span class="dv">3</span> <span class="op">//</span> <span class="dv">10</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(compute_grade(<span class="dv">55</span>))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(compute_grade(<span class="dv">89</span>))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(compute_grade(<span class="dv">90</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>F
+B+
+A-</code></pre>
 <p>플라이웨이트 모집단을 동적으로 빌드해야 하는 팩토리는 더 복잡합니다. 플라이웨이트를 등록하고 나중에 다시 찾을 수 있는 동적 데이터 구조가 필요합니다. 일반적으로 사전을 선택합니다.</p>
-<div class="testcode">
-<p><span id="strings">strings</span> = {}</p>
-<p>def my_intern(string):<br>
-s = <span id="strings.setdefault">strings.setdefault</span>(string, string) return s</p>
-<p>a1 = my_intern(‘A’) b1 = my_intern(‘B’) a2 = my_intern(‘A’)</p>
-<p>print(a1 is b1) print(a1 is a2)</p>
-</div>
-<div class="testoutput">
-<p>False True</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>_strings <span class="op">=</span> {}</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_intern(string):</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> _strings.setdefault(string, string)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>a1 <span class="op">=</span> my_intern(<span class="st">'A'</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>b1 <span class="op">=</span> my_intern(<span class="st">'B'</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>a2 <span class="op">=</span> my_intern(<span class="st">'A'</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(a1 <span class="kw">is</span> b1)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(a1 <span class="kw">is</span> a2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>False
+True</code></pre>
 <p>동적으로 할당된 플라이웨이트의 한 가지 위험은 가능한 값의 수가 매우 많고 호출자가 프로그램 런타임 동안 많은 고유한 값을 요청할 수 있는 경우 결국 메모리가 고갈될 가능성입니다. 이러한 경우 <code>weakref</code> 모듈의 <code>WeakValueDictionary</code>를 사용하는 것을 고려할 수 있습니다.</p>
 <p>약한 참조는 위에서 주어진 간단한 예에서는 작동하지 않습니다. 왜냐하면 <code>my_intern</code>은 각 인턴된 문자열을 값뿐만 아니라 해당 키로도 사용하기 때문입니다. 그러나 인덱스가 단순한 값이고 키가 더 복잡한 객체 인스턴스인 더 일반적인 경우에는 잘 작동해야 합니다.</p>
 <p>갱 오브 포는 플라이웨이트 패턴을 팩토리 함수를 사용하는 것으로 정의하지만, 파이썬은 또 다른 가능성을 제공합니다. 클래스는 <code>bool()</code> 및 <code>int()</code>와 마찬가지로 생성자에서 바로 패턴을 구현할 수 있습니다. 위의 예제를 클래스로 다시 작성하고 — 예를 들어 미리 빌드하는 대신 주문형으로 객체를 할당하면 — 다음과 같은 결과가 생성됩니다.</p>
-<div class="testcode">
-<p>class Grade(object):<br>
-<span id="instances">instances</span> = {}</p>
-<p>def __new__(cls, percent):<br>
-percent = max(50, min(99, percent)) letter = ‘FDCBA’[(percent - 50) // 10] self = cls._instances.get(letter) if self is None: self = cls._instances[letter] = object.__new__(Grade) self.letter = letter return self</p>
-<p>def __repr__(self):<br>
-return ‘Grade {!r}’.format(self.letter)</p>
-<p>print(Grade(55), Grade(85), Grade(95), Grade(100)) print(len(Grade._instances)) # 인스턴스 수 print(Grade(95) is Grade(100)) # ’A’를 두 번 더 요청 print(len(Grade._instances)) # 숫자가 동일하게 유지되었습니까?</p>
-</div>
-<div class="testoutput">
-<p>Grade ‘F’ Grade ‘B’ Grade ‘A’ Grade ‘A’ 3 True 3</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Grade(<span class="bu">object</span>):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    _instances <span class="op">=</span> {}</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__new__</span>(cls, percent):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        percent <span class="op">=</span> <span class="bu">max</span>(<span class="dv">50</span>, <span class="bu">min</span>(<span class="dv">99</span>, percent))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        letter <span class="op">=</span> <span class="st">'FDCBA'</span>[(percent <span class="op">-</span> <span class="dv">50</span>) <span class="op">//</span> <span class="dv">10</span>]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span> <span class="op">=</span> cls._instances.get(letter)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span> <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span> <span class="op">=</span> cls._instances[letter] <span class="op">=</span> <span class="bu">object</span>.<span class="fu">__new__</span>(Grade)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.letter <span class="op">=</span> letter</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__repr__</span>(<span class="va">self</span>):</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">'Grade </span><span class="sc">{!r}</span><span class="st">'</span>.<span class="bu">format</span>(<span class="va">self</span>.letter)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(Grade(<span class="dv">55</span>), Grade(<span class="dv">85</span>), Grade(<span class="dv">95</span>), Grade(<span class="dv">100</span>))</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(Grade._instances))    <span class="co"># 인스턴스 수</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(Grade(<span class="dv">95</span>) <span class="kw">is</span> Grade(<span class="dv">100</span>))  <span class="co"># 'A'를 두 번 더 요청</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(Grade._instances))    <span class="co"># 숫자가 동일하게 유지되었습니까?</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Grade 'F' Grade 'B' Grade 'A' Grade 'A'
+3
+True
+3</code></pre>
 <p><em>A</em>에 대한 <code>Grade</code> 객체가 생성되면 이에 대한 모든 추가 요청은 동일한 객체를 받습니다. 인스턴스 사전은 계속 증가하지 않습니다.</p>
 <p><code>__new__()</code>가 기존 객체를 반환할 수 있는 이러한 클래스에서는 <code>__init__()</code>을 정의하지 않는다는 점에 유의하십시오. 이는 파이썬이 항상 <code>__new__()</code>에서 반환된 객체에서 <code>__init__()</code>을 호출하기 때문입니다 (객체가 클래스 자체의 인스턴스인 한). 이는 새 플라이웨이트 객체를 처음 반환할 때는 유용하지만, 이미 초기화된 객체를 반환하는 후속 경우에는 중복됩니다. 따라서 대신 <code>__new__()</code> 중간에 초기화 작업을 수행합니다.</p>
 <blockquote class="blockquote">

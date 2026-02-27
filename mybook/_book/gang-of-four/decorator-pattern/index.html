@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -155,7 +190,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">감시 객체 패턴 (Sentinel Object Pattern)</span></span></a>
   </div>
 </li>
       </ul>
@@ -403,19 +438,21 @@ ul.task-list li input[type="checkbox"] {
 <h2 data-number="12.5" class="anchored" data-anchor-id="주의-사항-래핑이-실제로-작동하지-않음"><span class="header-section-number">12.5</span> 주의 사항: 래핑이 실제로 작동하지 않음</h2>
 <p>파이썬이 성찰을 지원하지 않는다면 — 객체에 대해 수행할 수 있는 유일한 작업이 <code>f.write</code>와 같은 식별자를 통한 정적 조회이든 <code>getattr(f, attrname)</code> 문자열 조회를 통한 동적 조회이든 속성 조회뿐이라면 — 데코레이터는 완벽할 수 있습니다. 래핑된 객체에서 성공하는 모든 속성 조회가 래퍼에서 수행될 때 동일한 종류의 값을 반환하는 한, 다른 파이썬 코드는 차이점을 결코 알 수 없을 것입니다.</p>
 <p>그러나 파이썬은 단순히 동적 프로그래밍 언어가 아닙니다. 성찰도 지원합니다. 그리고 성찰은 데코레이터 패턴의 몰락입니다. 래퍼를 전달하는 코드가 더 깊이 들여다보기로 결정하면 온갖 종류의 차이점이 분명해집니다. 예를 들어 네이티브 파일 객체는 많은 비공개 메서드와 속성으로 강화됩니다.</p>
-<div class="testsetup">
-<p>import sys sys.path.insert(0, ‘gang-of-four/decorator-pattern’) from verbose_static_wrapper import WriteLoggingFile1 from tactical_wrapper import WriteLoggingFile2 from getattr_powered_wrapper import WriteLoggingFile3</p>
-</div>
-<p>&gt;&gt;&gt; from logging import getLogger &gt;&gt;&gt; f = open(‘/etc/passwd’) &gt;&gt;&gt; dir(f) [‘_CHUNK_SIZE’, ‘__class__’, ‘__del__’, ‘__delattr__’, ‘__dict__’, ‘__dir__’, ‘__doc__’, ‘__enter__’, ‘__eq__’, ‘__exit__’, ‘__format__’, ‘__ge__’, ‘__getattribute__’, ‘__getstate__’, ‘__gt__’, ‘__hash__’, ‘__init__’, ‘__init_subclass__’, ‘__iter__’, ‘__le__’, ‘__lt__’, ‘__ne__’, ‘__new__’, ‘__next__’, ‘__reduce__’, ‘__reduce_ex__’, ‘__repr__’, ‘__setattr__’, ‘__sizeof__’, ‘__str__’, ‘__subclasshook__’, ‘_checkClosed’, ‘_checkReadable’, ‘_checkSeekable’, ‘_checkWritable’, ‘_finalizing’, ‘buffer’, ‘close’, ‘closed’, ‘detach’, ‘encoding’, ‘errors’, ‘fileno’, ‘flush’, ‘isatty’, ‘line_buffering’, ‘mode’, ‘name’, ‘newlines’, ‘read’, ‘readable’, ‘readline’, ‘readlines’, ‘seek’, ‘seekable’, ‘tell’, ‘truncate’, ‘writable’, ‘write’, ‘writelines’]</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>sys.path.insert(<span class="dv">0</span>, <span class="st">'gang-of-four/decorator-pattern'</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> verbose_static_wrapper <span class="im">import</span> WriteLoggingFile1</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tactical_wrapper <span class="im">import</span> WriteLoggingFile2</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> getattr_powered_wrapper <span class="im">import</span> WriteLoggingFile3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>&gt;&gt;&gt; from logging import getLogger &gt;&gt;&gt; f = open(‘/etc/passwd’) &gt;&gt;&gt; dir(f) [’_CHUNK_SIZE’, ‘<strong>class</strong>’, ‘<strong>del</strong>’, ‘<strong>delattr</strong>’, ‘<strong>dict</strong>’, ‘<strong>dir</strong>’, ‘<strong>doc</strong>’, ‘<strong>enter</strong>’, ‘<strong>eq</strong>’, ‘<strong>exit</strong>’, ‘<strong>format</strong>’, ‘<strong>ge</strong>’, ‘<strong>getattribute</strong>’, ‘<strong>getstate</strong>’, ‘<strong>gt</strong>’, ‘<strong>hash</strong>’, ‘<strong>init</strong>’, ‘<strong>init_subclass</strong>’, ‘<strong>iter</strong>’, ‘<strong>le</strong>’, ‘<strong>lt</strong>’, ‘<strong>ne</strong>’, ‘<strong>new</strong>’, ‘<strong>next</strong>’, ‘<strong>reduce</strong>’, ‘<strong>reduce_ex</strong>’, ‘<strong>repr</strong>’, ‘<strong>setattr</strong>’, ‘<strong>sizeof</strong>’, ‘<strong>str</strong>’, ‘<strong>subclasshook</strong>’, ’_checkClosed’, ’_checkReadable’, ’_checkSeekable’, ’_checkWritable’, ’_finalizing’, ‘buffer’, ‘close’, ‘closed’, ‘detach’, ‘encoding’, ‘errors’, ‘fileno’, ‘flush’, ‘isatty’, ‘line_buffering’, ‘mode’, ‘name’, ‘newlines’, ‘read’, ‘readable’, ‘readline’, ‘readlines’, ‘seek’, ‘seekable’, ‘tell’, ‘truncate’, ‘writable’, ‘write’, ‘writelines’]</p>
 <p>반면에 사용자의 래퍼는 — 파일의 공개 인터페이스를 중심으로 제작했다면 — 이러한 모든 비공개 부속품이 부족할 것입니다. 신중하게 구현된 공개 메서드와 속성 뒤에는 일반 파이썬 <code>object</code>의 단순한 더블 언더스코어 메서드와 호환성을 유지하기 위해 구현해야 했던 몇 가지 메서드만 있습니다.</p>
-<p>&gt;&gt;&gt; w = WriteLoggingFile1(f, getLogger()) &gt;&gt;&gt; dir(w) [‘__class__’, ‘__delattr__’, ‘__dict__’, ‘__dir__’, ‘__doc__’, ‘__enter__’, ‘__eq__’, ‘__exit__’, ‘__format__’, ‘__ge__’, ‘__getattribute__’, ‘__gt__’, ‘__hash__’, ‘__init__’, ‘__init_subclass__’, ‘__iter__’, ‘__le__’, ‘__lt__’, ‘__module__’, ‘__ne__’, ‘__new__’, ‘__next__’, ‘__reduce__’, ‘__reduce_ex__’, ‘__repr__’, ‘__setattr__’, ‘__sizeof__’, ‘__str__’, ‘__subclasshook__’, ‘__weakref__’, ‘_file’, ‘_logger’, ‘close’, ‘closed’, ‘encoding’, ‘errors’, ‘fileno’, ‘flush’, ‘isatty’, ‘mode’, ‘name’, ‘newlines’, ‘read’, ‘readinto’, ‘readline’, ‘readlines’, ‘seek’, ‘tell’, ‘truncate’, ‘write’, ‘writelines’]</p>
+<p>&gt;&gt;&gt; w = WriteLoggingFile1(f, getLogger()) &gt;&gt;&gt; dir(w) [‘<strong>class</strong>’, ‘<strong>delattr</strong>’, ‘<strong>dict</strong>’, ‘<strong>dir</strong>’, ‘<strong>doc</strong>’, ‘<strong>enter</strong>’, ‘<strong>eq</strong>’, ‘<strong>exit</strong>’, ‘<strong>format</strong>’, ‘<strong>ge</strong>’, ‘<strong>getattribute</strong>’, ‘<strong>gt</strong>’, ‘<strong>hash</strong>’, ‘<strong>init</strong>’, ‘<strong>init_subclass</strong>’, ‘<strong>iter</strong>’, ‘<strong>le</strong>’, ‘<strong>lt</strong>’, ‘<strong>module</strong>’, ‘<strong>ne</strong>’, ‘<strong>new</strong>’, ‘<strong>next</strong>’, ‘<strong>reduce</strong>’, ‘<strong>reduce_ex</strong>’, ‘<strong>repr</strong>’, ‘<strong>setattr</strong>’, ‘<strong>sizeof</strong>’, ‘<strong>str</strong>’, ‘<strong>subclasshook</strong>’, ‘<strong>weakref</strong>’, ’_file’, ’_logger’, ‘close’, ‘closed’, ‘encoding’, ‘errors’, ‘fileno’, ‘flush’, ‘isatty’, ‘mode’, ‘name’, ‘newlines’, ‘read’, ‘readinto’, ‘readline’, ‘readlines’, ‘seek’, ‘tell’, ‘truncate’, ‘write’, ‘writelines’]</p>
 <p>물론 전술적 래퍼는 실제 파일 객체와는 눈에 띄게 다릅니다. 래핑된 객체에서 사용할 수 있는 전체 메서드 범위를 제공하려고 시도조차 하지 않기 때문입니다.</p>
-<p>&gt;&gt;&gt; w = WriteLoggingFile2(f, getLogger()) &gt;&gt;&gt; dir(w) [‘__class__’, ‘__delattr__’, ‘__dict__’, ‘__dir__’, ‘__doc__’, ‘__eq__’, ‘__format__’, ‘__ge__’, ‘__getattribute__’, ‘__gt__’, ‘__hash__’, ‘__init__’, ‘__init_subclass__’, ‘__le__’, ‘__lt__’, ‘__module__’, ‘__ne__’, ‘__new__’, ‘__reduce__’, ‘__reduce_ex__’, ‘__repr__’, ‘__setattr__’, ‘__sizeof__’, ‘__str__’, ‘__subclasshook__’, ‘__weakref__’, ‘_file’, ‘_logger’, ‘write’]</p>
+<p>&gt;&gt;&gt; w = WriteLoggingFile2(f, getLogger()) &gt;&gt;&gt; dir(w) [‘<strong>class</strong>’, ‘<strong>delattr</strong>’, ‘<strong>dict</strong>’, ‘<strong>dir</strong>’, ‘<strong>doc</strong>’, ‘<strong>eq</strong>’, ‘<strong>format</strong>’, ‘<strong>ge</strong>’, ‘<strong>getattribute</strong>’, ‘<strong>gt</strong>’, ‘<strong>hash</strong>’, ‘<strong>init</strong>’, ‘<strong>init_subclass</strong>’, ‘<strong>le</strong>’, ‘<strong>lt</strong>’, ‘<strong>module</strong>’, ‘<strong>ne</strong>’, ‘<strong>new</strong>’, ‘<strong>reduce</strong>’, ‘<strong>reduce_ex</strong>’, ‘<strong>repr</strong>’, ‘<strong>setattr</strong>’, ‘<strong>sizeof</strong>’, ‘<strong>str</strong>’, ‘<strong>subclasshook</strong>’, ‘<strong>weakref</strong>’, ’_file’, ’_logger’, ‘write’]</p>
 <p>더 흥미로운 것은 getattr 래퍼입니다. 실제로 래핑된 클래스의 모든 속성과 메서드에 대한 액세스를 제공하지만, 이름으로 액세스할 때 각 속성이 존재하기 시작하기 때문에 <code>dir()</code>에서는 완전히 누락됩니다.</p>
-<p>&gt;&gt;&gt; w = WriteLoggingFile3(f, getLogger()) &gt;&gt;&gt; dir(w) [‘__class__’, ‘__delattr__’, ‘__dict__’, ‘__dir__’, ‘__doc__’, ‘__eq__’, ‘__format__’, ‘__ge__’, ‘__getattr__’, ‘__getattribute__’, ‘__gt__’, ‘__hash__’, ‘__init__’, ‘__init_subclass__’, ‘__iter__’, ‘__le__’, ‘__lt__’, ‘__module__’, ‘__ne__’, ‘__new__’, ‘__next__’, ‘__reduce__’, ‘__reduce_ex__’, ‘__repr__’, ‘__setattr__’, ‘__sizeof__’, ‘__str__’, ‘__subclasshook__’, ‘__weakref__’, ‘_file’, ‘_logger’, ‘write’, ‘writelines’]</p>
-<p>이러한 차이점조차도 해결할 수 있을까요? <a href="https://docs.python.org/3/reference/datamodel.html">파이썬 데이터 모델</a>의 많은 더블 언더스코어 메서드를 스크롤하다 보면 <a href="https://docs.python.org/3/reference/datamodel.html#object.__dir__">__dir__ 메서드</a>를 볼 때 갑자기 거친 희망에 사로잡힐 수 있습니다 — 이것이 래퍼를 위장하는 마지막 비밀이 아닐까요?</p>
+<p>&gt;&gt;&gt; w = WriteLoggingFile3(f, getLogger()) &gt;&gt;&gt; dir(w) [‘<strong>class</strong>’, ‘<strong>delattr</strong>’, ‘<strong>dict</strong>’, ‘<strong>dir</strong>’, ‘<strong>doc</strong>’, ‘<strong>eq</strong>’, ‘<strong>format</strong>’, ‘<strong>ge</strong>’, ‘<strong>getattr</strong>’, ‘<strong>getattribute</strong>’, ‘<strong>gt</strong>’, ‘<strong>hash</strong>’, ‘<strong>init</strong>’, ‘<strong>init_subclass</strong>’, ‘<strong>iter</strong>’, ‘<strong>le</strong>’, ‘<strong>lt</strong>’, ‘<strong>module</strong>’, ‘<strong>ne</strong>’, ‘<strong>new</strong>’, ‘<strong>next</strong>’, ‘<strong>reduce</strong>’, ‘<strong>reduce_ex</strong>’, ‘<strong>repr</strong>’, ‘<strong>setattr</strong>’, ‘<strong>sizeof</strong>’, ‘<strong>str</strong>’, ‘<strong>subclasshook</strong>’, ‘<strong>weakref</strong>’, ’_file’, ’_logger’, ‘write’, ‘writelines’]</p>
+<p>이러한 차이점조차도 해결할 수 있을까요? <a href="https://docs.python.org/3/reference/datamodel.html">파이썬 데이터 모델</a>의 많은 더블 언더스코어 메서드를 스크롤하다 보면 <a href="https://docs.python.org/3/reference/datamodel.html#object.__dir__"><strong>dir</strong> 메서드</a>를 볼 때 갑자기 거친 희망에 사로잡힐 수 있습니다 — 이것이 래퍼를 위장하는 마지막 비밀이 아닐까요?</p>
 <p>아아, 그것만으로는 충분하지 않을 것입니다. <code>__dir__()</code>을 구현하고 래핑된 객체로 전달하더라도, 파이썬은 <code>__dict__</code> 속성을 특별하게 처리합니다 — 액세스하면 항상 파이썬 클래스 인스턴스의 속성을 보유하는 사전에 직접 액세스할 수 있습니다.</p>
-<p>&gt;&gt;&gt; f.__dict__ {‘mode’: ‘r’} &gt;&gt;&gt; w.__dict__ {‘_file’: &lt;_io.TextIOWrapper name=‘/etc/passwd’ mode=‘r’ encoding=‘UTF-8’&gt;, ‘_logger’: &lt;RootLogger root (WARNING)&gt;}</p>
+<p>&gt;&gt;&gt; f.__dict__ {‘mode’: ‘r’} &gt;&gt;&gt; w.__dict__ {’_file’: &lt;_io.TextIOWrapper name=‘/etc/passwd’ mode=‘r’ encoding=‘UTF-8’&gt;, ’_logger’: &lt;RootLogger root (WARNING)&gt;}</p>
 <p>파이썬의 성찰을 전복시키는 훨씬 더 모호한 방법을 생각하기 시작할 수 있습니다 — 이 시점에서 이미 <code>__slots__</code>를 생각하고 있을 수 있습니다. 예를 들어 — 그러나 모든 길은 같은 곳으로 이어집니다. 아무리 영리하고 모호한 기동을 하더라도, 래퍼의 갑옷에는 적어도 작은 틈이 남아 있어 충분히 주의 깊은 성찰을 통해 차이점을 볼 수 있습니다. 따라서 우리는 다음과 같은 결론에 도달합니다.</p>
 <div class="admonition">
 <p>격언</p>
@@ -438,7 +475,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="해킹-클래스-몽키-패치" class="level2" data-number="12.7">
 <h2 data-number="12.7" class="anchored" data-anchor-id="해킹-클래스-몽키-패치"><span class="header-section-number">12.7</span> 해킹: 클래스 몽키 패치</h2>
 <p>야생에서 볼 수 있는 또 다른 접근 방식은 원하는 동작이 재정의된 서브클래스를 만들고, 그런 다음 객체 인스턴스의 클래스를 외과적으로 변경하는 것입니다. 안타깝게도 이것은 일반적인 경우에 가능하지 않으며, 실제로 여기 예제에서는 파일 클래스가 모든 내장 클래스와 마찬가지로 <code>__class__</code> 속성에 대한 할당을 허용하지 않기 때문에 실패합니다.</p>
-<p>&gt;&gt;&gt; f = open(‘/etc/passwd’) &gt;&gt;&gt; class Foo(type(f)): … def write_and_log(self, s): … self.write(s) … logger.debug(‘wrote %s bytes to %s’, len(s), self._file) … &gt;&gt;&gt; f.__class__ = Foo Traceback (most recent call last): … TypeError: __class__ assignment only supported for heap types or ModuleType subclasses</p>
+<p>&gt;&gt;&gt; f = open(‘/etc/passwd’) &gt;&gt;&gt; class Foo(type(f)): … def write_and_log(self, s): … self.write(s) … logger.debug(‘wrote %s bytes to %s’, len(s), self._file) … &gt;&gt;&gt; f.__class__ = Foo Traceback (most recent call last): … TypeError: <strong>class</strong> assignment only supported for heap types or ModuleType subclasses</p>
 <p>그러나 수술이 작동하는 경우, 원래 클래스가 아닌 서브클래스의 동작을 하는 객체를 갖게 됩니다.</p>
 </section>
 <section id="추가-자료" class="level2" data-number="12.8">

@@ -10,48 +10,33 @@
 
 ## GoF (Gang of Four): 원칙
 
-<div class="toctree" maxdepth="2">
-
-gang-of-four/composition-over-inheritance/index
-
-</div>
+- [상속보다 컴포지션 원칙](gang-of-four/composition-over-inheritance/index.qmd)
 
 ## 파이썬 특정 패턴
 
-<div class="toctree" maxdepth="2">
-
-python/module-globals/index python/prebound-methods/index python/sentinel-object/index
-
-</div>
+- [전역 객체 패턴](python/module-globals/index.qmd)
+- [사전 바인딩된 메서드 패턴](python/prebound-methods/index.qmd)
+- [감시 객체 패턴](python/sentinel-object/index.qmd)
 
 ## GoF (Gang of Four): 생성 패턴
 
-<div class="toctree" maxdepth="2">
-
-gang-of-four/abstract-factory/index gang-of-four/builder/index gang-of-four/factory-method/index gang-of-four/prototype/index gang-of-four/singleton/index
-
-</div>
+- [추상 팩토리 패턴](gang-of-four/abstract-factory/index.qmd)
+- [빌더 패턴](gang-of-four/builder/index.qmd)
+- [팩토리 메서드 패턴](gang-of-four/factory-method/index.qmd)
+- [프로토타입 패턴](gang-of-four/prototype/index.qmd)
+- [싱글턴 패턴](gang-of-four/singleton/index.qmd)
 
 ## GoF (Gang of Four): 구조 패턴
 
-<div class="toctree" maxdepth="2">
-
-gang-of-four/composite/index gang-of-four/decorator-pattern/index gang-of-four/flyweight/index
-
-</div>
+- [컴포지트 패턴](gang-of-four/composite/index.qmd)
+- [데코레이터 패턴](gang-of-four/decorator-pattern/index.qmd)
+- [플라이웨이트 패턴](gang-of-four/flyweight/index.qmd)
 
 ## GoF (Gang of Four): 행동 패턴
 
-<div class="toctree" maxdepth="2">
-
-gang-of-four/iterator/index
-
-</div>
+- [반복자 패턴](gang-of-four/iterator/index.qmd)
 
 ## 참고 문헌
 
-<div class="toctree" maxdepth="2">
-
-gang-of-four/index fowler-refactoring/index
-
-</div>
+- [Gang of Four 책](gang-of-four/index.qmd)
+- [마틴 파울러의 리팩토링](fowler-refactoring/index.qmd)

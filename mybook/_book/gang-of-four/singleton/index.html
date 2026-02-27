@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -155,7 +190,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">감시 객체 패턴 (Sentinel Object Pattern)</span></span></a>
   </div>
 </li>
       </ul>
@@ -312,7 +347,7 @@ ul.task-list li input[type="checkbox"] {
 <p><em>:doc:`/gang-of-four/index`의 “생성 패턴”</em></p>
 <div class="admonition">
 <p>결론</p>
-<p>파이썬 프로그래머는 <code>/gang-of-four/index`에 설명된 싱글턴 패턴을 거의 구현하지 않습니다. 이 싱글턴 클래스는 일반적인 인스턴스화를 금지하고 대신 싱글턴 인스턴스를 반환하는 클래스 메서드를 제공합니다. 파이썬은 더 우아하며, 클래스가 일반적인 인스턴스화 구문을 계속 지원하도록 하면서 싱글턴 인스턴스를 반환하는 사용자 정의</code><span class="title-ref">__new__()</span><span class="title-ref"> 메서드를 정의할 수 있도록 합니다. 하지만 디자인이 싱글턴 객체에 대한 전역 액세스를 제공하도록 강제하는 경우, 훨씬 더 파이썬다운 접근 방식은 대신 :doc:</span>/python/module-globals/index`를 사용하는 것입니다.</p>
+<p>파이썬 프로그래머는 <code>/gang-of-four/index`에 설명된 싱글턴 패턴을 거의 구현하지 않습니다. 이 싱글턴 클래스는 일반적인 인스턴스화를 금지하고 대신 싱글턴 인스턴스를 반환하는 클래스 메서드를 제공합니다. 파이썬은 더 우아하며, 클래스가 일반적인 인스턴스화 구문을 계속 지원하도록 하면서 싱글턴 인스턴스를 반환하는 사용자 정의</code><span class="title-ref"><strong>new</strong>()</span><span class="title-ref"> 메서드를 정의할 수 있도록 합니다. 하지만 디자인이 싱글턴 객체에 대한 전역 액세스를 제공하도록 강제하는 경우, 훨씬 더 파이썬다운 접근 방식은 대신 :doc:</span>/python/module-globals/index`를 사용하는 것입니다.</p>
 </div>
 <section id="모호성-제거" class="level2" data-number="10.1">
 <h2 data-number="10.1" class="anchored" data-anchor-id="모호성-제거"><span class="header-section-number">10.1</span> 모호성 제거</h2>
@@ -350,87 +385,85 @@ log = new Logger()</code></pre>
 <li>그래서 Gang of Four는 클래스의 싱글턴 객체를 반환하는 클래스 메서드로 전환했습니다. 전역 함수와 달리 클래스 메서드는 전역 네임스페이스에 또 다른 이름을 추가하는 것을 피했으며, 정적 메서드와 달리 싱글턴인 서브클래스도 지원할 수 있었습니다.</li>
 </ol>
 <p>파이썬 코드는 그들의 접근 방식을 어떻게 보여줄 수 있을까요? 파이썬에는 <code>new</code>, <code>protected</code> 및 <code>private</code>의 복잡성이 없습니다. 대안은 <code>__init__()</code>에서 예외를 발생시켜 일반적인 객체 인스턴스화를 불가능하게 만드는 것입니다. 그런 다음 클래스 메서드는 던더 메서드 트릭을 사용하여 예외를 트리거하지 않고 객체를 생성할 수 있습니다.</p>
-<div class="testcode">
-<p># Gang of Four의 원래 싱글턴 패턴이 # 파이썬에서 어떻게 보일 수 있는지 보여줍니다.</p>
-<p>class Logger(object):<br>
-<span id="instance">instance</span> = None</p>
-<p>def __init__(self):<br>
-raise RuntimeError(‘대신 instance()를 호출하십시오.’)</p>
-<p><span class="citation" data-cites="classmethod">@classmethod</span> def instance(cls): if cls._instance is None: print(‘새 인스턴스 생성 중’) cls._instance = cls.__new__(cls) # 여기에 초기화를 넣으십시오. return cls._instance</p>
-</div>
-<div class="testcode" data-hide="">
-<p>def fake_repr(self):<br>
-return ‘&lt;Logger object at 0x7f0ff5e7c080&gt;’</p>
-<p>Logger.__repr__ = fake_repr</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gang of Four의 원래 싱글턴 패턴이</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 파이썬에서 어떻게 보일 수 있는지 보여줍니다.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger(<span class="bu">object</span>):</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    _instance <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">RuntimeError</span>(<span class="st">'대신 instance()를 호출하십시오.'</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">@classmethod</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> instance(cls):</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cls._instance <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">'새 인스턴스 생성 중'</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            cls._instance <span class="op">=</span> cls.<span class="fu">__new__</span>(cls)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 여기에 초기화를 넣으십시오.</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> cls._instance</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fake_repr(<span class="va">self</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">'&lt;Logger object at 0x7f0ff5e7c080&gt;'</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Logger.<span class="fu">__repr__</span> <span class="op">=</span> fake_repr</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이렇게 하면 클라이언트가 클래스를 호출하여 새 인스턴스를 만드는 것을 성공적으로 방지합니다.</p>
-<div class="testcode">
-<p>log = Logger()</p>
-</div>
-<div class="testoutput">
-<p>Traceback (most recent call last):<br>
-…</p>
-<p>RuntimeError: 대신 instance()를 호출하십시오.</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>log <span class="op">=</span> Logger()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>Traceback (most recent call last):
+  ...
+RuntimeError: 대신 instance()를 호출하십시오.</code></pre>
 <p>대신 호출자는 <code>instance()</code> 클래스 메서드를 사용하도록 지시받으며, 이 메서드는 객체를 생성하고 반환합니다.</p>
-<div class="testcode">
-<p>log1 = Logger.instance() print(log1)</p>
-</div>
-<div class="testoutput">
-<p>새 인스턴스 생성 중 &lt;Logger object at 0x7f0ff5e7c080&gt;</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>log1 <span class="op">=</span> Logger.instance()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(log1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>새 인스턴스 생성 중
+&lt;Logger object at 0x7f0ff5e7c080&gt;</code></pre>
 <p>후속 <code>instance()</code> 호출은 초기화 단계를 반복하지 않고 싱글턴을 반환합니다(“새 인스턴스 생성 중”이 다시 인쇄되지 않는다는 사실에서 알 수 있듯이). 이는 Gang of Four가 의도한 대로 정확하게 작동합니다.</p>
-<div class="testcode">
-<p>log2 = Logger.instance() print(log2) print(‘동일한 객체입니까?’, log1 is log2)</p>
-</div>
-<div class="testoutput">
-<p>&lt;Logger object at 0x7f0ff5e7c080&gt; 동일한 객체입니까? True</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>log2 <span class="op">=</span> Logger.instance()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(log2)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'동일한 객체입니까?'</span>, log1 <span class="kw">is</span> log2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>&lt;Logger object at 0x7f0ff5e7c080&gt;
+동일한 객체입니까? True</code></pre>
 <p>파이썬에서 원래 Gang of Four 클래스 메서드를 구현하기 위해 상상할 수 있는 더 복잡한 체계가 있지만, 위의 예가 가능한 한 최소한의 마법으로 원래 체계를 가장 잘 보여준다고 생각합니다. Gang of Four의 패턴은 어쨌든 파이썬에 적합하지 않으므로, 더 이상 반복하려는 유혹을 참고 대신 파이썬에서 패턴이 가장 잘 지원되는 방법으로 넘어가겠습니다.</p>
 </section>
 <section id="더-파이썬다운-구현" class="level2" data-number="10.3">
 <h2 data-number="10.3" class="anchored" data-anchor-id="더-파이썬다운-구현"><span class="header-section-number">10.3</span> 더 파이썬다운 구현</h2>
 <p>어떤 의미에서 파이썬은 싱글턴 패턴에 대해 C++보다 더 잘 준비되어 시작했습니다. 왜냐하면 파이썬에는 새 객체를 강제로 생성하는 <code>new</code> 키워드가 없기 때문입니다. 대신 객체는 호출 가능 객체를 호출하여 생성되며, 이는 호출 가능 객체가 실제로 수행하는 작업에 대한 구문적 제한을 부과하지 않습니다.</p>
 <pre><code>log = Logger()</code></pre>
-<p>작성자가 클래스 호출을 제어할 수 있도록 하기 위해 파이썬 2.4는 싱글턴 패턴 및 <code>/gang-of-four/flyweight/index`와 같은 대체 생성 패턴을 지원하기 위해</code><span class="title-ref">__new__()</span>` 던더 메서드를 추가했습니다.</p>
+<p>작성자가 클래스 호출을 제어할 수 있도록 하기 위해 파이썬 2.4는 싱글턴 패턴 및 <code>/gang-of-four/flyweight/index`와 같은 대체 생성 패턴을 지원하기 위해</code><span class="title-ref"><strong>new</strong>()</span>` 던더 메서드를 추가했습니다.</p>
 <p>웹에는 <code>__new__()</code>를 특징으로 하는 싱글턴 패턴 레시피가 가득하며, 각각은 메서드의 가장 큰 단점, 즉 반환되는 객체가 새롭든 아니든 항상 반환 값에서 <code>__init__()</code>이 호출된다는 사실을 해결하기 위한 다소 복잡한 메커니즘을 제안합니다. 내 예제를 간단하게 만들기 위해 <code>__init__()</code> 메서드를 정의하지 않고 따라서 해결할 필요가 없도록 하겠습니다.</p>
-<div class="testcode">
-<p># 싱글턴 패턴의 간단한 구현</p>
-<p>class Logger(object):<br>
-<span id="instance">instance</span> = None</p>
-<p>def __new__(cls):<br>
-if cls._instance is None:<br>
-print(‘객체 생성 중’) cls._instance = super(Logger, cls).__new__(cls) # 여기에 초기화를 넣으십시오.</p>
-<p>return cls._instance</p>
-</div>
-<div class="testcode" data-hide="">
-<p>def fake_repr(self):<br>
-return ‘&lt;Logger object at 0x7fa8e9cf7f60&gt;’</p>
-<p>Logger.__repr__ = fake_repr</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 싱글턴 패턴의 간단한 구현</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Logger(<span class="bu">object</span>):</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    _instance <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__new__</span>(cls):</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> cls._instance <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">'객체 생성 중'</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>            cls._instance <span class="op">=</span> <span class="bu">super</span>(Logger, cls).<span class="fu">__new__</span>(cls)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 여기에 초기화를 넣으십시오.</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> cls._instance</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fake_repr(<span class="va">self</span>):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">'&lt;Logger object at 0x7fa8e9cf7f60&gt;'</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>Logger.<span class="fu">__repr__</span> <span class="op">=</span> fake_repr</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>객체는 클래스에 대한 첫 번째 호출에서 생성됩니다.</p>
-<div class="testcode">
-<p>log1 = Logger() print(log1)</p>
-</div>
-<div class="testoutput">
-<p>객체 생성 중 &lt;Logger object at 0x7fa8e9cf7f60&gt;</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>log1 <span class="op">=</span> Logger()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(log1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>객체 생성 중
+&lt;Logger object at 0x7fa8e9cf7f60&gt;</code></pre>
 <p>그러나 두 번째 호출은 동일한 인스턴스를 반환합니다. “객체 생성 중” 메시지는 인쇄되지 않으며 다른 객체도 반환되지 않습니다.</p>
-<div class="testcode">
-<p>log2 = Logger() print(log2) print(‘동일한 객체입니까?’, log1 is log2)</p>
-</div>
-<div class="testoutput">
-<p>&lt;Logger object at 0x7fa8e9cf7f60&gt; 동일한 객체입니까? True</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>log2 <span class="op">=</span> Logger()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(log2)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'동일한 객체입니까?'</span>, log1 <span class="kw">is</span> log2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>&lt;Logger object at 0x7fa8e9cf7f60&gt;
+동일한 객체입니까? True</code></pre>
 <p>위의 예는 일반적인 경우에 <code>cls._instance</code> 속성 조회를 두 번 수행하는 비용을 감수하면서 단순성을 선택합니다. 그러한 낭비에 몸서리치는 프로그래머를 위해 결과를 물론 이름에 할당하고 반환 문에서 재사용할 수 있습니다. 그리고 더 빠른 바이트 코드를 생성할 수 있는 다양한 다른 개선 사항을 상상할 수 있습니다. 그러나 아무리 정교하게 조정하더라도 위의 패턴은 일반적인 클래스 인스턴스화처럼 보이는 것 뒤에 싱글턴 객체를 숨기는 모든 파이썬 클래스의 기초입니다.</p>
 </section>
 <section id="결론" class="level2" data-number="10.4">
 <h2 data-number="10.4" class="anchored" data-anchor-id="결론"><span class="header-section-number">10.4</span> 결론</h2>
 <p>Gang of Four의 원래 싱글턴 패턴은 <code>new</code>, <code>private</code> 및 <code>protected</code>와 같은 개념이 없는 파이썬과 같은 언어에는 적합하지 않지만, <code>__new__()</code> 위에 빌드될 때 패턴을 무시하기는 쉽지 않습니다 — 결국 싱글턴은 <code>__new__()</code> 던더 메서드가 도입된 이유 중 하나였습니다!</p>
 <p>그러나 파이썬의 싱글턴 패턴에는 몇 가지 단점이 있습니다.</p>
-<p>첫 번째 반론은 싱글턴 패턴의 구현이 많은 파이썬 프로그래머에게 읽기 어렵다는 것입니다. 대안인 <code>전역 객체 패턴 &lt;/python/module-globals/index&gt;`은 읽기 쉽습니다. 단순히 익숙한 할당문이며 모듈의 최상위 수준에 배치됩니다. 그러나</code><span class="title-ref">__new__()</span>` 메서드를 처음 읽는 파이썬 프로그래머는 무슨 일이 일어나고 있는지 이해하기 위해 문서를 찾아봐야 할 것입니다.</p>
+<p>첫 번째 반론은 싱글턴 패턴의 구현이 많은 파이썬 프로그래머에게 읽기 어렵다는 것입니다. 대안인 <code>전역 객체 패턴 &lt;/python/module-globals/index&gt;`은 읽기 쉽습니다. 단순히 익숙한 할당문이며 모듈의 최상위 수준에 배치됩니다. 그러나</code><span class="title-ref"><strong>new</strong>()</span>` 메서드를 처음 읽는 파이썬 프로그래머는 무슨 일이 일어나고 있는지 이해하기 위해 문서를 찾아봐야 할 것입니다.</p>
 <p>두 번째 반론은 싱글턴 패턴이 <code>Logger()</code>와 같은 클래스 호출을 독자에게 오해하게 만든다는 것입니다. 디자이너가 클래스 이름에 “싱글턴” 또는 다른 힌트를 넣지 않았고 독자가 힌트를 이해할 만큼 디자인 패턴을 잘 알지 못한다면, 코드는 새 인스턴스가 생성되어 반환되는 것처럼 읽힐 것입니다.</p>
-<p>세 번째 반론은 싱글턴 패턴이 <code>/python/module-globals/index`가 그렇지 않은 디자인 약속을 강요한다는 것입니다. 전역 객체를 제공하면 프로그래머는 여전히 클래스의 다른 인스턴스를 자유롭게 만들 수 있습니다. 이는 특히 테스트에 유용하며, 공유 객체를 알려진 양호한 상태로 재설정할 필요 없이 각각 완전히 별개의 객체를 테스트할 수 있도록 합니다. 그러나 싱글턴 패턴은 추가 인스턴스를 불가능하게 만듭니다. (호출자가 몽키 패치에 기꺼이 참여하거나,</code><span class="title-ref">__new__()</span><span class="title-ref">의 논리를 전복시키기 위해 </span><span class="title-ref">_instance</span>`를 일시적으로 수정하거나, 메서드를 대체하는 서브클래스를 만들지 않는 한 말입니다. 그러나 해결해야 할 패턴은 일반적으로 피해야 할 패턴입니다.)</p>
+<p>세 번째 반론은 싱글턴 패턴이 <code>/python/module-globals/index`가 그렇지 않은 디자인 약속을 강요한다는 것입니다. 전역 객체를 제공하면 프로그래머는 여전히 클래스의 다른 인스턴스를 자유롭게 만들 수 있습니다. 이는 특히 테스트에 유용하며, 공유 객체를 알려진 양호한 상태로 재설정할 필요 없이 각각 완전히 별개의 객체를 테스트할 수 있도록 합니다. 그러나 싱글턴 패턴은 추가 인스턴스를 불가능하게 만듭니다. (호출자가 몽키 패치에 기꺼이 참여하거나,</code><span class="title-ref"><strong>new</strong>()</span><span class="title-ref">의 논리를 전복시키기 위해 </span><span class="title-ref">_instance</span>`를 일시적으로 수정하거나, 메서드를 대체하는 서브클래스를 만들지 않는 한 말입니다. 그러나 해결해야 할 패턴은 일반적으로 피해야 할 패턴입니다.)</p>
 <p>그렇다면 왜 파이썬에서 싱글턴 패턴을 사용해야 할까요?</p>
 <p>패턴이 정말로 필요한 한 가지 상황은 새로운 요구 사항으로 인해 이제 단일 인스턴스로 가장 잘 작동하는 기존 클래스일 것입니다. 모든 클라이언트 코드를 마이그레이션하여 클래스를 직접 호출하는 것을 중단하고 전역 객체를 사용하기 시작하는 것이 불가능하다면, 싱글턴 패턴은 이전 구문을 유지하면서 싱글턴으로 전환하는 자연스러운 접근 방식이 될 것입니다.</p>
 <p>그러나 그렇지 않으면 <a href="https://docs.python.org/3/faq/programming.html#how-do-i-share-global-variables-across-modules">공식 파이썬 FAQ</a>의 조언을 따르고 :doc:`/python/module-globals/index`를 사용하는 것이 좋습니다.</p>

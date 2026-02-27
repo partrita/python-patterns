@@ -130,31 +130,33 @@ getattr_powered_wrapper.py
 
 그러나 파이썬은 단순히 동적 프로그래밍 언어가 아닙니다. 성찰도 지원합니다. 그리고 성찰은 데코레이터 패턴의 몰락입니다. 래퍼를 전달하는 코드가 더 깊이 들여다보기로 결정하면 온갖 종류의 차이점이 분명해집니다. 예를 들어 네이티브 파일 객체는 많은 비공개 메서드와 속성으로 강화됩니다.
 
-<div class="testsetup">
+```python
+import sys
+sys.path.insert(0, 'gang-of-four/decorator-pattern')
+from verbose_static_wrapper import WriteLoggingFile1
+from tactical_wrapper import WriteLoggingFile2
+from getattr_powered_wrapper import WriteLoggingFile3
+```
 
-import sys sys.path.insert(0, 'gang-of-four/decorator-pattern') from verbose_static_wrapper import WriteLoggingFile1 from tactical_wrapper import WriteLoggingFile2 from getattr_powered_wrapper import WriteLoggingFile3
-
-</div>
-
-\>\>\> from logging import getLogger \>\>\> f = open('/etc/passwd') \>\>\> dir(f) \['\_CHUNK_SIZE', '\_\_class\_\_', '\_\_del\_\_', '\_\_delattr\_\_', '\_\_dict\_\_', '\_\_dir\_\_', '\_\_doc\_\_', '\_\_enter\_\_', '\_\_eq\_\_', '\_\_exit\_\_', '\_\_format\_\_', '\_\_ge\_\_', '\_\_getattribute\_\_', '\_\_getstate\_\_', '\_\_gt\_\_', '\_\_hash\_\_', '\_\_init\_\_', '\_\_init_subclass\_\_', '\_\_iter\_\_', '\_\_le\_\_', '\_\_lt\_\_', '\_\_ne\_\_', '\_\_new\_\_', '\_\_next\_\_', '\_\_reduce\_\_', '\_\_reduce_ex\_\_', '\_\_repr\_\_', '\_\_setattr\_\_', '\_\_sizeof\_\_', '\_\_str\_\_', '\_\_subclasshook\_\_', '\_checkClosed', '\_checkReadable', '\_checkSeekable', '\_checkWritable', '\_finalizing', 'buffer', 'close', 'closed', 'detach', 'encoding', 'errors', 'fileno', 'flush', 'isatty', 'line_buffering', 'mode', 'name', 'newlines', 'read', 'readable', 'readline', 'readlines', 'seek', 'seekable', 'tell', 'truncate', 'writable', 'write', 'writelines'\]
+\>\>\> from logging import getLogger \>\>\> f = open('/etc/passwd') \>\>\> dir(f) \['_CHUNK_SIZE', '__class__', '__del__', '__delattr__', '__dict__', '__dir__', '__doc__', '__enter__', '__eq__', '__exit__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__lt__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '_checkClosed', '_checkReadable', '_checkSeekable', '_checkWritable', '_finalizing', 'buffer', 'close', 'closed', 'detach', 'encoding', 'errors', 'fileno', 'flush', 'isatty', 'line_buffering', 'mode', 'name', 'newlines', 'read', 'readable', 'readline', 'readlines', 'seek', 'seekable', 'tell', 'truncate', 'writable', 'write', 'writelines'\]
 
 반면에 사용자의 래퍼는 — 파일의 공개 인터페이스를 중심으로 제작했다면 — 이러한 모든 비공개 부속품이 부족할 것입니다. 신중하게 구현된 공개 메서드와 속성 뒤에는 일반 파이썬 `object`의 단순한 더블 언더스코어 메서드와 호환성을 유지하기 위해 구현해야 했던 몇 가지 메서드만 있습니다.
 
-\>\>\> w = WriteLoggingFile1(f, getLogger()) \>\>\> dir(w) \['\_\_class\_\_', '\_\_delattr\_\_', '\_\_dict\_\_', '\_\_dir\_\_', '\_\_doc\_\_', '\_\_enter\_\_', '\_\_eq\_\_', '\_\_exit\_\_', '\_\_format\_\_', '\_\_ge\_\_', '\_\_getattribute\_\_', '\_\_gt\_\_', '\_\_hash\_\_', '\_\_init\_\_', '\_\_init_subclass\_\_', '\_\_iter\_\_', '\_\_le\_\_', '\_\_lt\_\_', '\_\_module\_\_', '\_\_ne\_\_', '\_\_new\_\_', '\_\_next\_\_', '\_\_reduce\_\_', '\_\_reduce_ex\_\_', '\_\_repr\_\_', '\_\_setattr\_\_', '\_\_sizeof\_\_', '\_\_str\_\_', '\_\_subclasshook\_\_', '\_\_weakref\_\_', '\_file', '\_logger', 'close', 'closed', 'encoding', 'errors', 'fileno', 'flush', 'isatty', 'mode', 'name', 'newlines', 'read', 'readinto', 'readline', 'readlines', 'seek', 'tell', 'truncate', 'write', 'writelines'\]
+\>\>\> w = WriteLoggingFile1(f, getLogger()) \>\>\> dir(w) \['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__enter__', '__eq__', '__exit__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_file', '_logger', 'close', 'closed', 'encoding', 'errors', 'fileno', 'flush', 'isatty', 'mode', 'name', 'newlines', 'read', 'readinto', 'readline', 'readlines', 'seek', 'tell', 'truncate', 'write', 'writelines'\]
 
 물론 전술적 래퍼는 실제 파일 객체와는 눈에 띄게 다릅니다. 래핑된 객체에서 사용할 수 있는 전체 메서드 범위를 제공하려고 시도조차 하지 않기 때문입니다.
 
-\>\>\> w = WriteLoggingFile2(f, getLogger()) \>\>\> dir(w) \['\_\_class\_\_', '\_\_delattr\_\_', '\_\_dict\_\_', '\_\_dir\_\_', '\_\_doc\_\_', '\_\_eq\_\_', '\_\_format\_\_', '\_\_ge\_\_', '\_\_getattribute\_\_', '\_\_gt\_\_', '\_\_hash\_\_', '\_\_init\_\_', '\_\_init_subclass\_\_', '\_\_le\_\_', '\_\_lt\_\_', '\_\_module\_\_', '\_\_ne\_\_', '\_\_new\_\_', '\_\_reduce\_\_', '\_\_reduce_ex\_\_', '\_\_repr\_\_', '\_\_setattr\_\_', '\_\_sizeof\_\_', '\_\_str\_\_', '\_\_subclasshook\_\_', '\_\_weakref\_\_', '\_file', '\_logger', 'write'\]
+\>\>\> w = WriteLoggingFile2(f, getLogger()) \>\>\> dir(w) \['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_file', '_logger', 'write'\]
 
 더 흥미로운 것은 getattr 래퍼입니다. 실제로 래핑된 클래스의 모든 속성과 메서드에 대한 액세스를 제공하지만, 이름으로 액세스할 때 각 속성이 존재하기 시작하기 때문에 `dir()`에서는 완전히 누락됩니다.
 
-\>\>\> w = WriteLoggingFile3(f, getLogger()) \>\>\> dir(w) \['\_\_class\_\_', '\_\_delattr\_\_', '\_\_dict\_\_', '\_\_dir\_\_', '\_\_doc\_\_', '\_\_eq\_\_', '\_\_format\_\_', '\_\_ge\_\_', '\_\_getattr\_\_', '\_\_getattribute\_\_', '\_\_gt\_\_', '\_\_hash\_\_', '\_\_init\_\_', '\_\_init_subclass\_\_', '\_\_iter\_\_', '\_\_le\_\_', '\_\_lt\_\_', '\_\_module\_\_', '\_\_ne\_\_', '\_\_new\_\_', '\_\_next\_\_', '\_\_reduce\_\_', '\_\_reduce_ex\_\_', '\_\_repr\_\_', '\_\_setattr\_\_', '\_\_sizeof\_\_', '\_\_str\_\_', '\_\_subclasshook\_\_', '\_\_weakref\_\_', '\_file', '\_logger', 'write', 'writelines'\]
+\>\>\> w = WriteLoggingFile3(f, getLogger()) \>\>\> dir(w) \['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattr__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__next__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_file', '_logger', 'write', 'writelines'\]
 
-이러한 차이점조차도 해결할 수 있을까요? [파이썬 데이터 모델](https://docs.python.org/3/reference/datamodel.html)의 많은 더블 언더스코어 메서드를 스크롤하다 보면 [\_\_dir\_\_ 메서드](https://docs.python.org/3/reference/datamodel.html#object.__dir__)를 볼 때 갑자기 거친 희망에 사로잡힐 수 있습니다 — 이것이 래퍼를 위장하는 마지막 비밀이 아닐까요?
+이러한 차이점조차도 해결할 수 있을까요? [파이썬 데이터 모델](https://docs.python.org/3/reference/datamodel.html)의 많은 더블 언더스코어 메서드를 스크롤하다 보면 [__dir__ 메서드](https://docs.python.org/3/reference/datamodel.html#object.__dir__)를 볼 때 갑자기 거친 희망에 사로잡힐 수 있습니다 — 이것이 래퍼를 위장하는 마지막 비밀이 아닐까요?
 
 아아, 그것만으로는 충분하지 않을 것입니다. `__dir__()`을 구현하고 래핑된 객체로 전달하더라도, 파이썬은 `__dict__` 속성을 특별하게 처리합니다 — 액세스하면 항상 파이썬 클래스 인스턴스의 속성을 보유하는 사전에 직접 액세스할 수 있습니다.
 
-\>\>\> f.\_\_dict\_\_ {'mode': 'r'} \>\>\> w.\_\_dict\_\_ {'\_file': \<\_io.TextIOWrapper name='/etc/passwd' mode='r' encoding='UTF-8'\>, '\_logger': \<RootLogger root (WARNING)\>}
+\>\>\> f.__dict__ {'mode': 'r'} \>\>\> w.__dict__ {'_file': \<_io.TextIOWrapper name='/etc/passwd' mode='r' encoding='UTF-8'\>, '_logger': \<RootLogger root (WARNING)\>}
 
 파이썬의 성찰을 전복시키는 훨씬 더 모호한 방법을 생각하기 시작할 수 있습니다 — 이 시점에서 이미 `__slots__`를 생각하고 있을 수 있습니다. 예를 들어 — 그러나 모든 길은 같은 곳으로 이어집니다. 아무리 영리하고 모호한 기동을 하더라도, 래퍼의 갑옷에는 적어도 작은 틈이 남아 있어 충분히 주의 깊은 성찰을 통해 차이점을 볼 수 있습니다. 따라서 우리는 다음과 같은 결론에 도달합니다.
 
@@ -174,7 +176,7 @@ import sys sys.path.insert(0, 'gang-of-four/decorator-pattern') from verbose_sta
 
 이러한 기동을 직접 시도해 본 적이 있다면, 파이썬 객체 인스턴스에 설치된 함수가 자동 `self` 인수를 받지 않는다는 사실에 좌초했을 수 있습니다 — 대신 문자 그대로 호출되는 인수만 봅니다. 따라서 파일의 `write()`를 로깅으로 보완하려는 첫 번째 시도:
 
-\>\>\> def bind_write_method(logger): ... \# 작동하지 않음: <span class="title-ref">self</span> 인수를 받지 않음 ... def write_and_log(self, s): ... self.write(s) ... logger.debug('wrote %s bytes to %s', len(s), self.\_file) ... return write_and_log
+\>\>\> def bind_write_method(logger): ... \# 작동하지 않음: <span class="title-ref">self</span> 인수를 받지 않음 ... def write_and_log(self, s): ... self.write(s) ... logger.debug('wrote %s bytes to %s', len(s), self._file) ... return write_and_log
 
 —는 새 메서드가 두 개가 아닌 하나의 인수만 보기 때문에 오류로 종료됩니다.
 
@@ -192,7 +194,7 @@ import sys sys.path.insert(0, 'gang-of-four/decorator-pattern') from verbose_sta
 
 야생에서 볼 수 있는 또 다른 접근 방식은 원하는 동작이 재정의된 서브클래스를 만들고, 그런 다음 객체 인스턴스의 클래스를 외과적으로 변경하는 것입니다. 안타깝게도 이것은 일반적인 경우에 가능하지 않으며, 실제로 여기 예제에서는 파일 클래스가 모든 내장 클래스와 마찬가지로 `__class__` 속성에 대한 할당을 허용하지 않기 때문에 실패합니다.
 
-\>\>\> f = open('/etc/passwd') \>\>\> class Foo(type(f)): ... def write_and_log(self, s): ... self.write(s) ... logger.debug('wrote %s bytes to %s', len(s), self.\_file) ... \>\>\> f.\_\_class\_\_ = Foo Traceback (most recent call last): ... TypeError: \_\_class\_\_ assignment only supported for heap types or ModuleType subclasses
+\>\>\> f = open('/etc/passwd') \>\>\> class Foo(type(f)): ... def write_and_log(self, s): ... self.write(s) ... logger.debug('wrote %s bytes to %s', len(s), self._file) ... \>\>\> f.__class__ = Foo Traceback (most recent call last): ... TypeError: __class__ assignment only supported for heap types or ModuleType subclasses
 
 그러나 수술이 작동하는 경우, 원래 클래스가 아닌 서브클래스의 동작을 하는 객체를 갖게 됩니다.
 

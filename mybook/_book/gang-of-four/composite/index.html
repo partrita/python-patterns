@@ -155,7 +155,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../python/sentinel-object/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">index.html</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">감시 객체 패턴 (Sentinel Object Pattern)</span></span></a>
   </div>
 </li>
       </ul>
@@ -408,12 +408,12 @@ children = widget.winfo_children() …</p>
 def children(self):<br>
 return []</p>
 <p>class Frame(Widget):<br>
-def __init__(self, child_widgets):<br>
+def <strong>init</strong>(self, child_widgets):<br>
 self.child_widgets = child_widgets</p>
 <p>def children(self):<br>
 return self.child_widgets</p>
 <p>class Label(Widget):<br>
-def __init__(self, text):<br>
+def <strong>init</strong>(self, text):<br>
 self.text = text</p>
 </blockquote>
 <p>또는 객체가 단순히 동일한 인터페이스를 덕 타이핑하고 테스트에 의존하여 컨테이너와 내용 간의 대칭성을 유지할 수 있습니다. (매우 간단한 스크립트의 경우 “테스트”는 단순히 코드가 실행된다는 사실일 수 있습니다.) :</p>

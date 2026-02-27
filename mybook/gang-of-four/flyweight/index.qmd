@@ -58,44 +58,47 @@
 
 가장 간단한 플라이웨이트는 미리 할당됩니다. 학점 할당 시스템은 학점 자체에 대해 플라이웨이트를 사용할 수 있습니다.
 
-<div class="testcode">
+```python
+_grades = [letter + suffix
+           for letter in 'ABCD'
+           for suffix in ('+', '', '-')] + ['F']
 
-<span id="grades">grades</span> = \[letter + suffix  
-for letter in 'ABCD' for suffix in ('+', '', '-')\] + \['F'\]
+def compute_grade(percent):
+    percent = max(59, min(99, percent))
+    return _grades[(99 - percent) * 3 // 10]
 
-def compute_grade(percent):  
-percent = max(59, min(99, percent)) return <span id="grades">grades</span>\[(99 - percent) \* 3 // 10\]
+print(compute_grade(55))
+print(compute_grade(89))
+print(compute_grade(90))
+```
 
-print(compute_grade(55)) print(compute_grade(89)) print(compute_grade(90))
-
-</div>
-
-<div class="testoutput">
-
-F B+ A-
-
-</div>
+```text
+F
+B+
+A-
+```
 
 플라이웨이트 모집단을 동적으로 빌드해야 하는 팩토리는 더 복잡합니다. 플라이웨이트를 등록하고 나중에 다시 찾을 수 있는 동적 데이터 구조가 필요합니다. 일반적으로 사전을 선택합니다.
 
-<div class="testcode">
+```python
+_strings = {}
 
-<span id="strings">strings</span> = {}
+def my_intern(string):
+    s = _strings.setdefault(string, string)
+    return s
 
-def my_intern(string):  
-s = <span id="strings.setdefault">strings.setdefault</span>(string, string) return s
+a1 = my_intern('A')
+b1 = my_intern('B')
+a2 = my_intern('A')
 
-a1 = my_intern('A') b1 = my_intern('B') a2 = my_intern('A')
+print(a1 is b1)
+print(a1 is a2)
+```
 
-print(a1 is b1) print(a1 is a2)
-
-</div>
-
-<div class="testoutput">
-
-False True
-
-</div>
+```text
+False
+True
+```
 
 동적으로 할당된 플라이웨이트의 한 가지 위험은 가능한 값의 수가 매우 많고 호출자가 프로그램 런타임 동안 많은 고유한 값을 요청할 수 있는 경우 결국 메모리가 고갈될 가능성입니다. 이러한 경우 `weakref` 모듈의 `WeakValueDictionary`를 사용하는 것을 고려할 수 있습니다.
 
@@ -103,26 +106,34 @@ False True
 
 갱 오브 포는 플라이웨이트 패턴을 팩토리 함수를 사용하는 것으로 정의하지만, 파이썬은 또 다른 가능성을 제공합니다. 클래스는 `bool()` 및 `int()`와 마찬가지로 생성자에서 바로 패턴을 구현할 수 있습니다. 위의 예제를 클래스로 다시 작성하고 — 예를 들어 미리 빌드하는 대신 주문형으로 객체를 할당하면 — 다음과 같은 결과가 생성됩니다.
 
-<div class="testcode">
+```python
+class Grade(object):
+    _instances = {}
 
-class Grade(object):  
-<span id="instances">instances</span> = {}
+    def __new__(cls, percent):
+        percent = max(50, min(99, percent))
+        letter = 'FDCBA'[(percent - 50) // 10]
+        self = cls._instances.get(letter)
+        if self is None:
+            self = cls._instances[letter] = object.__new__(Grade)
+            self.letter = letter
+        return self
 
-def \_\_new\_\_(cls, percent):  
-percent = max(50, min(99, percent)) letter = 'FDCBA'\[(percent - 50) // 10\] self = cls.\_instances.get(letter) if self is None: self = cls.\_instances\[letter\] = object.\_\_new\_\_(Grade) self.letter = letter return self
+    def __repr__(self):
+        return 'Grade {!r}'.format(self.letter)
 
-def \_\_repr\_\_(self):  
-return 'Grade {!r}'.format(self.letter)
+print(Grade(55), Grade(85), Grade(95), Grade(100))
+print(len(Grade._instances))    # 인스턴스 수
+print(Grade(95) is Grade(100))  # 'A'를 두 번 더 요청
+print(len(Grade._instances))    # 숫자가 동일하게 유지되었습니까?
+```
 
-print(Grade(55), Grade(85), Grade(95), Grade(100)) print(len(Grade.\_instances)) \# 인스턴스 수 print(Grade(95) is Grade(100)) \# 'A'를 두 번 더 요청 print(len(Grade.\_instances)) \# 숫자가 동일하게 유지되었습니까?
-
-</div>
-
-<div class="testoutput">
-
-Grade 'F' Grade 'B' Grade 'A' Grade 'A' 3 True 3
-
-</div>
+```text
+Grade 'F' Grade 'B' Grade 'A' Grade 'A'
+3
+True
+3
+```
 
 *A*에 대한 `Grade` 객체가 생성되면 이에 대한 모든 추가 요청은 동일한 객체를 받습니다. 인스턴스 사전은 계속 증가하지 않습니다.
 
